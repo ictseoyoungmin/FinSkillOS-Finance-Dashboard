@@ -15,85 +15,14 @@ from engine.metrics import compute_metrics, format_percent, format_ratio
 from engine.report_builder import build_html_report
 from engine.rule_engine import RuleAuditLog
 from engine.schema_mapper import infer_schema
+from ui.components import empty_state, metric_card, section_header
+from ui.layout import date_range_label, render_sidebar_nav, render_topbar, render_topbar_controls
+from ui.theme import apply_dashboard_style, style_plotly_figure
 
 
 APP_ROOT = Path(__file__).resolve().parent
 SAMPLE_DATA_DIR = APP_ROOT / "sample_data"
 SKILLS_DIR = APP_ROOT / "FinSkillOS_skills"
-
-
-def apply_dashboard_style() -> None:
-    st.markdown(
-        """
-        <style>
-        :root {
-            --fs-ink: #17202a;
-            --fs-muted: #5f6f7d;
-            --fs-line: #d8e0e7;
-            --fs-blue: #245b8f;
-            --fs-green: #1f7a5a;
-            --fs-red: #a33a3a;
-            --fs-amber: #9a6a16;
-        }
-        .main .block-container {
-            padding-top: 1.5rem;
-            padding-bottom: 3rem;
-            max-width: 1420px;
-        }
-        h1, h2, h3 {
-            color: var(--fs-ink);
-            letter-spacing: 0;
-        }
-        div[data-testid="stMetric"] {
-            border: 1px solid var(--fs-line);
-            border-radius: 8px;
-            padding: 0.75rem 0.85rem;
-            background: #fbfcfd;
-        }
-        div[data-testid="stMetricLabel"] {
-            color: var(--fs-muted);
-            font-size: 0.78rem;
-        }
-        .fs-section {
-            border-top: 1px solid var(--fs-line);
-            padding-top: 1.1rem;
-            margin-top: 1.6rem;
-        }
-        .fs-section-kicker {
-            color: var(--fs-blue);
-            font-size: 0.78rem;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-        .fs-section-title {
-            color: var(--fs-ink);
-            font-size: 1.25rem;
-            font-weight: 720;
-            margin: 0.1rem 0 0.65rem 0;
-        }
-        .fs-header-line {
-            color: var(--fs-muted);
-            font-size: 0.92rem;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
-
-
-def section_header(number: int, title: str, rule_id: str | None = None) -> None:
-    label = f"Section {number:02d}"
-    if rule_id:
-        label = f"{label} · {rule_id}"
-    st.markdown(
-        f"""
-        <div class="fs-section">
-          <div class="fs-section-kicker">{label}</div>
-          <div class="fs-section-title">{title}</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
 
 
 def list_sample_files() -> list[str]:
@@ -238,17 +167,23 @@ def render_schema_mapping(schema: dict[str, object] | None) -> None:
 
 def render_executive_summary(metrics: dict[str, object] | None) -> None:
     if metrics is None:
-        st.info("No metrics available.")
+        empty_state("No Metrics Available", "Select a sample dataset or upload a CSV to generate the KPI strip.")
         return
 
     summary = metrics.get("summary", {})
     cols = st.columns(6)
-    cols[0].metric("Total Return", format_percent(summary.get("total_return")))
-    cols[1].metric("Annualized Return", format_percent(summary.get("annualized_return")))
-    cols[2].metric("Volatility", format_percent(summary.get("annualized_volatility")))
-    cols[3].metric("Maximum Drawdown", format_percent(summary.get("max_drawdown")))
-    cols[4].metric("Sharpe Ratio", format_ratio(summary.get("sharpe_ratio")))
-    cols[5].metric("Risk Level", str(summary.get("risk_level", "UNKNOWN")))
+    with cols[0]:
+        metric_card("Total Return", format_percent(summary.get("total_return")), "Total over selected period", "teal", "↗")
+    with cols[1]:
+        metric_card("Annualized Return", format_percent(summary.get("annualized_return")), "Compounded per year", "teal", "⟳")
+    with cols[2]:
+        metric_card("Volatility (Ann.)", format_percent(summary.get("annualized_volatility")), "Standard deviation", "blue", "~")
+    with cols[3]:
+        metric_card("Max Drawdown", format_percent(summary.get("max_drawdown")), "From peak to trough", "red", "↘")
+    with cols[4]:
+        metric_card("Sharpe Ratio", format_ratio(summary.get("sharpe_ratio")), "Risk-adjusted return", "purple", "Σ")
+    with cols[5]:
+        metric_card("Risk Level", str(summary.get("risk_level", "UNKNOWN")), "Balanced risk profile", "amber", "◇")
 
     details = {
         "Drawdown Risk": summary.get("drawdown_risk_level", "UNKNOWN"),
@@ -373,13 +308,7 @@ def add_chart_rules(audit: RuleAuditLog, chart_plan: list[dict[str, object]]) ->
 
 
 def _plotly_layout(fig: go.Figure) -> go.Figure:
-    fig.update_layout(
-        template="plotly_white",
-        margin=dict(l=20, r=20, t=48, b=24),
-        legend_title_text="",
-        hovermode="x unified",
-    )
-    return fig
+    return style_plotly_figure(fig)
 
 
 def render_chart_plan(chart_plan: list[dict[str, object]], schema: dict[str, object] | None, metrics: dict[str, object] | None, section: str) -> None:
@@ -524,7 +453,7 @@ def main() -> None:
     )
     apply_dashboard_style()
 
-    controls = render_sidebar()
+    controls = render_topbar_controls(list_sample_files())
     df, source_name = read_uploaded_or_sample(
         controls["uploaded_file"],
         controls["sample_name"],
@@ -564,22 +493,32 @@ def main() -> None:
             "applied_rules": audit.deduplicated_records(),
         }
 
-    section_header(1, "Header & Upload Panel", "DASH-002")
-    st.title("FinSkillOS")
-    st.markdown(
-        '<div class="fs-header-line">Skill-Governed Investment Analytics Dashboard</div>',
-        unsafe_allow_html=True,
+    active_tab = render_sidebar_nav(
+        active_tab="Overview",
+        source_name=source_name,
+        mode=mode,
     )
-
-    header_cols = st.columns(3)
-    header_cols[0].metric("Analysis Mode", mode)
-    header_cols[1].metric("Dataset", source_name)
-    header_cols[2].metric("Risk-Free Rate", f"{controls['risk_free_rate']:.4f}")
+    render_topbar(
+        title="Investment Analytics Dashboard" if active_tab == "Overview" else active_tab,
+        subtitle="Skill-Governed Investment Analytics Dashboard",
+        active_tab=active_tab,
+        source_name=source_name,
+        date_range=date_range_label(profile),
+    )
 
     if controls["run_analysis"]:
         st.success("Analysis refreshed for the current dataset.")
     elif controls["export_requested"]:
         st.warning("Report export is not available yet.")
+
+    section_header(1, "Header & Upload Panel", "DASH-002")
+    header_cols = st.columns(3)
+    with header_cols[0]:
+        metric_card("Analysis Mode", mode, "Selected execution profile", "blue", "▤")
+    with header_cols[1]:
+        metric_card("Dataset", source_name, "Uploaded file or sample", "teal", "▦")
+    with header_cols[2]:
+        metric_card("Risk-Free Rate", f"{controls['risk_free_rate']:.4f}", "Sharpe Ratio assumption", "amber", "%")
 
     render_dashboard_sections(
         df=df,
