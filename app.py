@@ -12,6 +12,7 @@ from engine.chart_planner import plan_charts
 from engine.data_profiler import profile_dataframe
 from engine.insight_engine import generate_insights
 from engine.metrics import compute_metrics, format_percent, format_ratio
+from engine.report_builder import build_html_report
 from engine.rule_engine import RuleAuditLog
 from engine.schema_mapper import infer_schema
 
@@ -332,6 +333,20 @@ def render_applied_rules(audit: RuleAuditLog) -> None:
     )
 
 
+def render_report_export(analysis_result: dict[str, object] | None) -> None:
+    if analysis_result is None:
+        st.info("No analysis result available for report export.")
+        return
+    html_report = build_html_report(analysis_result)
+    st.download_button(
+        "Download HTML Report",
+        data=html_report.encode("utf-8"),
+        file_name="finskillos_analysis_report.html",
+        mime="text/html",
+    )
+    st.caption("The report includes dataset summary, schema mapping, metrics, risk insights, rule audit log, and disclaimer.")
+
+
 def render_metric_tables(metrics: dict[str, object] | None) -> None:
     if metrics is None:
         return
@@ -463,6 +478,7 @@ def render_dashboard_sections(
     metrics: dict[str, object] | None,
     chart_plan: list[dict[str, object]],
     insights: dict[str, object] | None,
+    analysis_result: dict[str, object] | None,
 ) -> None:
     section_header(2, "Data Profile", "DASH-001")
     if df is None:
@@ -496,7 +512,7 @@ def render_dashboard_sections(
     render_applied_rules(audit)
 
     section_header(10, "Export Report", "REPORT-001")
-    st.info("Report export is not available yet.")
+    render_report_export(analysis_result)
 
 
 def main() -> None:
@@ -519,6 +535,7 @@ def main() -> None:
     schema = None
     metrics = None
     insights = None
+    analysis_result = None
     chart_plan: list[dict[str, object]] = []
     if df is not None:
         profile = profile_dataframe(df)
@@ -536,6 +553,16 @@ def main() -> None:
         add_chart_rules(audit, chart_plan)
         insights = generate_insights(metrics, profile, schema)
         audit.extend(insights["applied_rules"])
+        analysis_result = {
+            "source_name": source_name,
+            "mode": mode,
+            "profile": profile,
+            "schema": schema,
+            "metrics": metrics,
+            "chart_plan": chart_plan,
+            "insights": insights,
+            "applied_rules": audit.deduplicated_records(),
+        }
 
     section_header(1, "Header & Upload Panel", "DASH-002")
     st.title("FinSkillOS")
@@ -563,6 +590,7 @@ def main() -> None:
         metrics=metrics,
         chart_plan=chart_plan,
         insights=insights,
+        analysis_result=analysis_result,
     )
 
     with st.expander("Skills.md 기반 구현 참조", expanded=False):
