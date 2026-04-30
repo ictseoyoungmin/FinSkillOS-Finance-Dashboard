@@ -3,8 +3,11 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
 import streamlit as st
 
+from engine.chart_planner import plan_charts
 from engine.data_profiler import profile_dataframe
 from engine.metrics import compute_metrics, format_percent, format_ratio
 from engine.rule_engine import RuleAuditLog
@@ -203,6 +206,114 @@ def render_metric_tables(metrics: dict[str, object] | None) -> None:
         st.dataframe(corr, use_container_width=True)
 
 
+def add_chart_rules(audit: RuleAuditLog, chart_plan: list[dict[str, object]]) -> None:
+    for chart in chart_plan:
+        audit.add(
+            rule_id=str(chart["rule_id"]),
+            step="chart_planning",
+            condition=str(chart["reason"]),
+            action=f"Plan chart `{chart['chart_id']}`.",
+            result="Selected for rendering." if chart.get("available") else "Not rendered; prerequisites are unavailable.",
+        )
+
+
+def _plotly_layout(fig: go.Figure) -> go.Figure:
+    fig.update_layout(
+        template="plotly_white",
+        margin=dict(l=20, r=20, t=48, b=24),
+        legend_title_text="",
+        hovermode="x unified",
+    )
+    return fig
+
+
+def render_chart_plan(chart_plan: list[dict[str, object]], schema: dict[str, object] | None, metrics: dict[str, object] | None, section: str) -> None:
+    if schema is None or metrics is None:
+        st.info("데이터를 선택하면 자동 차트 계획이 표시됩니다.")
+        return
+
+    section_charts = [chart for chart in chart_plan if chart.get("section") == section]
+    if not section_charts:
+        st.info("이 섹션에 선택된 차트가 없습니다.")
+        return
+
+    std_df = schema.get("standardized_df")
+    for chart in section_charts:
+        st.caption(f"{chart['title']} | Rule: {chart['rule_id']} | {chart['reason']}")
+        if not chart.get("available"):
+            st.warning(f"{chart['title']} was not generated because prerequisites are unavailable.")
+            continue
+
+        chart_id = chart["chart_id"]
+        if chart_id == "price_trend" and isinstance(std_df, pd.DataFrame):
+            fig = px.line(std_df, x="date", y="price", color="asset" if "asset" in std_df.columns else None)
+            st.plotly_chart(_plotly_layout(fig), use_container_width=True)
+
+        elif chart_id in {"cumulative_return", "indexed_cumulative_return"}:
+            cumulative = metrics.get("cumulative_returns")
+            if isinstance(cumulative, pd.DataFrame) and not cumulative.empty:
+                plot_df = cumulative.copy()
+                plot_df["indexed_value"] = 100.0 * (1.0 + plot_df["cumulative_return"])
+                fig = px.line(plot_df, x="date", y="indexed_value", color="asset")
+                st.plotly_chart(_plotly_layout(fig), use_container_width=True)
+
+        elif chart_id in {"drawdown", "drawdown_comparison"}:
+            drawdowns = metrics.get("drawdowns")
+            if isinstance(drawdowns, pd.DataFrame) and not drawdowns.empty:
+                fig = px.area(drawdowns, x="date", y="drawdown", color="asset")
+                fig.update_yaxes(tickformat=".0%")
+                st.plotly_chart(_plotly_layout(fig), use_container_width=True)
+
+        elif chart_id == "metric_summary_table":
+            render_metric_tables(metrics)
+
+        elif chart_id == "risk_return_scatter":
+            asset_metrics = pd.DataFrame(metrics.get("asset_metrics", []))
+            required = {"annualized_volatility", "annualized_return", "asset"}
+            if not asset_metrics.empty and required.issubset(asset_metrics.columns):
+                asset_metrics = asset_metrics.dropna(subset=["annualized_volatility", "annualized_return"])
+                fig = px.scatter(
+                    asset_metrics,
+                    x="annualized_volatility",
+                    y="annualized_return",
+                    text="asset",
+                    size=asset_metrics["max_drawdown"].abs() if "max_drawdown" in asset_metrics.columns else None,
+                )
+                fig.update_traces(textposition="top center")
+                fig.update_xaxes(tickformat=".0%")
+                fig.update_yaxes(tickformat=".0%")
+                st.plotly_chart(_plotly_layout(fig), use_container_width=True)
+
+        elif chart_id == "correlation_heatmap":
+            corr = metrics.get("correlation_matrix")
+            if isinstance(corr, pd.DataFrame) and not corr.empty:
+                fig = px.imshow(
+                    corr,
+                    text_auto=".2f",
+                    zmin=-1,
+                    zmax=1,
+                    color_continuous_scale="RdBu_r",
+                    aspect="auto",
+                )
+                st.plotly_chart(_plotly_layout(fig), use_container_width=True)
+
+        elif chart_id == "allocation_chart" and isinstance(std_df, pd.DataFrame):
+            fig = px.pie(std_df, names="asset", values="weight", hole=0.48)
+            st.plotly_chart(_plotly_layout(fig), use_container_width=True)
+
+        elif chart_id == "concentration_table":
+            allocation = metrics.get("allocation", {})
+            if allocation:
+                st.dataframe(pd.DataFrame([allocation]), use_container_width=True)
+
+        elif chart_id == "sector_exposure" and isinstance(std_df, pd.DataFrame):
+            if {"sector", "weight"}.issubset(std_df.columns):
+                sector_df = std_df.groupby("sector", as_index=False)["weight"].sum()
+                fig = px.bar(sector_df, x="sector", y="weight")
+                fig.update_yaxes(tickformat=".0%")
+                st.plotly_chart(_plotly_layout(fig), use_container_width=True)
+
+
 def render_placeholder_sections(
     df: pd.DataFrame | None,
     source_name: str,
@@ -210,6 +321,7 @@ def render_placeholder_sections(
     profile: dict[str, object] | None,
     schema: dict[str, object] | None,
     metrics: dict[str, object] | None,
+    chart_plan: list[dict[str, object]],
 ) -> None:
     st.subheader("Data Profile")
     if df is None:
@@ -227,14 +339,13 @@ def render_placeholder_sections(
     render_executive_summary(metrics)
 
     st.subheader("Return Analysis")
-    render_metric_tables(metrics)
-    st.info("Slice 6에서 가격 추세와 누적수익률 차트가 자동 선택됩니다.")
+    render_chart_plan(chart_plan, schema, metrics, "return_analysis")
 
     st.subheader("Risk Analysis")
-    st.info("Slice 5-6에서 변동성, 최대낙폭, drawdown 차트가 연결됩니다.")
+    render_chart_plan(chart_plan, schema, metrics, "risk_analysis")
 
     st.subheader("Correlation & Diversification")
-    st.info("Slice 5-6에서 다중 자산 상관관계와 risk-return scatter가 연결됩니다.")
+    render_chart_plan(chart_plan, schema, metrics, "correlation_diversification")
 
     st.subheader("Rule-Based Insights")
     st.info("Slice 8에서 Fact / Interpretation / Caution 구조의 리스크 우선 인사이트가 표시됩니다.")
@@ -264,6 +375,7 @@ def main() -> None:
     profile = None
     schema = None
     metrics = None
+    chart_plan: list[dict[str, object]] = []
     if df is not None:
         profile = profile_dataframe(df)
         audit.extend(profile["applied_rules"])
@@ -276,6 +388,8 @@ def main() -> None:
             profile=profile,
         )
         audit.extend(metrics["applied_rules"])
+        chart_plan = plan_charts(schema, metrics)
+        add_chart_rules(audit, chart_plan)
 
     st.title("FinSkillOS")
     st.caption("Skill-Governed Investment Analytics Dashboard")
@@ -297,6 +411,7 @@ def main() -> None:
         profile=profile,
         schema=schema,
         metrics=metrics,
+        chart_plan=chart_plan,
     )
 
     with st.expander("Skills.md 기반 구현 참조", expanded=False):
