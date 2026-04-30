@@ -22,6 +22,12 @@ python3 -m venv .venv
 .venv/bin/streamlit run app.py
 ```
 
+After `.venv` is ready, you can use the helper script:
+
+```bash
+./run_app.sh
+```
+
 If the system Python does not include `ensurepip`, bootstrap pip inside `.venv` first, then install `requirements.txt`.
 
 ## Skill Documents

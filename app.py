@@ -19,6 +19,80 @@ SAMPLE_DATA_DIR = APP_ROOT / "sample_data"
 SKILLS_DIR = APP_ROOT / "FinSkillOS_skills"
 
 
+def apply_dashboard_style() -> None:
+    st.markdown(
+        """
+        <style>
+        :root {
+            --fs-ink: #17202a;
+            --fs-muted: #5f6f7d;
+            --fs-line: #d8e0e7;
+            --fs-blue: #245b8f;
+            --fs-green: #1f7a5a;
+            --fs-red: #a33a3a;
+            --fs-amber: #9a6a16;
+        }
+        .main .block-container {
+            padding-top: 1.5rem;
+            padding-bottom: 3rem;
+            max-width: 1420px;
+        }
+        h1, h2, h3 {
+            color: var(--fs-ink);
+            letter-spacing: 0;
+        }
+        div[data-testid="stMetric"] {
+            border: 1px solid var(--fs-line);
+            border-radius: 8px;
+            padding: 0.75rem 0.85rem;
+            background: #fbfcfd;
+        }
+        div[data-testid="stMetricLabel"] {
+            color: var(--fs-muted);
+            font-size: 0.78rem;
+        }
+        .fs-section {
+            border-top: 1px solid var(--fs-line);
+            padding-top: 1.1rem;
+            margin-top: 1.6rem;
+        }
+        .fs-section-kicker {
+            color: var(--fs-blue);
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .fs-section-title {
+            color: var(--fs-ink);
+            font-size: 1.25rem;
+            font-weight: 720;
+            margin: 0.1rem 0 0.65rem 0;
+        }
+        .fs-header-line {
+            color: var(--fs-muted);
+            font-size: 0.92rem;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def section_header(number: int, title: str, rule_id: str | None = None) -> None:
+    label = f"Section {number:02d}"
+    if rule_id:
+        label = f"{label} · {rule_id}"
+    st.markdown(
+        f"""
+        <div class="fs-section">
+          <div class="fs-section-kicker">{label}</div>
+          <div class="fs-section-title">{title}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 def list_sample_files() -> list[str]:
     if not SAMPLE_DATA_DIR.exists():
         return []
@@ -78,7 +152,7 @@ def build_initial_audit_log(mode: str, source_name: str) -> RuleAuditLog:
 
 
 def render_sidebar() -> dict[str, object]:
-    st.sidebar.header("Analysis Controls")
+    st.sidebar.header("FinSkillOS Controls")
     uploaded_file = st.sidebar.file_uploader("CSV Upload", type=["csv"])
     sample_files = ["샘플 없음"] + list_sample_files()
     sample_name = st.sidebar.selectbox("Sample Dataset", sample_files)
@@ -118,7 +192,7 @@ def render_profile(profile: dict[str, object]) -> None:
         st.write("Date Candidates")
         st.dataframe(candidates, use_container_width=True)
     else:
-        st.warning("날짜 후보가 감지되지 않았습니다. Allocation/static 분석 모드가 필요할 수 있습니다.")
+        st.warning("No date candidate detected. Static allocation analysis remains available.")
 
     column_cols = st.columns(2)
     column_cols[0].write("Numeric Columns")
@@ -143,7 +217,7 @@ def render_profile(profile: dict[str, object]) -> None:
 
 def render_schema_mapping(schema: dict[str, object] | None) -> None:
     if schema is None:
-        st.info("데이터를 선택하면 자동 표준 스키마 매핑 결과가 표시됩니다.")
+        st.info("No dataset selected.")
         return
 
     st.metric("Detected Schema", str(schema["schema_type"]))
@@ -151,7 +225,7 @@ def render_schema_mapping(schema: dict[str, object] | None) -> None:
     if mapping_table:
         st.dataframe(mapping_table, use_container_width=True)
     else:
-        st.warning("자동 매핑된 표준 필드가 없습니다. Slice 4 이후 수동 매핑 fallback을 확장할 수 있습니다.")
+        st.warning("No standard fields were mapped automatically.")
 
     standardized_df = schema.get("standardized_df")
     if isinstance(standardized_df, pd.DataFrame) and not standardized_df.empty:
@@ -161,7 +235,7 @@ def render_schema_mapping(schema: dict[str, object] | None) -> None:
 
 def render_executive_summary(metrics: dict[str, object] | None) -> None:
     if metrics is None:
-        st.info("Slice 5 지표 엔진이 데이터를 받으면 Executive Summary가 표시됩니다.")
+        st.info("No metrics available.")
         return
 
     summary = metrics.get("summary", {})
@@ -229,7 +303,7 @@ def _plotly_layout(fig: go.Figure) -> go.Figure:
 
 def render_chart_plan(chart_plan: list[dict[str, object]], schema: dict[str, object] | None, metrics: dict[str, object] | None, section: str) -> None:
     if schema is None or metrics is None:
-        st.info("데이터를 선택하면 자동 차트 계획이 표시됩니다.")
+        st.info("No chart plan available.")
         return
 
     section_charts = [chart for chart in chart_plan if chart.get("section") == section]
@@ -314,7 +388,7 @@ def render_chart_plan(chart_plan: list[dict[str, object]], schema: dict[str, obj
                 st.plotly_chart(_plotly_layout(fig), use_container_width=True)
 
 
-def render_placeholder_sections(
+def render_dashboard_sections(
     df: pd.DataFrame | None,
     source_name: str,
     audit: RuleAuditLog,
@@ -323,38 +397,39 @@ def render_placeholder_sections(
     metrics: dict[str, object] | None,
     chart_plan: list[dict[str, object]],
 ) -> None:
-    st.subheader("Data Profile")
+    section_header(2, "Data Profile", "DASH-001")
     if df is None:
-        st.info("CSV를 업로드하거나 샘플 데이터를 선택하면 데이터 프로파일이 표시됩니다.")
+        st.info("No dataset selected.")
     else:
         st.caption(f"Source: {source_name}")
         if profile is not None:
             render_profile(profile)
-        st.dataframe(df.head(20), use_container_width=True)
+        with st.expander("Raw Data Preview", expanded=False):
+            st.dataframe(df.head(20), use_container_width=True)
 
-    st.subheader("Schema Mapping Result")
+    section_header(3, "Schema Mapping Result", "DASH-001")
     render_schema_mapping(schema)
 
-    st.subheader("Executive Summary")
+    section_header(4, "Executive Summary", "DASH-SUMMARY-001")
     render_executive_summary(metrics)
 
-    st.subheader("Return Analysis")
+    section_header(5, "Return Analysis", "VIS-PRIORITY")
     render_chart_plan(chart_plan, schema, metrics, "return_analysis")
 
-    st.subheader("Risk Analysis")
+    section_header(6, "Risk Analysis", "VIS-003")
     render_chart_plan(chart_plan, schema, metrics, "risk_analysis")
 
-    st.subheader("Correlation & Diversification")
+    section_header(7, "Correlation & Diversification", "VIS-004")
     render_chart_plan(chart_plan, schema, metrics, "correlation_diversification")
 
-    st.subheader("Rule-Based Insights")
-    st.info("Slice 8에서 Fact / Interpretation / Caution 구조의 리스크 우선 인사이트가 표시됩니다.")
+    section_header(8, "Rule-Based Insights", "INSIGHT-001")
+    st.info("Evidence-linked insights are not available yet.")
 
-    st.subheader("Applied Skill Rules")
+    section_header(9, "Applied Skill Rules", "AUTO-APP-002")
     st.dataframe(audit.deduplicated_records(), use_container_width=True)
 
-    st.subheader("Export Report")
-    st.info("Slice 10에서 HTML 리포트 다운로드가 활성화됩니다.")
+    section_header(10, "Export Report", "REPORT-001")
+    st.info("Report export is not available yet.")
 
 
 def main() -> None:
@@ -364,6 +439,7 @@ def main() -> None:
         layout="wide",
         initial_sidebar_state="expanded",
     )
+    apply_dashboard_style()
 
     controls = render_sidebar()
     df, source_name = read_uploaded_or_sample(
@@ -391,8 +467,12 @@ def main() -> None:
         chart_plan = plan_charts(schema, metrics)
         add_chart_rules(audit, chart_plan)
 
+    section_header(1, "Header & Upload Panel", "DASH-002")
     st.title("FinSkillOS")
-    st.caption("Skill-Governed Investment Analytics Dashboard")
+    st.markdown(
+        '<div class="fs-header-line">Skill-Governed Investment Analytics Dashboard</div>',
+        unsafe_allow_html=True,
+    )
 
     header_cols = st.columns(3)
     header_cols[0].metric("Analysis Mode", mode)
@@ -400,11 +480,11 @@ def main() -> None:
     header_cols[2].metric("Risk-Free Rate", f"{controls['risk_free_rate']:.4f}")
 
     if controls["run_analysis"]:
-        st.success("Slice 1 골격 검증 완료. 이후 슬라이스에서 실제 분석 엔진이 순차적으로 연결됩니다.")
+        st.success("Analysis refreshed for the current dataset.")
     elif controls["export_requested"]:
-        st.warning("Report export는 Slice 10에서 활성화됩니다.")
+        st.warning("Report export is not available yet.")
 
-    render_placeholder_sections(
+    render_dashboard_sections(
         df=df,
         source_name=source_name,
         audit=audit,
