@@ -10,6 +10,20 @@ from dataclasses import asdict, dataclass
 from typing import Iterable
 
 
+RULE_PREFIX_MEANINGS = {
+    "DATA": "데이터 구조 이해 및 품질 검사",
+    "SCHEMA": "표준 스키마 매핑",
+    "METRIC": "금융 지표 계산",
+    "VIS": "시각화 선택",
+    "DASH": "대시보드 레이아웃 구성",
+    "INSIGHT": "인사이트 생성",
+    "RISK": "리스크 분류",
+    "SAFE": "금융 표현 안전장치",
+    "AUTO": "바이브코딩 및 자동 생성",
+    "EXT": "확장 기능 아이디어",
+}
+
+
 @dataclass(frozen=True)
 class AppliedRule:
     """A single Skill Rule application record shown in dashboard audit logs."""
@@ -21,8 +35,19 @@ class AppliedRule:
     result: str
     severity: str = "INFO"
 
+    @property
+    def prefix(self) -> str:
+        return self.rule_id.split("-", 1)[0]
+
+    @property
+    def category(self) -> str:
+        return RULE_PREFIX_MEANINGS.get(self.prefix, "기타")
+
     def to_dict(self) -> dict[str, str]:
-        return asdict(self)
+        record = asdict(self)
+        record["prefix"] = self.prefix
+        record["category"] = self.category
+        return record
 
 
 class RuleAuditLog:
@@ -58,21 +83,48 @@ class RuleAuditLog:
             if isinstance(rule, AppliedRule):
                 self._rules.append(rule)
             else:
-                self._rules.append(AppliedRule(**rule))
+                payload = {
+                    key: rule[key]
+                    for key in ("rule_id", "step", "condition", "action", "result", "severity")
+                    if key in rule
+                }
+                self._rules.append(AppliedRule(**payload))
 
-    def to_records(self) -> list[dict[str, str]]:
-        return [rule.to_dict() for rule in self._rules]
+    def to_records(self) -> list[dict[str, str | int]]:
+        return [
+            {"order": index, **rule.to_dict()}
+            for index, rule in enumerate(self._rules, start=1)
+        ]
 
-    def deduplicated_records(self) -> list[dict[str, str]]:
+    def deduplicated_records(self) -> list[dict[str, str | int]]:
         seen: set[tuple[str, str, str]] = set()
-        records: list[dict[str, str]] = []
+        records: list[dict[str, str | int]] = []
         for rule in self._rules:
             key = (rule.rule_id, rule.step, rule.result)
             if key in seen:
                 continue
             seen.add(key)
-            records.append(rule.to_dict())
+            records.append({"order": len(records) + 1, **rule.to_dict()})
         return records
+
+    def summary_by_prefix(self, deduplicated: bool = True) -> list[dict[str, str | int]]:
+        records = self.deduplicated_records() if deduplicated else self.to_records()
+        counts: dict[str, dict[str, str | int]] = {}
+        for record in records:
+            prefix = str(record["prefix"])
+            if prefix not in counts:
+                counts[prefix] = {
+                    "prefix": prefix,
+                    "category": str(record["category"]),
+                    "count": 0,
+                }
+            counts[prefix]["count"] = int(counts[prefix]["count"]) + 1
+        return sorted(counts.values(), key=lambda item: str(item["prefix"]))
+
+    def has_prefixes(self, prefixes: Iterable[str], deduplicated: bool = True) -> dict[str, bool]:
+        records = self.deduplicated_records() if deduplicated else self.to_records()
+        present = {str(record["prefix"]) for record in records}
+        return {prefix: prefix in present for prefix in prefixes}
 
     def __len__(self) -> int:
         return len(self._rules)

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import json
 
 import pandas as pd
 import plotly.express as px
@@ -291,6 +292,46 @@ def render_insights(insights: dict[str, object] | None) -> None:
         st.warning(f"Safety rewrite applied for prohibited term(s): {', '.join(blocked_terms)}")
 
 
+def render_applied_rules(audit: RuleAuditLog) -> None:
+    records = audit.deduplicated_records()
+    summary = audit.summary_by_prefix()
+    coverage = audit.has_prefixes(["DATA", "METRIC", "VIS", "INSIGHT", "SAFE"])
+
+    cols = st.columns(4)
+    cols[0].metric("Applied Rules", len(records))
+    cols[1].metric("Rule Categories", len(summary))
+    cols[2].metric("Warnings", sum(1 for row in records if row.get("severity") == "WARNING"))
+    cols[3].metric("Required Coverage", f"{sum(coverage.values())}/{len(coverage)}")
+
+    st.write("Rule Category Summary")
+    st.dataframe(summary, use_container_width=True)
+
+    coverage_df = pd.DataFrame(
+        [{"prefix": prefix, "present": present} for prefix, present in coverage.items()]
+    )
+    st.write("Required Rule Coverage")
+    st.dataframe(coverage_df, use_container_width=True)
+
+    st.write("Rule Audit Detail")
+    st.dataframe(records, use_container_width=True)
+
+    csv_data = pd.DataFrame(records).to_csv(index=False).encode("utf-8-sig")
+    json_data = json.dumps(records, ensure_ascii=False, indent=2).encode("utf-8")
+    download_cols = st.columns(2)
+    download_cols[0].download_button(
+        "Download Rules CSV",
+        data=csv_data,
+        file_name="finskillos_applied_rules.csv",
+        mime="text/csv",
+    )
+    download_cols[1].download_button(
+        "Download Rules JSON",
+        data=json_data,
+        file_name="finskillos_applied_rules.json",
+        mime="application/json",
+    )
+
+
 def render_metric_tables(metrics: dict[str, object] | None) -> None:
     if metrics is None:
         return
@@ -452,7 +493,7 @@ def render_dashboard_sections(
     render_insights(insights)
 
     section_header(9, "Applied Skill Rules", "AUTO-APP-002")
-    st.dataframe(audit.deduplicated_records(), use_container_width=True)
+    render_applied_rules(audit)
 
     section_header(10, "Export Report", "REPORT-001")
     st.info("Report export is not available yet.")
