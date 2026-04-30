@@ -7,6 +7,7 @@ import streamlit as st
 
 from engine.data_profiler import profile_dataframe
 from engine.rule_engine import RuleAuditLog
+from engine.schema_mapper import infer_schema
 
 
 APP_ROOT = Path(__file__).resolve().parent
@@ -136,11 +137,30 @@ def render_profile(profile: dict[str, object]) -> None:
         st.dataframe(warnings, use_container_width=True)
 
 
+def render_schema_mapping(schema: dict[str, object] | None) -> None:
+    if schema is None:
+        st.info("데이터를 선택하면 자동 표준 스키마 매핑 결과가 표시됩니다.")
+        return
+
+    st.metric("Detected Schema", str(schema["schema_type"]))
+    mapping_table = schema.get("mapping_table", [])
+    if mapping_table:
+        st.dataframe(mapping_table, use_container_width=True)
+    else:
+        st.warning("자동 매핑된 표준 필드가 없습니다. Slice 4 이후 수동 매핑 fallback을 확장할 수 있습니다.")
+
+    standardized_df = schema.get("standardized_df")
+    if isinstance(standardized_df, pd.DataFrame) and not standardized_df.empty:
+        st.write("Standardized Data Preview")
+        st.dataframe(standardized_df.head(20), use_container_width=True)
+
+
 def render_placeholder_sections(
     df: pd.DataFrame | None,
     source_name: str,
     audit: RuleAuditLog,
     profile: dict[str, object] | None,
+    schema: dict[str, object] | None,
 ) -> None:
     st.subheader("Data Profile")
     if df is None:
@@ -152,7 +172,7 @@ def render_placeholder_sections(
         st.dataframe(df.head(20), use_container_width=True)
 
     st.subheader("Schema Mapping Result")
-    st.info("Slice 4에서 자동 표준 스키마 매핑 결과가 연결됩니다.")
+    render_schema_mapping(schema)
 
     st.subheader("Executive Summary")
     st.info("Slice 5에서 수익률, 변동성, 최대낙폭, Sharpe Ratio, Risk Level 카드가 연결됩니다.")
@@ -192,9 +212,12 @@ def main() -> None:
     mode = str(controls["mode"])
     audit = build_initial_audit_log(mode=mode, source_name=source_name)
     profile = None
+    schema = None
     if df is not None:
         profile = profile_dataframe(df)
         audit.extend(profile["applied_rules"])
+        schema = infer_schema(df, profile, mode=mode)
+        audit.extend(schema["applied_rules"])
 
     st.title("FinSkillOS")
     st.caption("Skill-Governed Investment Analytics Dashboard")
@@ -209,7 +232,13 @@ def main() -> None:
     elif controls["export_requested"]:
         st.warning("Report export는 Slice 10에서 활성화됩니다.")
 
-    render_placeholder_sections(df=df, source_name=source_name, audit=audit, profile=profile)
+    render_placeholder_sections(
+        df=df,
+        source_name=source_name,
+        audit=audit,
+        profile=profile,
+        schema=schema,
+    )
 
     with st.expander("Skills.md 기반 구현 참조", expanded=False):
         st.write("이 앱은 `FinSkillOS_skills` 문서 세트의 Rule ID와 구현 계약을 기준으로 개발됩니다.")
