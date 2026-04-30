@@ -5,6 +5,7 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
+from engine.data_profiler import profile_dataframe
 from engine.rule_engine import RuleAuditLog
 
 
@@ -100,15 +101,54 @@ def render_sidebar() -> dict[str, object]:
     }
 
 
-def render_placeholder_sections(df: pd.DataFrame | None, source_name: str, audit: RuleAuditLog) -> None:
+def render_profile(profile: dict[str, object]) -> None:
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("Rows", f"{profile['row_count']:,}")
+    col2.metric("Columns", f"{profile['column_count']:,}")
+    col3.metric("Frequency", str(profile["frequency"]).title())
+    col4.metric("Periods / Year", str(profile["periods_per_year"]))
+
+    candidates = profile.get("date_candidates", [])
+    if candidates:
+        st.write("Date Candidates")
+        st.dataframe(candidates, use_container_width=True)
+    else:
+        st.warning("날짜 후보가 감지되지 않았습니다. Allocation/static 분석 모드가 필요할 수 있습니다.")
+
+    column_cols = st.columns(2)
+    column_cols[0].write("Numeric Columns")
+    column_cols[0].dataframe(pd.DataFrame({"column": profile["numeric_columns"]}), use_container_width=True)
+    column_cols[1].write("Categorical Columns")
+    column_cols[1].dataframe(pd.DataFrame({"column": profile["categorical_columns"]}), use_container_width=True)
+
+    missing_df = pd.DataFrame(
+        [
+            {"column": column, "missing_rate": rate}
+            for column, rate in profile["missing_rates"].items()
+        ]
+    )
+    st.write("Missing Rates")
+    st.dataframe(missing_df, use_container_width=True)
+
+    warnings = profile.get("quality_warnings", [])
+    if warnings:
+        st.write("Quality Warnings")
+        st.dataframe(warnings, use_container_width=True)
+
+
+def render_placeholder_sections(
+    df: pd.DataFrame | None,
+    source_name: str,
+    audit: RuleAuditLog,
+    profile: dict[str, object] | None,
+) -> None:
     st.subheader("Data Profile")
     if df is None:
         st.info("CSV를 업로드하거나 샘플 데이터를 선택하면 데이터 프로파일이 표시됩니다.")
     else:
-        col1, col2, col3 = st.columns(3)
-        col1.metric("Rows", f"{len(df):,}")
-        col2.metric("Columns", f"{len(df.columns):,}")
-        col3.metric("Source", source_name)
+        st.caption(f"Source: {source_name}")
+        if profile is not None:
+            render_profile(profile)
         st.dataframe(df.head(20), use_container_width=True)
 
     st.subheader("Schema Mapping Result")
@@ -151,6 +191,10 @@ def main() -> None:
     )
     mode = str(controls["mode"])
     audit = build_initial_audit_log(mode=mode, source_name=source_name)
+    profile = None
+    if df is not None:
+        profile = profile_dataframe(df)
+        audit.extend(profile["applied_rules"])
 
     st.title("FinSkillOS")
     st.caption("Skill-Governed Investment Analytics Dashboard")
@@ -165,7 +209,7 @@ def main() -> None:
     elif controls["export_requested"]:
         st.warning("Report export는 Slice 10에서 활성화됩니다.")
 
-    render_placeholder_sections(df=df, source_name=source_name, audit=audit)
+    render_placeholder_sections(df=df, source_name=source_name, audit=audit, profile=profile)
 
     with st.expander("Skills.md 기반 구현 참조", expanded=False):
         st.write("이 앱은 `FinSkillOS_skills` 문서 세트의 Rule ID와 구현 계약을 기준으로 개발됩니다.")
