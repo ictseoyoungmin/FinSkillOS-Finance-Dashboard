@@ -318,6 +318,14 @@ def infer_schema(df: pd.DataFrame, profile: dict[str, Any], mode: str = "Auto") 
         ]
 
     _add_mapping_rules(audit, selected)
+    audit.add(
+        rule_id="SCHEMA-001",
+        step="schema_mapping",
+        condition="Candidate source columns were scored against FinSkillOS standard fields.",
+        action="Build the standard schema mapping table.",
+        result=f"{len(selected)} standard field mapping(s) selected.",
+        severity="WARNING" if not selected else "INFO",
+    )
 
     structure_rule = {
         "single_asset_price": "DATA-STRUCT-001",

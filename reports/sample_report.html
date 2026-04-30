@@ -29,16 +29,16 @@
   <table>
     <caption>Dataset summary</caption>
     <tbody>
-      <tr><th>Dataset</th><td>single_asset_price.csv</td></tr>
+      <tr><th>Dataset</th><td>multi_asset_portfolio.csv</td></tr>
       <tr><th>Analysis Mode</th><td>Auto Detect</td></tr>
-      <tr><th>Rows</th><td>252</td></tr>
+      <tr><th>Rows</th><td>1008</td></tr>
       <tr><th>Columns</th><td>3</td></tr>
       <tr><th>Frequency</th><td>daily</td></tr>
     </tbody>
   </table>
 
   <h2>2. Schema Mapping</h2>
-  <p>Detected schema: <strong>single_asset_price</strong></p>
+  <p>Detected schema: <strong>multi_asset_long</strong></p>
   <table class="dataframe">
   <caption>Schema mapping</caption><thead>
     <tr style="text-align: right;">
@@ -54,24 +54,24 @@
     <tr>
       <td>date</td>
       <td>date</td>
-      <td>1.00</td>
+      <td>1.0</td>
       <td>DATA-001</td>
       <td>auto_high</td>
       <td>100% datetime parse success, date keyword match</td>
     </tr>
     <tr>
-      <td>price</td>
-      <td>close</td>
-      <td>0.98</td>
-      <td>DATA-003</td>
+      <td>asset</td>
+      <td>asset</td>
+      <td>1.0</td>
+      <td>DATA-002</td>
       <td>auto_high</td>
-      <td>name=0.95, dtype=1.00, distribution=1.00, missingness=1.00</td>
+      <td>name=1.00, dtype=1.00, distribution=1.00, missingness=1.00</td>
     </tr>
     <tr>
-      <td>volume</td>
-      <td>volume</td>
-      <td>1.00</td>
-      <td>DATA-005</td>
+      <td>price</td>
+      <td>price</td>
+      <td>1.0</td>
+      <td>DATA-003</td>
       <td>auto_high</td>
       <td>name=1.00, dtype=1.00, distribution=1.00, missingness=1.00</td>
     </tr>
@@ -80,11 +80,11 @@
 
   <h2>3. Metric Summary</h2>
   <div class="metric-grid">
-    <div class="metric"><div class="metric-label">Total Return</div><div class="metric-value">45.35%</div></div>
-    <div class="metric"><div class="metric-label">Annualized Return</div><div class="metric-value">45.57%</div></div>
-    <div class="metric"><div class="metric-label">Volatility</div><div class="metric-value">18.35%</div></div>
-    <div class="metric"><div class="metric-label">Maximum Drawdown</div><div class="metric-value">-12.70%</div></div>
-    <div class="metric"><div class="metric-label">Sharpe Ratio</div><div class="metric-value">2.48</div></div>
+    <div class="metric"><div class="metric-label">Total Return</div><div class="metric-value">-5.86%</div></div>
+    <div class="metric"><div class="metric-label">Annualized Return</div><div class="metric-value">-5.88%</div></div>
+    <div class="metric"><div class="metric-label">Volatility</div><div class="metric-value">7.17%</div></div>
+    <div class="metric"><div class="metric-label">Maximum Drawdown</div><div class="metric-value">-9.45%</div></div>
+    <div class="metric"><div class="metric-label">Sharpe Ratio</div><div class="metric-value">-0.82</div></div>
     <div class="metric"><div class="metric-label">Risk Level</div><div class="metric-value">MODERATE</div></div>
   </div>
   <table class="dataframe">
@@ -104,24 +104,87 @@
       <th>observation_count</th>
       <th>data_sufficiency</th>
       <th>missing_reasons</th>
+      <th>drawdown_risk_level</th>
+      <th>volatility_risk_level</th>
+      <th>sharpe_quality</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td>Portfolio</td>
-      <td>0.453548</td>
-      <td>0.455716</td>
-      <td>0.183523</td>
-      <td>0.112897</td>
-      <td>-0.127048</td>
-      <td>2.483155</td>
-      <td>4.036578</td>
-      <td>3.586966</td>
-      <td>-0.016467</td>
-      <td>-0.026544</td>
+      <td>Commodity</td>
+      <td>0.089449</td>
+      <td>0.089821</td>
+      <td>0.098227</td>
+      <td>0.065218</td>
+      <td>-0.090605</td>
+      <td>0.914418</td>
+      <td>1.377228</td>
+      <td>0.991346</td>
+      <td>-0.009284</td>
+      <td>-0.013460</td>
       <td>251</td>
       <td>Medium history</td>
       <td>[]</td>
+      <td>MODERATE</td>
+      <td>LOW</td>
+      <td>Moderate</td>
+    </tr>
+    <tr>
+      <td>Defensive Bond</td>
+      <td>0.059087</td>
+      <td>0.059330</td>
+      <td>0.053220</td>
+      <td>0.035175</td>
+      <td>-0.039466</td>
+      <td>1.114799</td>
+      <td>1.686699</td>
+      <td>1.503312</td>
+      <td>-0.005127</td>
+      <td>-0.006744</td>
+      <td>251</td>
+      <td>Medium history</td>
+      <td>[]</td>
+      <td>LOW</td>
+      <td>LOW</td>
+      <td>Strong</td>
+    </tr>
+    <tr>
+      <td>Global Tech</td>
+      <td>-0.192927</td>
+      <td>-0.193616</td>
+      <td>0.169834</td>
+      <td>0.127616</td>
+      <td>-0.287403</td>
+      <td>-1.140032</td>
+      <td>-1.517175</td>
+      <td>-0.673672</td>
+      <td>-0.018140</td>
+      <td>-0.027605</td>
+      <td>251</td>
+      <td>Medium history</td>
+      <td>[]</td>
+      <td>VERY HIGH</td>
+      <td>MODERATE</td>
+      <td>Negative risk-adjusted performance</td>
+    </tr>
+    <tr>
+      <td>Growth Equity</td>
+      <td>-0.172167</td>
+      <td>-0.172790</td>
+      <td>0.129707</td>
+      <td>0.097337</td>
+      <td>-0.225661</td>
+      <td>-1.332161</td>
+      <td>-1.775171</td>
+      <td>-0.765705</td>
+      <td>-0.013211</td>
+      <td>-0.019982</td>
+      <td>251</td>
+      <td>Medium history</td>
+      <td>[]</td>
+      <td>HIGH</td>
+      <td>MODERATE</td>
+      <td>Negative risk-adjusted performance</td>
     </tr>
   </tbody>
 </table>
@@ -142,39 +205,48 @@
   </thead>
   <tbody>
     <tr>
-      <td>price_trend</td>
-      <td>VIS-001</td>
-      <td>Price Trend</td>
-      <td>1</td>
-      <td>Single asset price data is available.</td>
-      <td>return_analysis</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <td>cumulative_return</td>
+      <td>indexed_cumulative_return</td>
       <td>VIS-002</td>
-      <td>Cumulative Return</td>
-      <td>2</td>
-      <td>Return series can be converted to cumulative return.</td>
+      <td>Indexed Cumulative Return Comparison</td>
+      <td>1</td>
+      <td>Multiple asset return series are available.</td>
       <td>return_analysis</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <td>drawdown</td>
-      <td>VIS-003</td>
-      <td>Drawdown</td>
-      <td>3</td>
-      <td>Return series exists or can be computed from price.</td>
-      <td>risk_analysis</td>
       <td>True</td>
     </tr>
     <tr>
       <td>metric_summary_table</td>
       <td>VIS-006</td>
-      <td>Metric Summary</td>
-      <td>5</td>
-      <td>One or more metrics are calculable.</td>
+      <td>Asset Metric Summary</td>
+      <td>2</td>
+      <td>Asset-level metrics are calculable.</td>
       <td>return_analysis</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <td>risk_return_scatter</td>
+      <td>VIS-005</td>
+      <td>Risk-Return Scatter</td>
+      <td>3</td>
+      <td>Two or more assets have annualized return and volatility.</td>
+      <td>correlation_diversification</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <td>correlation_heatmap</td>
+      <td>VIS-004</td>
+      <td>Correlation Heatmap</td>
+      <td>4</td>
+      <td>Two or more asset return series have sufficient overlap.</td>
+      <td>correlation_diversification</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <td>drawdown_comparison</td>
+      <td>VIS-003</td>
+      <td>Drawdown Comparison</td>
+      <td>5</td>
+      <td>Drawdown series can be computed for multiple assets.</td>
+      <td>risk_analysis</td>
       <td>True</td>
     </tr>
   </tbody>
@@ -192,34 +264,34 @@
   
   <div class="insight">
     <h3>insight_002 · drawdown · MEDIUM</h3>
-    <p><strong>Fact:</strong> 최대낙폭(Maximum Drawdown)은 -12.70%입니다.</p>
+    <p><strong>Fact:</strong> 최대낙폭(Maximum Drawdown)은 -9.45%입니다.</p>
     <p><strong>Interpretation:</strong> RISK-001 기준으로 손실 구간 리스크는 MODERATE입니다.</p>
     <p><strong>Caution:</strong> 최대낙폭은 과거 관측치이며 미래 최대 손실 한도가 아닙니다.</p>
-    <p class="small"><strong>Evidence:</strong> {'metric': 'max_drawdown', 'value': -0.127047633426436, 'rule_id': 'RISK-001', 'chart': 'drawdown'}</p>
+    <p class="small"><strong>Evidence:</strong> {'metric': 'max_drawdown', 'value': -0.0944530393722367, 'rule_id': 'RISK-001', 'chart': 'drawdown'}</p>
   </div>
   
   <div class="insight">
-    <h3>insight_003 · volatility · MEDIUM</h3>
-    <p><strong>Fact:</strong> 연율화 변동성(Annualized Volatility)은 18.35%입니다.</p>
-    <p><strong>Interpretation:</strong> RISK-002 기준으로 변동성 리스크는 MODERATE입니다.</p>
+    <h3>insight_003 · volatility · INFO</h3>
+    <p><strong>Fact:</strong> 연율화 변동성(Annualized Volatility)은 7.17%입니다.</p>
+    <p><strong>Interpretation:</strong> RISK-002 기준으로 변동성 리스크는 LOW입니다.</p>
     <p><strong>Caution:</strong> 변동성은 가격 변화의 크기를 나타내며 손실 방향만을 의미하지는 않습니다.</p>
-    <p class="small"><strong>Evidence:</strong> {'metric': 'annualized_volatility', 'value': 0.1835227851459123, 'rule_id': 'RISK-002'}</p>
+    <p class="small"><strong>Evidence:</strong> {'metric': 'annualized_volatility', 'value': 0.07172522274156878, 'rule_id': 'RISK-002'}</p>
   </div>
   
   <div class="insight">
     <h3>insight_004 · return · INFO</h3>
-    <p><strong>Fact:</strong> 관측 기간의 누적수익률은 45.35%입니다.</p>
-    <p><strong>Interpretation:</strong> 동일 기간 기준 성과 방향은 양(+)의 방향입니다.</p>
+    <p><strong>Fact:</strong> 관측 기간의 누적수익률은 -5.86%입니다.</p>
+    <p><strong>Interpretation:</strong> 동일 기간 기준 성과 방향은 음(-)의 방향입니다.</p>
     <p><strong>Caution:</strong> 수익률은 관측 기간에 민감하며, 기간을 바꾸면 결과가 달라질 수 있습니다.</p>
-    <p class="small"><strong>Evidence:</strong> {'metric': 'total_return', 'value': 0.45354806240563605, 'rule_id': 'METRIC-003'}</p>
+    <p class="small"><strong>Evidence:</strong> {'metric': 'total_return', 'value': -0.058564930793522096, 'rule_id': 'METRIC-003'}</p>
   </div>
   
   <div class="insight">
-    <h3>insight_005 · sharpe · INFO</h3>
-    <p><strong>Fact:</strong> 샤프비율(Sharpe Ratio)은 2.48입니다.</p>
-    <p><strong>Interpretation:</strong> RISK-003 기준으로 위험 조정 성과는 Very strong, verify data quality로 분류됩니다.</p>
+    <h3>insight_005 · sharpe · WARNING</h3>
+    <p><strong>Fact:</strong> 샤프비율(Sharpe Ratio)은 -0.82입니다.</p>
+    <p><strong>Interpretation:</strong> RISK-003 기준으로 위험 조정 성과는 Negative risk-adjusted performance로 분류됩니다.</p>
     <p><strong>Caution:</strong> Sharpe Ratio는 수익률 분포가 안정적이라는 가정에 영향을 받습니다.</p>
-    <p class="small"><strong>Evidence:</strong> {'metric': 'sharpe_ratio', 'value': 2.483155236035258, 'rule_id': 'RISK-003'}</p>
+    <p class="small"><strong>Evidence:</strong> {'metric': 'sharpe_ratio', 'value': -0.8196734419674261, 'rule_id': 'RISK-003'}</p>
   </div>
   
 
@@ -241,61 +313,6 @@
   <tbody>
     <tr>
       <td>1</td>
-      <td>AUTO-STRUCT-001</td>
-      <td>project_skeleton</td>
-      <td>FinSkillOS MVP requires the documented app and engine layout.</td>
-      <td>Initialized Streamlit app, engine package, sample_data, and reports folders.</td>
-      <td>Slice 1 project skeleton is active.</td>
-      <td>INFO</td>
-      <td>AUTO</td>
-      <td>바이브코딩 및 자동 생성</td>
-    </tr>
-    <tr>
-      <td>2</td>
-      <td>DASH-001</td>
-      <td>dashboard_layout</td>
-      <td>Default dashboard section order is required.</td>
-      <td>Rendered the initial sections in the Skill-defined sequence.</td>
-      <td>Header, Data Profile, Schema Mapping, Summary, Analysis, Insights, Rules, and Export placeholders are visible.</td>
-      <td>INFO</td>
-      <td>DASH</td>
-      <td>대시보드 레이아웃 구성</td>
-    </tr>
-    <tr>
-      <td>3</td>
-      <td>DASH-002</td>
-      <td>dashboard_header</td>
-      <td>Header must include service name, description, mode, and dataset name.</td>
-      <td>Displayed FinSkillOS header metadata.</td>
-      <td>Mode=Auto Detect; Dataset=single_asset_price.csv.</td>
-      <td>INFO</td>
-      <td>DASH</td>
-      <td>대시보드 레이아웃 구성</td>
-    </tr>
-    <tr>
-      <td>4</td>
-      <td>DASH-003</td>
-      <td>sidebar_controls</td>
-      <td>Sidebar must provide upload, sample selection, analysis mode, risk-free rate, run, and export controls.</td>
-      <td>Rendered required sidebar controls.</td>
-      <td>All required sidebar controls are present.</td>
-      <td>INFO</td>
-      <td>DASH</td>
-      <td>대시보드 레이아웃 구성</td>
-    </tr>
-    <tr>
-      <td>5</td>
-      <td>AUTO-APP-002</td>
-      <td>rule_trace_visibility</td>
-      <td>Applied Skill Rules must be visible in the web UI.</td>
-      <td>Rendered an Applied Skill Rules table.</td>
-      <td>Rule audit records are displayed at the bottom of the dashboard.</td>
-      <td>INFO</td>
-      <td>AUTO</td>
-      <td>바이브코딩 및 자동 생성</td>
-    </tr>
-    <tr>
-      <td>6</td>
       <td>DATA-001</td>
       <td>column_type_inference</td>
       <td>A column has at least 80% datetime parse success or a date keyword match.</td>
@@ -306,7 +323,7 @@
       <td>데이터 구조 이해 및 품질 검사</td>
     </tr>
     <tr>
-      <td>7</td>
+      <td>2</td>
       <td>DATA-QA-001</td>
       <td>data_quality</td>
       <td>Column missing rates were calculated.</td>
@@ -317,7 +334,18 @@
       <td>데이터 구조 이해 및 품질 검사</td>
     </tr>
     <tr>
-      <td>8</td>
+      <td>3</td>
+      <td>DATA-QA-005</td>
+      <td>data_quality</td>
+      <td>Parsed date values are not monotonic increasing.</td>
+      <td>Record that downstream processing should sort by date.</td>
+      <td>`date` requires date sorting.</td>
+      <td>INFO</td>
+      <td>DATA</td>
+      <td>데이터 구조 이해 및 품질 검사</td>
+    </tr>
+    <tr>
+      <td>4</td>
       <td>DATA-FREQ-001</td>
       <td>frequency_detection</td>
       <td>Median date gap is between 1 and 3 days.</td>
@@ -328,18 +356,7 @@
       <td>데이터 구조 이해 및 품질 검사</td>
     </tr>
     <tr>
-      <td>9</td>
-      <td>DATA-QA-004</td>
-      <td>data_quality</td>
-      <td>One or more numeric series have period changes above 50%.</td>
-      <td>Flag extreme return candidates without removing rows.</td>
-      <td>volume</td>
-      <td>WARNING</td>
-      <td>DATA</td>
-      <td>데이터 구조 이해 및 품질 검사</td>
-    </tr>
-    <tr>
-      <td>10</td>
+      <td>5</td>
       <td>DATA-001</td>
       <td>schema_mapping</td>
       <td>`date` matched `date` with confidence 1.00.</td>
@@ -350,40 +367,51 @@
       <td>데이터 구조 이해 및 품질 검사</td>
     </tr>
     <tr>
-      <td>11</td>
+      <td>6</td>
+      <td>DATA-002</td>
+      <td>schema_mapping</td>
+      <td>`asset` matched `asset` with confidence 1.00.</td>
+      <td>Map source column `asset` to standard field `asset`.</td>
+      <td>asset &lt;- asset (auto_high).</td>
+      <td>INFO</td>
+      <td>DATA</td>
+      <td>데이터 구조 이해 및 품질 검사</td>
+    </tr>
+    <tr>
+      <td>7</td>
       <td>DATA-003</td>
       <td>schema_mapping</td>
-      <td>`close` matched `price` with confidence 0.98.</td>
-      <td>Map source column `close` to standard field `price`.</td>
-      <td>price &lt;- close (auto_high).</td>
+      <td>`price` matched `price` with confidence 1.00.</td>
+      <td>Map source column `price` to standard field `price`.</td>
+      <td>price &lt;- price (auto_high).</td>
       <td>INFO</td>
       <td>DATA</td>
       <td>데이터 구조 이해 및 품질 검사</td>
     </tr>
     <tr>
-      <td>12</td>
-      <td>DATA-005</td>
+      <td>8</td>
+      <td>SCHEMA-001</td>
       <td>schema_mapping</td>
-      <td>`volume` matched `volume` with confidence 1.00.</td>
-      <td>Map source column `volume` to standard field `volume`.</td>
-      <td>volume &lt;- volume (auto_high).</td>
+      <td>Candidate source columns were scored against FinSkillOS standard fields.</td>
+      <td>Build the standard schema mapping table.</td>
+      <td>3 standard field mapping(s) selected.</td>
       <td>INFO</td>
-      <td>DATA</td>
-      <td>데이터 구조 이해 및 품질 검사</td>
+      <td>SCHEMA</td>
+      <td>표준 스키마 매핑</td>
     </tr>
     <tr>
-      <td>13</td>
-      <td>DATA-STRUCT-001</td>
+      <td>9</td>
+      <td>DATA-STRUCT-002</td>
       <td>schema_classification</td>
       <td>Standard field availability was evaluated.</td>
-      <td>Classify dataset as `single_asset_price`.</td>
-      <td>Detected schema type: single_asset_price.</td>
+      <td>Classify dataset as `multi_asset_long`.</td>
+      <td>Detected schema type: multi_asset_long.</td>
       <td>INFO</td>
       <td>DATA</td>
       <td>데이터 구조 이해 및 품질 검사</td>
     </tr>
     <tr>
-      <td>14</td>
+      <td>10</td>
       <td>DATA-QA-005</td>
       <td>schema_standardization</td>
       <td>Time-series data should be processed in ascending date order.</td>
@@ -394,7 +422,7 @@
       <td>데이터 구조 이해 및 품질 검사</td>
     </tr>
     <tr>
-      <td>15</td>
+      <td>11</td>
       <td>METRIC-BASE-002</td>
       <td>metric_assumption</td>
       <td>Frequency-derived periods_per_year is required for annualized metrics.</td>
@@ -405,7 +433,7 @@
       <td>금융 지표 계산</td>
     </tr>
     <tr>
-      <td>16</td>
+      <td>12</td>
       <td>METRIC-BASE-003</td>
       <td>metric_assumption</td>
       <td>Risk-free rate is required for Sharpe Ratio.</td>
@@ -416,7 +444,7 @@
       <td>금융 지표 계산</td>
     </tr>
     <tr>
-      <td>17</td>
+      <td>13</td>
       <td>METRIC-001</td>
       <td>return_preparation</td>
       <td>Price series is available.</td>
@@ -427,7 +455,7 @@
       <td>금융 지표 계산</td>
     </tr>
     <tr>
-      <td>18</td>
+      <td>14</td>
       <td>METRIC-002</td>
       <td>metric_calculation</td>
       <td>Return series exists.</td>
@@ -438,106 +466,128 @@
       <td>금융 지표 계산</td>
     </tr>
     <tr>
-      <td>19</td>
+      <td>15</td>
       <td>METRIC-003</td>
       <td>metric_calculation</td>
       <td>Return or price series exists.</td>
       <td>Calculate total return.</td>
-      <td>total_return=0.45354806240563605.</td>
+      <td>total_return=-0.058564930793522096.</td>
+      <td>INFO</td>
+      <td>METRIC</td>
+      <td>금융 지표 계산</td>
+    </tr>
+    <tr>
+      <td>16</td>
+      <td>METRIC-004</td>
+      <td>metric_calculation</td>
+      <td>More than one return observation exists.</td>
+      <td>Calculate annualized return.</td>
+      <td>annualized_return=-0.05879126020046199.</td>
+      <td>INFO</td>
+      <td>METRIC</td>
+      <td>금융 지표 계산</td>
+    </tr>
+    <tr>
+      <td>17</td>
+      <td>METRIC-005</td>
+      <td>metric_calculation</td>
+      <td>Return series exists.</td>
+      <td>Calculate annualized volatility.</td>
+      <td>annualized_volatility=0.07172522274156878.</td>
+      <td>INFO</td>
+      <td>METRIC</td>
+      <td>금융 지표 계산</td>
+    </tr>
+    <tr>
+      <td>18</td>
+      <td>METRIC-006</td>
+      <td>metric_calculation</td>
+      <td>Return series exists.</td>
+      <td>Calculate downside deviation.</td>
+      <td>downside_deviation=0.05315060536379041.</td>
+      <td>INFO</td>
+      <td>METRIC</td>
+      <td>금융 지표 계산</td>
+    </tr>
+    <tr>
+      <td>19</td>
+      <td>METRIC-007</td>
+      <td>metric_calculation</td>
+      <td>Return series exists.</td>
+      <td>Calculate maximum drawdown.</td>
+      <td>max_drawdown=-0.0944530393722367.</td>
       <td>INFO</td>
       <td>METRIC</td>
       <td>금융 지표 계산</td>
     </tr>
     <tr>
       <td>20</td>
-      <td>METRIC-004</td>
+      <td>METRIC-009</td>
       <td>metric_calculation</td>
-      <td>More than one return observation exists.</td>
-      <td>Calculate annualized return.</td>
-      <td>annualized_return=0.45571556486684583.</td>
+      <td>Annualized return and non-zero volatility are available.</td>
+      <td>Calculate Sharpe Ratio when possible.</td>
+      <td>sharpe_ratio=-0.8196734419674261.</td>
       <td>INFO</td>
       <td>METRIC</td>
       <td>금융 지표 계산</td>
     </tr>
     <tr>
       <td>21</td>
-      <td>METRIC-005</td>
+      <td>METRIC-010</td>
       <td>metric_calculation</td>
-      <td>Return series exists.</td>
-      <td>Calculate annualized volatility.</td>
-      <td>annualized_volatility=0.1835227851459123.</td>
+      <td>Annualized return and downside deviation are available.</td>
+      <td>Calculate Sortino Ratio when possible.</td>
+      <td>sortino_ratio=-1.106125881315255.</td>
       <td>INFO</td>
       <td>METRIC</td>
       <td>금융 지표 계산</td>
     </tr>
     <tr>
       <td>22</td>
-      <td>METRIC-006</td>
+      <td>METRIC-011</td>
       <td>metric_calculation</td>
-      <td>Return series exists.</td>
-      <td>Calculate downside deviation.</td>
-      <td>downside_deviation=0.11289652302875225.</td>
+      <td>Annualized return and max drawdown are available.</td>
+      <td>Calculate Calmar Ratio when possible.</td>
+      <td>calmar_ratio=-0.6224390511010168.</td>
       <td>INFO</td>
       <td>METRIC</td>
       <td>금융 지표 계산</td>
     </tr>
     <tr>
       <td>23</td>
-      <td>METRIC-007</td>
+      <td>METRIC-008</td>
       <td>metric_calculation</td>
-      <td>Return series exists.</td>
-      <td>Calculate maximum drawdown.</td>
-      <td>max_drawdown=-0.127047633426436.</td>
+      <td>At least 60 return observations exist.</td>
+      <td>Calculate historical VaR approximation.</td>
+      <td>VaR95=-0.00733594979771976.</td>
       <td>INFO</td>
       <td>METRIC</td>
       <td>금융 지표 계산</td>
     </tr>
     <tr>
       <td>24</td>
-      <td>METRIC-009</td>
+      <td>METRIC-012</td>
       <td>metric_calculation</td>
-      <td>Annualized return and non-zero volatility are available.</td>
-      <td>Calculate Sharpe Ratio when possible.</td>
-      <td>sharpe_ratio=2.483155236035258.</td>
+      <td>Asset column exists.</td>
+      <td>Calculate asset-level metric table.</td>
+      <td>Asset metrics generated.</td>
       <td>INFO</td>
       <td>METRIC</td>
       <td>금융 지표 계산</td>
     </tr>
     <tr>
       <td>25</td>
-      <td>METRIC-010</td>
+      <td>METRIC-013</td>
       <td>metric_calculation</td>
-      <td>Annualized return and downside deviation are available.</td>
-      <td>Calculate Sortino Ratio when possible.</td>
-      <td>sortino_ratio=4.036577501601047.</td>
+      <td>Two or more asset return series exist.</td>
+      <td>Calculate Pearson correlation matrix.</td>
+      <td>Correlation matrix generated when overlap is sufficient.</td>
       <td>INFO</td>
       <td>METRIC</td>
       <td>금융 지표 계산</td>
     </tr>
     <tr>
       <td>26</td>
-      <td>METRIC-011</td>
-      <td>metric_calculation</td>
-      <td>Annualized return and max drawdown are available.</td>
-      <td>Calculate Calmar Ratio when possible.</td>
-      <td>calmar_ratio=3.586966184070776.</td>
-      <td>INFO</td>
-      <td>METRIC</td>
-      <td>금융 지표 계산</td>
-    </tr>
-    <tr>
-      <td>27</td>
-      <td>METRIC-008</td>
-      <td>metric_calculation</td>
-      <td>At least 60 return observations exist.</td>
-      <td>Calculate historical VaR approximation.</td>
-      <td>VaR95=-0.016467497027849.</td>
-      <td>INFO</td>
-      <td>METRIC</td>
-      <td>금융 지표 계산</td>
-    </tr>
-    <tr>
-      <td>28</td>
       <td>RISK-001</td>
       <td>risk_classification</td>
       <td>Maximum drawdown is available.</td>
@@ -548,29 +598,29 @@
       <td>리스크 분류</td>
     </tr>
     <tr>
-      <td>29</td>
+      <td>27</td>
       <td>RISK-002</td>
       <td>risk_classification</td>
       <td>Annualized volatility is available.</td>
       <td>Classify volatility risk.</td>
-      <td>volatility_risk=MODERATE.</td>
+      <td>volatility_risk=LOW.</td>
       <td>INFO</td>
       <td>RISK</td>
       <td>리스크 분류</td>
     </tr>
     <tr>
-      <td>30</td>
+      <td>28</td>
       <td>RISK-003</td>
       <td>risk_classification</td>
       <td>Sharpe Ratio is available when calculable.</td>
       <td>Classify risk-adjusted performance.</td>
-      <td>sharpe_quality=Very strong, verify data quality.</td>
+      <td>sharpe_quality=Negative risk-adjusted performance.</td>
       <td>INFO</td>
       <td>RISK</td>
       <td>리스크 분류</td>
     </tr>
     <tr>
-      <td>31</td>
+      <td>29</td>
       <td>RISK-004</td>
       <td>risk_classification</td>
       <td>Observation count is available.</td>
@@ -581,51 +631,7 @@
       <td>리스크 분류</td>
     </tr>
     <tr>
-      <td>32</td>
-      <td>VIS-001</td>
-      <td>chart_planning</td>
-      <td>Single asset price data is available.</td>
-      <td>Plan chart `price_trend`.</td>
-      <td>Selected for rendering.</td>
-      <td>INFO</td>
-      <td>VIS</td>
-      <td>시각화 선택</td>
-    </tr>
-    <tr>
-      <td>33</td>
-      <td>VIS-002</td>
-      <td>chart_planning</td>
-      <td>Return series can be converted to cumulative return.</td>
-      <td>Plan chart `cumulative_return`.</td>
-      <td>Selected for rendering.</td>
-      <td>INFO</td>
-      <td>VIS</td>
-      <td>시각화 선택</td>
-    </tr>
-    <tr>
-      <td>34</td>
-      <td>VIS-003</td>
-      <td>chart_planning</td>
-      <td>Return series exists or can be computed from price.</td>
-      <td>Plan chart `drawdown`.</td>
-      <td>Selected for rendering.</td>
-      <td>INFO</td>
-      <td>VIS</td>
-      <td>시각화 선택</td>
-    </tr>
-    <tr>
-      <td>35</td>
-      <td>VIS-006</td>
-      <td>chart_planning</td>
-      <td>One or more metrics are calculable.</td>
-      <td>Plan chart `metric_summary_table`.</td>
-      <td>Selected for rendering.</td>
-      <td>INFO</td>
-      <td>VIS</td>
-      <td>시각화 선택</td>
-    </tr>
-    <tr>
-      <td>36</td>
+      <td>30</td>
       <td>INSIGHT-001</td>
       <td>insight_generation</td>
       <td>Major insights must use Fact / Interpretation / Caution.</td>
@@ -636,7 +642,7 @@
       <td>인사이트 생성</td>
     </tr>
     <tr>
-      <td>37</td>
+      <td>31</td>
       <td>INSIGHT-002</td>
       <td>insight_generation</td>
       <td>Each insight must include evidence.</td>
@@ -647,7 +653,7 @@
       <td>인사이트 생성</td>
     </tr>
     <tr>
-      <td>38</td>
+      <td>32</td>
       <td>INSIGHT-003</td>
       <td>insight_generation</td>
       <td>Risk and limitation insights should be ordered before return interpretation.</td>
@@ -658,7 +664,7 @@
       <td>인사이트 생성</td>
     </tr>
     <tr>
-      <td>39</td>
+      <td>33</td>
       <td>SAFE-POST-001</td>
       <td>safety_check</td>
       <td>Generated insights must not include prohibited financial advice terms.</td>
@@ -669,7 +675,7 @@
       <td>금융 표현 안전장치</td>
     </tr>
     <tr>
-      <td>40</td>
+      <td>34</td>
       <td>SAFE-POST-002</td>
       <td>safety_check</td>
       <td>Insights without evidence must not be shown.</td>
@@ -680,7 +686,7 @@
       <td>금융 표현 안전장치</td>
     </tr>
     <tr>
-      <td>41</td>
+      <td>35</td>
       <td>SAFE-POST-003</td>
       <td>safety_check</td>
       <td>Insights should include caution text when uncertainty exists.</td>

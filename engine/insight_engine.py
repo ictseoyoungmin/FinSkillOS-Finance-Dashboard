@@ -68,7 +68,11 @@ def _contains_forbidden(text: str) -> list[str]:
     lowered = text.lower()
     blocked = []
     for term in FORBIDDEN_TERMS:
-        pattern = re.escape(term.lower())
+        escaped = re.escape(term.lower())
+        if term.isascii() and term.replace(" ", "").isalpha():
+            pattern = rf"\b{escaped}\b"
+        else:
+            pattern = escaped
         if re.search(pattern, lowered):
             blocked.append(term)
     return blocked
