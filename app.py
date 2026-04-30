@@ -6,6 +6,7 @@ import pandas as pd
 import streamlit as st
 
 from engine.data_profiler import profile_dataframe
+from engine.metrics import compute_metrics, format_percent, format_ratio
 from engine.rule_engine import RuleAuditLog
 from engine.schema_mapper import infer_schema
 
@@ -155,12 +156,60 @@ def render_schema_mapping(schema: dict[str, object] | None) -> None:
         st.dataframe(standardized_df.head(20), use_container_width=True)
 
 
+def render_executive_summary(metrics: dict[str, object] | None) -> None:
+    if metrics is None:
+        st.info("Slice 5 지표 엔진이 데이터를 받으면 Executive Summary가 표시됩니다.")
+        return
+
+    summary = metrics.get("summary", {})
+    cols = st.columns(6)
+    cols[0].metric("Total Return", format_percent(summary.get("total_return")))
+    cols[1].metric("Annualized Return", format_percent(summary.get("annualized_return")))
+    cols[2].metric("Volatility", format_percent(summary.get("annualized_volatility")))
+    cols[3].metric("Maximum Drawdown", format_percent(summary.get("max_drawdown")))
+    cols[4].metric("Sharpe Ratio", format_ratio(summary.get("sharpe_ratio")))
+    cols[5].metric("Risk Level", str(summary.get("risk_level", "UNKNOWN")))
+
+    details = {
+        "Drawdown Risk": summary.get("drawdown_risk_level", "UNKNOWN"),
+        "Volatility Risk": summary.get("volatility_risk_level", "UNKNOWN"),
+        "Sharpe Quality": summary.get("sharpe_quality", "N/A"),
+        "Data Sufficiency": summary.get("data_sufficiency", "N/A"),
+    }
+    st.dataframe(pd.DataFrame([details]), use_container_width=True)
+
+    allocation = metrics.get("allocation", {})
+    if allocation:
+        st.write("Allocation Concentration")
+        st.dataframe(pd.DataFrame([allocation]), use_container_width=True)
+
+    missing_reasons = summary.get("missing_reasons", [])
+    if missing_reasons:
+        st.write("Metric Notes")
+        st.dataframe(pd.DataFrame({"reason": missing_reasons}), use_container_width=True)
+
+
+def render_metric_tables(metrics: dict[str, object] | None) -> None:
+    if metrics is None:
+        return
+    asset_metrics = metrics.get("asset_metrics", [])
+    if asset_metrics:
+        st.write("Asset Metric Table")
+        st.dataframe(asset_metrics, use_container_width=True)
+
+    corr = metrics.get("correlation_matrix")
+    if isinstance(corr, pd.DataFrame) and not corr.empty:
+        st.write("Correlation Matrix")
+        st.dataframe(corr, use_container_width=True)
+
+
 def render_placeholder_sections(
     df: pd.DataFrame | None,
     source_name: str,
     audit: RuleAuditLog,
     profile: dict[str, object] | None,
     schema: dict[str, object] | None,
+    metrics: dict[str, object] | None,
 ) -> None:
     st.subheader("Data Profile")
     if df is None:
@@ -175,9 +224,10 @@ def render_placeholder_sections(
     render_schema_mapping(schema)
 
     st.subheader("Executive Summary")
-    st.info("Slice 5에서 수익률, 변동성, 최대낙폭, Sharpe Ratio, Risk Level 카드가 연결됩니다.")
+    render_executive_summary(metrics)
 
     st.subheader("Return Analysis")
+    render_metric_tables(metrics)
     st.info("Slice 6에서 가격 추세와 누적수익률 차트가 자동 선택됩니다.")
 
     st.subheader("Risk Analysis")
@@ -213,11 +263,19 @@ def main() -> None:
     audit = build_initial_audit_log(mode=mode, source_name=source_name)
     profile = None
     schema = None
+    metrics = None
     if df is not None:
         profile = profile_dataframe(df)
         audit.extend(profile["applied_rules"])
         schema = infer_schema(df, profile, mode=mode)
         audit.extend(schema["applied_rules"])
+        metrics = compute_metrics(
+            schema["standardized_df"],
+            schema,
+            risk_free_rate=float(controls["risk_free_rate"]),
+            profile=profile,
+        )
+        audit.extend(metrics["applied_rules"])
 
     st.title("FinSkillOS")
     st.caption("Skill-Governed Investment Analytics Dashboard")
@@ -238,6 +296,7 @@ def main() -> None:
         audit=audit,
         profile=profile,
         schema=schema,
+        metrics=metrics,
     )
 
     with st.expander("Skills.md 기반 구현 참조", expanded=False):
