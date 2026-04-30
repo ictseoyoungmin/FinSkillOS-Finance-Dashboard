@@ -9,6 +9,7 @@ import streamlit as st
 
 from engine.chart_planner import plan_charts
 from engine.data_profiler import profile_dataframe
+from engine.insight_engine import generate_insights
 from engine.metrics import compute_metrics, format_percent, format_ratio
 from engine.rule_engine import RuleAuditLog
 from engine.schema_mapper import infer_schema
@@ -266,6 +267,30 @@ def render_executive_summary(metrics: dict[str, object] | None) -> None:
         st.dataframe(pd.DataFrame({"reason": missing_reasons}), use_container_width=True)
 
 
+def render_insights(insights: dict[str, object] | None) -> None:
+    if insights is None:
+        st.info("No insights available.")
+        return
+    items = insights.get("insights", [])
+    if not items:
+        st.info("No evidence-linked insights were generated.")
+        return
+
+    for item in items:
+        severity = item.get("severity", "INFO")
+        title = f"{item.get('id', '')} · {item.get('category', '').title()} · {severity}"
+        with st.container(border=True):
+            st.markdown(f"**{title}**")
+            st.write(f"Fact: {item.get('fact')}")
+            st.write(f"Interpretation: {item.get('interpretation')}")
+            st.write(f"Caution: {item.get('caution')}")
+            st.caption(f"Evidence: {item.get('evidence')}")
+
+    blocked_terms = insights.get("blocked_terms", [])
+    if blocked_terms:
+        st.warning(f"Safety rewrite applied for prohibited term(s): {', '.join(blocked_terms)}")
+
+
 def render_metric_tables(metrics: dict[str, object] | None) -> None:
     if metrics is None:
         return
@@ -396,6 +421,7 @@ def render_dashboard_sections(
     schema: dict[str, object] | None,
     metrics: dict[str, object] | None,
     chart_plan: list[dict[str, object]],
+    insights: dict[str, object] | None,
 ) -> None:
     section_header(2, "Data Profile", "DASH-001")
     if df is None:
@@ -423,7 +449,7 @@ def render_dashboard_sections(
     render_chart_plan(chart_plan, schema, metrics, "correlation_diversification")
 
     section_header(8, "Rule-Based Insights", "INSIGHT-001")
-    st.info("Evidence-linked insights are not available yet.")
+    render_insights(insights)
 
     section_header(9, "Applied Skill Rules", "AUTO-APP-002")
     st.dataframe(audit.deduplicated_records(), use_container_width=True)
@@ -451,6 +477,7 @@ def main() -> None:
     profile = None
     schema = None
     metrics = None
+    insights = None
     chart_plan: list[dict[str, object]] = []
     if df is not None:
         profile = profile_dataframe(df)
@@ -466,6 +493,8 @@ def main() -> None:
         audit.extend(metrics["applied_rules"])
         chart_plan = plan_charts(schema, metrics)
         add_chart_rules(audit, chart_plan)
+        insights = generate_insights(metrics, profile, schema)
+        audit.extend(insights["applied_rules"])
 
     section_header(1, "Header & Upload Panel", "DASH-002")
     st.title("FinSkillOS")
@@ -492,6 +521,7 @@ def main() -> None:
         schema=schema,
         metrics=metrics,
         chart_plan=chart_plan,
+        insights=insights,
     )
 
     with st.expander("Skills.md 기반 구현 참조", expanded=False):
