@@ -17,6 +17,7 @@ from engine.rule_engine import RuleAuditLog
 from engine.schema_mapper import infer_schema
 from ui.components import empty_state, metric_card, section_header
 from ui.layout import date_range_label, render_sidebar_nav, render_topbar, render_topbar_controls
+from ui.tabs import render_overview_dashboard
 from ui.theme import apply_dashboard_style, style_plotly_figure
 
 
@@ -511,26 +512,38 @@ def main() -> None:
     elif controls["export_requested"]:
         st.warning("Report export is not available yet.")
 
-    section_header(1, "Header & Upload Panel", "DASH-002")
-    header_cols = st.columns(3)
-    with header_cols[0]:
-        metric_card("Analysis Mode", mode, "Selected execution profile", "blue", "▤")
-    with header_cols[1]:
-        metric_card("Dataset", source_name, "Uploaded file or sample", "teal", "▦")
-    with header_cols[2]:
-        metric_card("Risk-Free Rate", f"{controls['risk_free_rate']:.4f}", "Sharpe Ratio assumption", "amber", "%")
+    if active_tab == "Overview":
+        render_overview_dashboard(
+            df=df,
+            source_name=source_name,
+            audit=audit,
+            profile=profile,
+            schema=schema,
+            metrics=metrics,
+            insights=insights,
+            analysis_result=analysis_result,
+        )
+    else:
+        section_header(1, "Header & Upload Panel", "DASH-002")
+        header_cols = st.columns(3)
+        with header_cols[0]:
+            metric_card("Analysis Mode", mode, "Selected execution profile", "blue", "▤")
+        with header_cols[1]:
+            metric_card("Dataset", source_name, "Uploaded file or sample", "teal", "▦")
+        with header_cols[2]:
+            metric_card("Risk-Free Rate", f"{controls['risk_free_rate']:.4f}", "Sharpe Ratio assumption", "amber", "%")
 
-    render_dashboard_sections(
-        df=df,
-        source_name=source_name,
-        audit=audit,
-        profile=profile,
-        schema=schema,
-        metrics=metrics,
-        chart_plan=chart_plan,
-        insights=insights,
-        analysis_result=analysis_result,
-    )
+        render_dashboard_sections(
+            df=df,
+            source_name=source_name,
+            audit=audit,
+            profile=profile,
+            schema=schema,
+            metrics=metrics,
+            chart_plan=chart_plan,
+            insights=insights,
+            analysis_result=analysis_result,
+        )
 
     with st.expander("Skills.md 기반 구현 참조", expanded=False):
         st.write("이 앱은 `FinSkillOS_skills` 문서 세트의 Rule ID와 구현 계약을 기준으로 개발됩니다.")

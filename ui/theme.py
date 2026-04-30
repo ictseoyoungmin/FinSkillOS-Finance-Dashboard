@@ -316,6 +316,16 @@ def apply_dashboard_style() -> None:
             box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
             transition: transform 160ms ease, border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
         }
+        div[data-testid="stVerticalBlockBorderWrapper"] {
+            border-color: var(--fs-line) !important;
+            border-radius: var(--fs-radius) !important;
+            background: linear-gradient(180deg, rgba(14, 32, 52, 0.72), rgba(7, 17, 31, 0.78));
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+        }
+        @keyframes fs-card-in {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
         .fs-metric-card:hover,
         .fs-panel:hover,
         .fs-rule-card:hover,
@@ -330,6 +340,7 @@ def apply_dashboard_style() -> None:
             display: flex;
             gap: 0.8rem;
             align-items: flex-start;
+            animation: fs-card-in 240ms ease both;
         }
         .fs-metric-icon {
             width: 42px;
