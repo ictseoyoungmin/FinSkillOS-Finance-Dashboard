@@ -1,0 +1,7 @@
+.devmd
+.codex
+.venv/
+__pycache__/
+*.py[cod]
+
+FinSkillOS_skills/appendix
