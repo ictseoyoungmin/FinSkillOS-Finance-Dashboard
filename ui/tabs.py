@@ -24,7 +24,7 @@ from ui.charts import (
     render_rolling_return_chart,
     render_rolling_volatility_chart,
 )
-from ui.components import empty_state, insight_card, metric_card, rule_card, status_badge
+from ui.components import empty_state, insight_card, metric_card, onboarding_state, rule_card, status_badge
 
 
 def _schema_compact_table(schema: dict[str, Any] | None, profile: dict[str, Any] | None) -> pd.DataFrame:
@@ -155,9 +155,14 @@ def _rule_cards_for_prefix(audit: RuleAuditLog, prefixes: set[str], limit: int =
 
 def _require_analysis(df: pd.DataFrame | None, metrics: dict[str, Any] | None = None) -> bool:
     if df is None or metrics is None:
-        empty_state(
+        onboarding_state(
             "Select a Dataset to Continue",
             "Choose a bundled sample or upload a CSV from the analysis controls. This tab will populate after the pipeline runs.",
+            [
+                "Use Sample Dataset for the fastest demo path.",
+                "Choose Auto Detect unless you need to force a schema mode.",
+                "Review unavailable panels for exact prerequisite reasons.",
+            ],
         )
         return False
     return True
@@ -165,9 +170,14 @@ def _require_analysis(df: pd.DataFrame | None, metrics: dict[str, Any] | None = 
 
 def _analysis_available(df: pd.DataFrame | None) -> bool:
     if df is None:
-        empty_state(
+        onboarding_state(
             "Select a Dataset to Continue",
             "Choose a bundled sample or upload a CSV from the analysis controls. Governance tabs populate after the pipeline runs.",
+            [
+                "Run analysis to generate insights, rules, and report exports.",
+                "Applied Rules will show traceability by rule prefix.",
+                "Reports will expose the current HTML export package.",
+            ],
         )
         return False
     return True
@@ -244,9 +254,14 @@ def render_overview_dashboard(
     """Render the product-style overview dashboard."""
 
     if df is None or metrics is None:
-        empty_state(
+        onboarding_state(
             "Select a Dataset to Generate the Overview",
             "Use the analysis controls above to upload a CSV or choose a bundled sample. The overview will populate with KPI cards, charts, insights, and applied rule traceability.",
+            [
+                "Try multi_asset_portfolio.csv for the richest chart demo.",
+                "Try mixed_schema_assets.csv to show schema adaptation.",
+                "Try allocation_sample.csv to validate allocation states.",
+            ],
         )
         return
 
@@ -278,7 +293,7 @@ def render_overview_dashboard(
     with top_right.container(border=True):
         st.markdown("#### Data Profile")
         st.caption(f"Source: {source_name}")
-        st.dataframe(_schema_compact_table(schema, profile), use_container_width=True, hide_index=True)
+        st.dataframe(_schema_compact_table(schema, profile).astype(str), use_container_width=True, hide_index=True)
         compact_cols = st.columns(2)
         compact_cols[0].metric("Assets", _asset_count(metrics, schema))
         compact_cols[1].metric("Quality", _quality_summary(profile))
@@ -375,7 +390,7 @@ def render_data_profile_tab(
         if mapping_table.empty:
             empty_state("No Mapping Available", "No standard fields were mapped automatically.")
         else:
-            st.dataframe(mapping_table, use_container_width=True, hide_index=True)
+            st.dataframe(mapping_table.astype(str), use_container_width=True, hide_index=True)
 
     with middle.container(border=True):
         st.markdown("#### Data Quality")
@@ -383,7 +398,7 @@ def render_data_profile_tab(
         render_missing_values_chart(profile, height=270)
         warnings = pd.DataFrame(profile.get("quality_warnings", []))
         if not warnings.empty:
-            st.dataframe(warnings, use_container_width=True, hide_index=True)
+            st.dataframe(warnings.astype(str), use_container_width=True, hide_index=True)
         else:
             st.markdown(status_badge("No blocking quality warnings", "default"), unsafe_allow_html=True)
 
@@ -487,7 +502,7 @@ def render_return_analysis_tab(
             empty_state("Metric Table Unavailable", "Asset-level metrics were not generated for this dataset.")
         else:
             display_cols = [col for col in ["asset", "total_return", "annualized_return", "annualized_volatility", "sharpe_ratio"] if col in asset_metrics.columns]
-            st.dataframe(asset_metrics[display_cols], use_container_width=True, hide_index=True)
+            st.dataframe(asset_metrics[display_cols].astype(str), use_container_width=True, hide_index=True)
 
     st.markdown("### Applied Return Rules")
     _rule_cards_for_prefix(audit, {"METRIC", "VIS"}, limit=5)
@@ -558,7 +573,7 @@ def render_risk_analysis_tab(
                 {"scenario": "Data sufficiency", "impact": str(summary.get("data_sufficiency", "N/A")), "severity": "INFO"},
             ]
         )
-        st.dataframe(stress, use_container_width=True, hide_index=True)
+        st.dataframe(stress.astype(str), use_container_width=True, hide_index=True)
     with lower_right.container(border=True):
         st.markdown("#### Data Profile & Assumptions")
         assumptions = pd.DataFrame(
@@ -569,7 +584,7 @@ def render_risk_analysis_tab(
                 {"item": "Risk-Free Rate", "value": "Applied from user input"},
             ]
         )
-        st.dataframe(assumptions, use_container_width=True, hide_index=True)
+        st.dataframe(assumptions.astype(str), use_container_width=True, hide_index=True)
 
     st.markdown("### Applied Risk Rules")
     _rule_cards_for_prefix(audit, {"RISK", "METRIC", "SAFE"}, limit=5)
@@ -640,7 +655,7 @@ def render_diversification_tab(
     with bottom_right.container(border=True):
         st.markdown("#### Concentration Analysis")
         if allocation:
-            st.dataframe(pd.DataFrame([allocation]), use_container_width=True, hide_index=True)
+            st.dataframe(pd.DataFrame([allocation]).astype(str), use_container_width=True, hide_index=True)
         else:
             empty_state("Concentration Unavailable", "Concentration metrics require an allocation weight column.")
 
@@ -751,7 +766,7 @@ def render_insights_tab(
             if rules_df.empty:
                 empty_state("No Rule References", "No rule IDs were attached to this insight.")
             else:
-                st.dataframe(rules_df, use_container_width=True, hide_index=True)
+                st.dataframe(rules_df.astype(str), use_container_width=True, hide_index=True)
             st.markdown("##### Data Source")
             st.dataframe(
                 pd.DataFrame(

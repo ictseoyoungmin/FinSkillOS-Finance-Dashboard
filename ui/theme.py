@@ -45,6 +45,9 @@ def apply_dashboard_style() -> None:
             --fs-radius: 8px;
             --fs-shadow: 0 18px 60px rgba(0, 0, 0, 0.34);
             --fs-glow: 0 0 0 1px rgba(37, 242, 199, 0.36), 0 0 28px rgba(37, 242, 199, 0.1);
+            --fs-ease: cubic-bezier(0.22, 1, 0.36, 1);
+            --fs-fast: 140ms;
+            --fs-medium: 240ms;
         }
 
         html, body, [data-testid="stAppViewContainer"] {
@@ -77,6 +80,7 @@ def apply_dashboard_style() -> None:
         .main .block-container {
             padding: 1.15rem 1.8rem 3rem 1.8rem;
             max-width: 1640px;
+            animation: fs-page-in var(--fs-medium) var(--fs-ease) both;
         }
 
         h1, h2, h3, h4 {
@@ -106,6 +110,13 @@ def apply_dashboard_style() -> None:
             border-radius: var(--fs-radius);
             overflow: hidden;
         }
+        div[data-testid="stDataFrame"] {
+            border: 1px solid rgba(129, 166, 202, 0.16);
+            background: rgba(4, 13, 24, 0.64);
+        }
+        div[data-testid="stPlotlyChart"] {
+            min-height: 260px;
+        }
 
         .stButton > button,
         .stDownloadButton > button {
@@ -115,7 +126,7 @@ def apply_dashboard_style() -> None:
             color: #f3fffd;
             font-weight: 700;
             min-height: 2.6rem;
-            transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+            transition: transform var(--fs-fast) var(--fs-ease), border-color var(--fs-fast) var(--fs-ease), box-shadow var(--fs-fast) var(--fs-ease), filter var(--fs-fast) var(--fs-ease);
         }
 
         .stButton > button:hover,
@@ -123,6 +134,15 @@ def apply_dashboard_style() -> None:
             border-color: var(--fs-teal);
             box-shadow: var(--fs-glow);
             transform: translateY(-1px);
+            filter: saturate(1.08);
+        }
+
+        .stButton > button:disabled,
+        .stDownloadButton > button:disabled {
+            opacity: 0.48;
+            transform: none;
+            box-shadow: none;
+            cursor: not-allowed;
         }
 
         .stButton > button:focus-visible,
@@ -141,6 +161,12 @@ def apply_dashboard_style() -> None:
             border-color: var(--fs-line);
             border-radius: var(--fs-radius);
             color: var(--fs-ink);
+            transition: border-color var(--fs-fast) var(--fs-ease), box-shadow var(--fs-fast) var(--fs-ease);
+        }
+        [data-baseweb="select"] > div:hover,
+        [data-testid="stNumberInput"] input:hover,
+        [data-testid="stFileUploader"] section:hover {
+            border-color: rgba(37, 242, 199, 0.36);
         }
 
         .fs-brand {
@@ -204,17 +230,19 @@ def apply_dashboard_style() -> None:
             border-radius: var(--fs-radius);
             padding: 0.45rem 0.5rem;
             background: transparent;
-            transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
+            transition: border-color var(--fs-fast) var(--fs-ease), background var(--fs-fast) var(--fs-ease), color var(--fs-fast) var(--fs-ease), transform var(--fs-fast) var(--fs-ease);
         }
         [data-testid="stSidebar"] [role="radiogroup"] label:hover {
             border-color: rgba(37, 242, 199, 0.22);
             background: rgba(37, 242, 199, 0.06);
+            transform: translateX(2px);
         }
         [data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) {
             border-color: rgba(37, 242, 199, 0.42);
             background: linear-gradient(90deg, rgba(37, 242, 199, 0.15), rgba(56, 163, 255, 0.06));
             box-shadow: inset 3px 0 0 var(--fs-teal);
             color: var(--fs-teal);
+            animation: fs-nav-lock var(--fs-medium) var(--fs-ease) both;
         }
         .fs-nav-icon {
             width: 1.35rem;
@@ -276,6 +304,9 @@ def apply_dashboard_style() -> None:
             font-size: 0.75rem;
             font-weight: 730;
         }
+        .fs-badge-live {
+            animation: fs-pulse 1800ms var(--fs-ease) infinite;
+        }
         .fs-badge-muted {
             color: var(--fs-soft);
             border-color: var(--fs-line);
@@ -314,7 +345,7 @@ def apply_dashboard_style() -> None:
             border-radius: var(--fs-radius);
             background: linear-gradient(180deg, rgba(14, 32, 52, 0.92), rgba(7, 17, 31, 0.94));
             box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
-            transition: transform 160ms ease, border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+            transition: transform var(--fs-fast) var(--fs-ease), border-color var(--fs-fast) var(--fs-ease), background var(--fs-fast) var(--fs-ease), box-shadow var(--fs-fast) var(--fs-ease);
         }
         div[data-testid="stVerticalBlockBorderWrapper"] {
             border-color: var(--fs-line) !important;
@@ -325,6 +356,18 @@ def apply_dashboard_style() -> None:
         @keyframes fs-card-in {
             from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fs-page-in {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fs-nav-lock {
+            from { box-shadow: inset 0 0 0 var(--fs-teal), 0 0 0 rgba(37, 242, 199, 0); }
+            to { box-shadow: inset 3px 0 0 var(--fs-teal), 0 0 26px rgba(37, 242, 199, 0.08); }
+        }
+        @keyframes fs-pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(37, 242, 199, 0.0); }
+            50% { box-shadow: 0 0 0 4px rgba(37, 242, 199, 0.08); }
         }
         .fs-metric-card:hover,
         .fs-panel:hover,
@@ -341,6 +384,7 @@ def apply_dashboard_style() -> None:
             gap: 0.8rem;
             align-items: flex-start;
             animation: fs-card-in 240ms ease both;
+            overflow-wrap: anywhere;
         }
         .fs-metric-icon {
             width: 42px;
@@ -372,6 +416,7 @@ def apply_dashboard_style() -> None:
             font-size: 1.45rem;
             font-weight: 850;
             line-height: 1.05;
+            overflow-wrap: anywhere;
         }
         .fs-metric-caption {
             color: var(--fs-muted);
@@ -420,6 +465,7 @@ def apply_dashboard_style() -> None:
         .fs-rule-card {
             padding: 0.9rem;
             min-height: 122px;
+            overflow-wrap: anywhere;
         }
         .fs-rule-top {
             display: flex;
@@ -446,6 +492,7 @@ def apply_dashboard_style() -> None:
             border: 1px solid rgba(37, 242, 199, 0.38);
             color: var(--fs-teal);
             background: rgba(37, 242, 199, 0.1);
+            white-space: nowrap;
         }
         .fs-status-warning {
             border-color: rgba(244, 183, 64, 0.5);
@@ -461,6 +508,12 @@ def apply_dashboard_style() -> None:
             padding: 0.9rem;
             border-left: 3px solid var(--fs-teal);
             margin-bottom: 0.55rem;
+            overflow-wrap: anywhere;
+        }
+        .fs-insight-selected {
+            border-color: rgba(37, 242, 199, 0.5);
+            box-shadow: var(--fs-glow);
+            background: linear-gradient(180deg, rgba(20, 52, 74, 0.95), rgba(8, 22, 38, 0.95));
         }
         .fs-insight-card[data-category="caution"],
         .fs-insight-card[data-category="data_quality"] {
@@ -478,22 +531,49 @@ def apply_dashboard_style() -> None:
         .fs-empty-state {
             padding: 1.25rem;
             text-align: left;
+            min-height: 132px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .fs-empty-state::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(90deg, rgba(37, 242, 199, 0.06), transparent 34%),
+                repeating-linear-gradient(135deg, rgba(129, 166, 202, 0.04) 0 1px, transparent 1px 9px);
+            pointer-events: none;
         }
         .fs-empty-title {
             color: var(--fs-ink);
             font-weight: 830;
             font-size: 1.05rem;
+            position: relative;
         }
         .fs-empty-message {
             color: var(--fs-muted);
             margin-top: 0.3rem;
             font-size: 0.86rem;
+            position: relative;
+        }
+
+        @media (min-width: 1500px) {
+            .main .block-container {
+                max-width: 1680px;
+            }
+            div[data-testid="column"] {
+                min-width: 0;
+            }
         }
 
         @media (max-width: 980px) {
             .main .block-container {
                 padding-left: 1rem;
                 padding-right: 1rem;
+                padding-top: 0.9rem;
             }
             .fs-topbar {
                 display: block;
@@ -501,8 +581,49 @@ def apply_dashboard_style() -> None:
             .fs-page-title {
                 font-size: 1.38rem;
             }
+            .fs-control-panel {
+                padding: 0.7rem;
+            }
             .fs-card-grid {
                 grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+            }
+            .fs-metric-card {
+                min-height: 96px;
+                padding: 0.82rem;
+            }
+            .fs-metric-icon {
+                width: 34px;
+                height: 34px;
+                border-radius: 10px;
+            }
+            .fs-metric-value {
+                font-size: 1.16rem;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .main .block-container {
+                padding-left: 0.7rem;
+                padding-right: 0.7rem;
+            }
+            .fs-page-title {
+                font-size: 1.16rem;
+            }
+            .fs-page-subtitle,
+            .fs-badge,
+            .fs-metric-caption,
+            .fs-rule-description,
+            .fs-insight-body {
+                font-size: 0.72rem;
+            }
+            .fs-brand-title {
+                font-size: 1.2rem;
+            }
+            .fs-sidebar-card {
+                padding: 0.72rem;
+            }
+            div[data-testid="stPlotlyChart"] {
+                min-height: 220px;
             }
         }
 

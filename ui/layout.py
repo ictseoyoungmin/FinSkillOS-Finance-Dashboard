@@ -82,7 +82,7 @@ def render_topbar(title: str, subtitle: str, active_tab: str, source_name: str, 
             <h1 class="fs-page-title">{_html(title)}</h1>
             <div class="fs-page-subtitle">{_html(subtitle)}</div>
             <div class="fs-badge-row">
-              <span class="fs-badge">Rule-Governed</span>
+              <span class="fs-badge fs-badge-live">Rule-Governed</span>
               <span class="fs-badge fs-badge-muted">Generated from Skills.md</span>
               <span class="fs-badge fs-badge-muted">{_html(active_tab)}</span>
             </div>

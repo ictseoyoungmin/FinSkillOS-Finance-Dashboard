@@ -140,3 +140,16 @@ def empty_state(title: str, message: str) -> None:
         unsafe_allow_html=True,
     )
 
+
+def onboarding_state(title: str, message: str, steps: list[str]) -> None:
+    items = "".join(f"<li>{_html(step)}</li>" for step in steps)
+    st.markdown(
+        f"""
+        <div class="fs-empty-state">
+          <div class="fs-empty-title">{_html(title)}</div>
+          <div class="fs-empty-message">{_html(message)}</div>
+          <ul class="fs-empty-message">{items}</ul>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
