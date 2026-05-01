@@ -204,10 +204,22 @@ def insight_card(
     st.markdown(
         f"""
         <div class="fs-insight-card{selected_class}" data-category="{_html(category)}" data-severity="{_html(severity)}">
-          <div class="fs-insight-title">{_html(category).title()} · {_html(severity)}</div>
-          <div class="fs-insight-body"><strong>Fact:</strong> {_html(fact)}</div>
-          <div class="fs-insight-body"><strong>Interpretation:</strong> {_html(interpretation)}</div>
-          <div class="fs-insight-body"><strong>Caution:</strong> {_html(caution)}</div>
+          <div class="fs-insight-title">
+            <span>{_html(category).title()}</span>
+            {status_badge(severity, TONE_BY_SEVERITY.get(str(severity).upper(), "default"))}
+          </div>
+          <div class="fs-insight-row fs-insight-row-fact">
+            <span class="fs-insight-badge">Fact</span>
+            <div class="fs-insight-body">{_html(fact)}</div>
+          </div>
+          <div class="fs-insight-row fs-insight-row-interpretation">
+            <span class="fs-insight-badge">Interpretation</span>
+            <div class="fs-insight-body">{_html(interpretation)}</div>
+          </div>
+          <div class="fs-insight-row fs-insight-row-caution">
+            <span class="fs-insight-badge">Caution</span>
+            <div class="fs-insight-body">{_html(caution)}</div>
+          </div>
         </div>
         """,
         unsafe_allow_html=True,

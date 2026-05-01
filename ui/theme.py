@@ -652,10 +652,13 @@ def apply_dashboard_style() -> None:
             background: rgba(255, 91, 115, 0.1);
         }
         .fs-insight-card {
-            padding: 0.72rem 0.78rem;
+            padding: 0.68rem 0.72rem;
             border-left: 3px solid var(--fs-teal);
             margin-bottom: 0.48rem;
             overflow-wrap: anywhere;
+            display: flex;
+            flex-direction: column;
+            gap: 0.42rem;
         }
         .fs-insight-selected {
             border-color: rgba(37, 242, 199, 0.5);
@@ -674,7 +677,56 @@ def apply_dashboard_style() -> None:
             color: var(--fs-ink);
             font-size: 0.78rem;
             font-weight: 760;
-            margin-bottom: 0.28rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            margin-bottom: 0.06rem;
+        }
+        .fs-insight-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.52rem;
+            border: 1px solid rgba(255, 255, 255, 0.055);
+            border-radius: var(--fs-radius);
+            padding: 0.48rem 0.54rem;
+            background: rgba(11, 18, 31, 0.44);
+        }
+        .fs-insight-row-fact {
+            background: rgba(0, 212, 160, 0.08);
+            border-color: rgba(0, 212, 160, 0.16);
+        }
+        .fs-insight-row-interpretation {
+            background: rgba(79, 145, 232, 0.08);
+            border-color: rgba(79, 145, 232, 0.16);
+        }
+        .fs-insight-row-caution {
+            background: rgba(245, 166, 35, 0.08);
+            border-color: rgba(245, 166, 35, 0.18);
+        }
+        .fs-insight-badge {
+            flex: 0 0 auto;
+            border-radius: 5px;
+            padding: 0.12rem 0.42rem;
+            font-size: 0.62rem;
+            font-weight: 760;
+            white-space: nowrap;
+        }
+        .fs-insight-row-fact .fs-insight-badge {
+            color: var(--fs-teal);
+            background: rgba(0, 212, 160, 0.14);
+        }
+        .fs-insight-row-interpretation .fs-insight-badge {
+            color: var(--fs-blue);
+            background: rgba(79, 145, 232, 0.14);
+        }
+        .fs-insight-row-caution .fs-insight-badge {
+            color: var(--fs-amber);
+            background: rgba(245, 166, 35, 0.14);
+        }
+        .fs-insight-row .fs-insight-body {
+            min-width: 0;
+            line-height: 1.45;
         }
         .fs-empty-state {
             padding: 1rem;
