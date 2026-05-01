@@ -697,12 +697,21 @@ def render_diversification_tab(
     with bottom_right.container(border=True):
         st.markdown("#### Concentration Analysis")
         if allocation:
-            st.dataframe(pd.DataFrame([allocation]).astype(str), use_container_width=True, hide_index=True)
+            allocation_rows = [
+                {"item": "Concentration Level", "value": allocation.get("concentration_level", "N/A")},
+                {"item": "HHI", "value": format_ratio(allocation.get("hhi"))},
+                {"item": "Largest Weight", "value": largest_weight},
+                {"item": "Largest Asset", "value": largest_asset},
+                {"item": "Cash Exposure", "value": _cash_exposure(schema)},
+            ]
+            key_value_table(allocation_rows)
         else:
             empty_state("Concentration Unavailable", "Concentration metrics require an allocation weight column.")
 
-    st.markdown("### Rule Traceability & Data Quality")
-    _rule_cards_for_prefix(audit, {"VIS", "RISK", "DATA", "INSIGHT"}, limit=5)
+    with st.container(border=True):
+        st.markdown("#### Rule Traceability & Data Quality")
+        st.caption("Diversification rules, visualization checks, and data quality status")
+        _rule_validation_list_for_prefix(audit, {"VIS", "RISK", "DATA", "INSIGHT"}, limit=5)
 
 
 def render_insights_tab(
