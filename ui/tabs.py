@@ -163,6 +163,74 @@ def _require_analysis(df: pd.DataFrame | None, metrics: dict[str, Any] | None = 
     return True
 
 
+def _analysis_available(df: pd.DataFrame | None) -> bool:
+    if df is None:
+        empty_state(
+            "Select a Dataset to Continue",
+            "Choose a bundled sample or upload a CSV from the analysis controls. Governance tabs populate after the pipeline runs.",
+        )
+        return False
+    return True
+
+
+def _rule_records(audit: RuleAuditLog) -> list[dict[str, Any]]:
+    return [dict(record) for record in audit.deduplicated_records()]
+
+
+def _rule_summary(records: list[dict[str, Any]]) -> dict[str, Any]:
+    warnings = [record for record in records if record.get("severity") == "WARNING"]
+    blocked = [record for record in records if record.get("severity") == "ERROR"]
+    prefixes = {str(record.get("prefix")) for record in records}
+    required = {"DATA", "SCHEMA", "METRIC", "VIS", "INSIGHT", "SAFE"}
+    return {
+        "executed": len(records),
+        "passed": len(records) - len(warnings) - len(blocked),
+        "warnings": len(warnings),
+        "blocked": len(blocked),
+        "coverage": len(prefixes & required),
+        "required": len(required),
+        "prefixes": prefixes,
+    }
+
+
+def _selected_insight(items: list[dict[str, Any]]) -> tuple[int, dict[str, Any] | None]:
+    if not items:
+        return 0, None
+    max_index = len(items) - 1
+    current = int(st.session_state.get("selected_insight_index", 0))
+    current = max(0, min(current, max_index))
+    st.session_state["selected_insight_index"] = current
+    return current, items[current]
+
+
+def _rule_reference_rows(rule_ids: list[str], records: list[dict[str, Any]]) -> pd.DataFrame:
+    if not rule_ids:
+        return pd.DataFrame()
+    matched = [
+        {
+            "rule_id": record.get("rule_id"),
+            "step": record.get("step"),
+            "severity": record.get("severity"),
+            "result": record.get("result"),
+        }
+        for record in records
+        if record.get("rule_id") in set(rule_ids)
+    ]
+    if matched:
+        return pd.DataFrame(matched)
+    return pd.DataFrame([{"rule_id": rule_id, "step": "Referenced by insight", "severity": "INFO", "result": "No matching audit row"} for rule_id in rule_ids])
+
+
+def _report_library(source_name: str) -> pd.DataFrame:
+    return pd.DataFrame(
+        [
+            {"report_name": "Investment Analytics Report", "dataset": source_name, "status": "Latest", "format": "HTML"},
+            {"report_name": "Risk Analysis Extract", "dataset": source_name, "status": "Generated", "format": "HTML"},
+            {"report_name": "Rule Audit Export", "dataset": source_name, "status": "Generated", "format": "CSV/JSON"},
+        ]
+    )
+
+
 def render_overview_dashboard(
     df: pd.DataFrame | None,
     source_name: str,
@@ -578,3 +646,336 @@ def render_diversification_tab(
 
     st.markdown("### Rule Traceability & Data Quality")
     _rule_cards_for_prefix(audit, {"VIS", "RISK", "DATA", "INSIGHT"}, limit=5)
+
+
+def render_insights_tab(
+    df: pd.DataFrame | None,
+    source_name: str,
+    audit: RuleAuditLog,
+    schema: dict[str, Any] | None,
+    metrics: dict[str, Any] | None,
+    insights: dict[str, Any] | None,
+) -> None:
+    """Render the evidence-traced Insights tab."""
+
+    if not _analysis_available(df):
+        return
+    items = list((insights or {}).get("insights", []))
+    summary = metrics.get("summary", {}) if metrics else {}
+    selected_index, selected = _selected_insight(items)
+
+    kpi_cols = st.columns(5)
+    with kpi_cols[0]:
+        metric_card("Insights", f"{len(items):,}", "Evidence-linked cards", "teal", "IN")
+    with kpi_cols[1]:
+        metric_card("Total Return", format_percent(summary.get("total_return")), "Cumulative", "teal", "TR")
+    with kpi_cols[2]:
+        metric_card("Volatility", format_percent(summary.get("annualized_volatility")), "Annualized", "blue", "VO")
+    with kpi_cols[3]:
+        metric_card("Max Drawdown", format_percent(summary.get("max_drawdown")), "From peak to trough", "red", "MD")
+    with kpi_cols[4]:
+        metric_card("Risk Level", str(summary.get("risk_level", "UNKNOWN")), "Rule-classified", "amber", "RL")
+
+    st.markdown("### Executive Insight Summary")
+    with st.container(border=True):
+        if items:
+            lead = items[0]
+            st.markdown(
+                f"Across `{source_name}`, FinSkillOS generated **{len(items)}** evidence-linked insight(s). "
+                f"The lead signal is **{lead.get('category', 'insight')}** with severity **{lead.get('severity', 'INFO')}**."
+            )
+            st.caption("Generated and validated via Skills.md rules.")
+        else:
+            empty_state("No Insights Generated", "The insight engine did not produce evidence-linked insight cards for this dataset.")
+
+    feed_col, detail_col, trace_col = st.columns([0.92, 1.35, 0.86])
+    with feed_col.container(border=True):
+        st.markdown("#### Insight Feed")
+        if not items:
+            empty_state("Empty Feed", "No insight cards are available.")
+        for idx, item in enumerate(items):
+            label = f"{idx + 1}. {str(item.get('category', 'Insight')).title()} · {item.get('severity', 'INFO')}"
+            if st.button(label, key=f"insight_select_{idx}", use_container_width=True):
+                st.session_state["selected_insight_index"] = idx
+                selected_index, selected = idx, item
+            insight_card(
+                category=str(item.get("category", "Insight")),
+                fact=str(item.get("fact", "")),
+                interpretation=str(item.get("interpretation", "")),
+                caution=str(item.get("caution", "")),
+                severity=str(item.get("severity", "INFO")),
+                selected=idx == selected_index,
+            )
+
+    with detail_col.container(border=True):
+        st.markdown("#### Selected Insight")
+        if selected is None:
+            empty_state("No Selection", "Select an insight from the feed to inspect its evidence.")
+        else:
+            insight_card(
+                category=str(selected.get("category", "Insight")),
+                fact=str(selected.get("fact", "")),
+                interpretation=str(selected.get("interpretation", "")),
+                caution=str(selected.get("caution", "")),
+                severity=str(selected.get("severity", "INFO")),
+                selected=True,
+            )
+            st.markdown("##### Supporting Visualization")
+            evidence = selected.get("evidence", {})
+            chart_name = str(evidence.get("chart", ""))
+            if "drawdown" in chart_name:
+                render_drawdown_chart(metrics, height=285)
+            elif "correlation" in chart_name:
+                render_correlation_heatmap(metrics, height=285)
+            else:
+                render_cumulative_return_chart(metrics, height=285)
+
+            evidence_rows = pd.DataFrame(
+                [{"field": key, "value": value} for key, value in dict(evidence).items()]
+            )
+            st.markdown("##### Evidence Sources")
+            if evidence_rows.empty:
+                empty_state("No Evidence Rows", "This insight did not expose structured evidence.")
+            else:
+                st.dataframe(evidence_rows.astype(str), use_container_width=True, hide_index=True)
+
+    with trace_col.container(border=True):
+        st.markdown("#### Insight Validation & Traceability")
+        records = _rule_records(audit)
+        if selected is None:
+            empty_state("No Traceability", "Select an insight to inspect its referenced rules.")
+        else:
+            rule_ids = [str(rule_id) for rule_id in selected.get("rule_ids", [])]
+            st.markdown("##### Rules Applied")
+            rules_df = _rule_reference_rows(rule_ids, records)
+            if rules_df.empty:
+                empty_state("No Rule References", "No rule IDs were attached to this insight.")
+            else:
+                st.dataframe(rules_df, use_container_width=True, hide_index=True)
+            st.markdown("##### Data Source")
+            st.dataframe(
+                pd.DataFrame(
+                    [
+                        {"item": "Dataset", "value": source_name},
+                        {"item": "Schema", "value": schema.get("schema_type", "unknown") if schema else "unknown"},
+                        {"item": "Date Range", "value": _date_range(schema)},
+                    ]
+                ).astype(str),
+                use_container_width=True,
+                hide_index=True,
+            )
+            st.markdown(status_badge("Generated and validated via Skills.md rules", "default"), unsafe_allow_html=True)
+
+    st.markdown("### Pinned Insights & Next Steps")
+    next_cols = st.columns(4)
+    next_steps = [
+        ("Monitor Drawdown Regimes", "Linked to max drawdown and underwater chart."),
+        ("Assess Volatility Drivers", "Linked to rolling volatility and asset metrics."),
+        ("Review Diversification", "Linked to correlation and risk-return scatter."),
+        ("Validate Data Inputs", "Linked to Data Profile quality warnings."),
+    ]
+    for column, (title, description) in zip(next_cols, next_steps, strict=False):
+        with column:
+            rule_card("NEXT", title, description, status="Queued", severity="INFO")
+
+
+def render_applied_rules_tab(df: pd.DataFrame | None, audit: RuleAuditLog) -> None:
+    """Render the Applied Rules governance tab."""
+
+    if not _analysis_available(df):
+        return
+    records = _rule_records(audit)
+    summary = _rule_summary(records)
+
+    kpi_cols = st.columns(6)
+    with kpi_cols[0]:
+        metric_card("Rules Executed", f"{summary['executed']:,}", "Total rules run", "blue", "RU")
+    with kpi_cols[1]:
+        metric_card("Passed", f"{summary['passed']:,}", "No warning flag", "teal", "OK")
+    with kpi_cols[2]:
+        metric_card("Warnings", f"{summary['warnings']:,}", "Review recommended", "amber", "WR")
+    with kpi_cols[3]:
+        metric_card("Blocked", f"{summary['blocked']:,}", "Hard failures", "red", "BL")
+    with kpi_cols[4]:
+        metric_card("Coverage", f"{summary['coverage']}/{summary['required']}", "Required categories", "purple", "CV")
+    with kpi_cols[5]:
+        metric_card("Avg Execution", "local", "In-process rules", "blue", "TM")
+
+    table_col, timeline_col, graph_col, side_col = st.columns([1.35, 0.78, 0.9, 0.82])
+    with table_col.container(border=True):
+        st.markdown("#### Rules Table")
+        search = st.text_input("Search rules", placeholder="Search by rule ID, prefix, step, or result...", label_visibility="collapsed")
+        rules_df = pd.DataFrame(records)
+        if search and not rules_df.empty:
+            mask = rules_df.astype(str).apply(lambda col: col.str.contains(search, case=False, na=False)).any(axis=1)
+            rules_df = rules_df[mask]
+        if rules_df.empty:
+            empty_state("No Rules Found", "No applied rules match the current search.")
+        else:
+            display_cols = [col for col in ["order", "rule_id", "prefix", "step", "severity", "result"] if col in rules_df.columns]
+            st.dataframe(rules_df[display_cols].astype(str), use_container_width=True, hide_index=True)
+
+    with timeline_col.container(border=True):
+        st.markdown("#### Execution Timeline")
+        timeline = pd.DataFrame(
+            [
+                {
+                    "time": f"T+{idx:02d}",
+                    "rule": record.get("rule_id"),
+                    "status": "warning" if record.get("severity") == "WARNING" else "passed",
+                }
+                for idx, record in enumerate(records[:10], start=1)
+            ]
+        )
+        if timeline.empty:
+            empty_state("No Timeline", "No rules were executed.")
+        else:
+            st.dataframe(timeline.astype(str), use_container_width=True, hide_index=True)
+        st.markdown(status_badge("Live trace", "default"), unsafe_allow_html=True)
+
+    with graph_col.container(border=True):
+        st.markdown("#### Rule Dependency Graph")
+        dependency = pd.DataFrame(
+            [
+                {"domain": "Data Quality", "rules": sum(1 for row in records if row.get("prefix") in {"DATA", "SCHEMA"})},
+                {"domain": "Metrics", "rules": sum(1 for row in records if row.get("prefix") in {"METRIC", "RISK"})},
+                {"domain": "Visualization", "rules": sum(1 for row in records if row.get("prefix") == "VIS")},
+                {"domain": "Safety", "rules": sum(1 for row in records if row.get("prefix") in {"INSIGHT", "SAFE"})},
+            ]
+        )
+        st.dataframe(dependency.astype(str), use_container_width=True, hide_index=True)
+        st.caption("Hard and soft dependencies are represented by rule domains in this MVP.")
+
+    with side_col.container(border=True):
+        st.markdown("#### Governance Overview")
+        grade = "A+" if summary["blocked"] == 0 and summary["coverage"] >= 5 else "Review"
+        st.metric("System Integrity", grade)
+        st.dataframe(
+            pd.DataFrame(
+                [
+                    {"item": "Rule Coverage", "value": f"{summary['coverage']}/{summary['required']}"},
+                    {"item": "Warnings", "value": summary["warnings"]},
+                    {"item": "Blocked", "value": summary["blocked"]},
+                    {"item": "Loaded From", "value": "Skills.md"},
+                ]
+            ).astype(str),
+            use_container_width=True,
+            hide_index=True,
+        )
+
+    st.markdown("### Representative Rule Cards")
+    _rule_cards_for_prefix(audit, {"DATA", "SCHEMA", "METRIC", "VIS", "RISK", "INSIGHT", "SAFE"}, limit=5)
+
+    st.markdown("### Exceptions")
+    exceptions = [record for record in records if record.get("severity") == "WARNING"]
+    if not exceptions:
+        st.markdown(status_badge("No warnings or blocked rules", "default"), unsafe_allow_html=True)
+    else:
+        st.dataframe(pd.DataFrame(exceptions).astype(str), use_container_width=True, hide_index=True)
+
+
+def render_reports_tab(
+    df: pd.DataFrame | None,
+    source_name: str,
+    audit: RuleAuditLog,
+    profile: dict[str, Any] | None,
+    schema: dict[str, Any] | None,
+    metrics: dict[str, Any] | None,
+    analysis_result: dict[str, Any] | None,
+) -> None:
+    """Render the Reports workspace tab."""
+
+    if not _analysis_available(df):
+        return
+    records = _rule_records(audit)
+    summary = _rule_summary(records)
+    html_report = build_html_report(analysis_result) if analysis_result is not None else ""
+
+    kpi_cols = st.columns(6)
+    with kpi_cols[0]:
+        metric_card("Reports Generated", "1", "Current analysis", "teal", "RP")
+    with kpi_cols[1]:
+        metric_card("Latest Version", "v2.0", "Skills.md governed", "blue", "V")
+    with kpi_cols[2]:
+        metric_card("Export Formats", "3", "HTML, CSV, JSON", "purple", "EX")
+    with kpi_cols[3]:
+        metric_card("Rules Included", f"{len(records):,}", "Audit trail", "teal", "RU")
+    with kpi_cols[4]:
+        metric_card("Data Rows", f"{int(profile.get('row_count', 0)):,}" if profile else "N/A", "Profile summary", "blue", "DR")
+    with kpi_cols[5]:
+        metric_card("Delivery Status", "Healthy", "Local export ready", "teal", "OK")
+
+    library_col, preview_col, action_col, summary_col = st.columns([1.0, 1.25, 0.82, 0.9])
+    with library_col.container(border=True):
+        st.markdown("#### Report Library")
+        st.dataframe(_report_library(source_name).astype(str), use_container_width=True, hide_index=True)
+
+    with preview_col.container(border=True):
+        st.markdown("#### Report Preview")
+        if not html_report:
+            empty_state("Preview Unavailable", "Report preview requires an analysis result.")
+        else:
+            preview_summary = pd.DataFrame(
+                [
+                    {"section": "Dataset Summary", "status": "Included"},
+                    {"section": "Schema Mapping", "status": "Included"},
+                    {"section": "Metric Summary", "status": "Included"},
+                    {"section": "Risk Insights", "status": "Included"},
+                    {"section": "Applied Rules", "status": f"{len(records)} rows"},
+                    {"section": "Disclaimer", "status": "Included"},
+                ]
+            )
+            st.dataframe(preview_summary.astype(str), use_container_width=True, hide_index=True)
+            st.caption(f"Preview bytes: {len(html_report.encode('utf-8')):,}")
+
+    with action_col.container(border=True):
+        st.markdown("#### Export & Share")
+        if html_report:
+            st.download_button(
+                "Download HTML",
+                data=html_report.encode("utf-8"),
+                file_name="finskillos_analysis_report.html",
+                mime="text/html",
+                use_container_width=True,
+            )
+        rules_df = pd.DataFrame(records)
+        st.download_button(
+            "Download Rules CSV",
+            data=rules_df.to_csv(index=False).encode("utf-8-sig"),
+            file_name="finskillos_applied_rules.csv",
+            mime="text/csv",
+            use_container_width=True,
+        )
+        st.markdown("#### Schedule Report")
+        st.selectbox("Cadence", ["Manual", "Monthly", "Quarterly"], label_visibility="collapsed")
+        st.text_input("Recipient", value="reviewer@example.com", label_visibility="collapsed")
+        st.caption("Scheduling is a UI placeholder for post-MVP deployment.")
+
+    with summary_col.container(border=True):
+        st.markdown("#### Report Summary")
+        includes = pd.DataFrame(
+            [
+                {"item": "Executive summary with key metrics", "status": "Included"},
+                {"item": "Risk and return analysis", "status": "Included"},
+                {"item": "Schema and data profile", "status": "Included"},
+                {"item": "Rule audit trail", "status": "Included"},
+                {"item": "Safety disclaimer", "status": "Included"},
+            ]
+        )
+        st.dataframe(includes.astype(str), use_container_width=True, hide_index=True)
+        st.markdown("#### Validation Status")
+        st.dataframe(
+            pd.DataFrame(
+                [
+                    {"check": "Rule Coverage", "value": f"{summary['coverage']}/{summary['required']}"},
+                    {"check": "Warnings", "value": summary["warnings"]},
+                    {"check": "Blocked", "value": summary["blocked"]},
+                    {"check": "Schema", "value": schema.get("schema_type", "unknown") if schema else "unknown"},
+                ]
+            ).astype(str),
+            use_container_width=True,
+            hide_index=True,
+        )
+
+    st.markdown("### Report Rules & Validation")
+    _rule_cards_for_prefix(audit, {"METRIC", "RISK", "INSIGHT", "SAFE", "AUTO"}, limit=5)

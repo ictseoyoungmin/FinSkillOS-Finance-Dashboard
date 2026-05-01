@@ -18,9 +18,12 @@ from engine.schema_mapper import infer_schema
 from ui.components import empty_state, metric_card, section_header
 from ui.layout import date_range_label, render_sidebar_nav, render_topbar, render_topbar_controls
 from ui.tabs import (
+    render_applied_rules_tab,
     render_data_profile_tab,
     render_diversification_tab,
+    render_insights_tab,
     render_overview_dashboard,
+    render_reports_tab,
     render_return_analysis_tab,
     render_risk_analysis_tab,
 )
@@ -559,6 +562,30 @@ def main() -> None:
             schema=schema,
             metrics=metrics,
             insights=insights,
+        )
+    elif active_tab == "Insights":
+        render_insights_tab(
+            df=df,
+            source_name=source_name,
+            audit=audit,
+            schema=schema,
+            metrics=metrics,
+            insights=insights,
+        )
+    elif active_tab == "Applied Rules":
+        render_applied_rules_tab(
+            df=df,
+            audit=audit,
+        )
+    elif active_tab == "Reports":
+        render_reports_tab(
+            df=df,
+            source_name=source_name,
+            audit=audit,
+            profile=profile,
+            schema=schema,
+            metrics=metrics,
+            analysis_result=analysis_result,
         )
     else:
         section_header(1, "Header & Upload Panel", "DASH-002")
