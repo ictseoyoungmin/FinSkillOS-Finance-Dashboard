@@ -9,14 +9,14 @@ import streamlit as st
 
 
 NAV_ITEMS = [
-    ("Overview", "OV"),
-    ("Data Profile", "DP"),
-    ("Return Analysis", "RT"),
-    ("Risk Analysis", "RK"),
-    ("Diversification", "DV"),
-    ("Insights", "IN"),
-    ("Applied Rules", "RL"),
-    ("Reports", "RP"),
+    ("Overview", "⌂"),
+    ("Data Profile", "◎"),
+    ("Return Analysis", "↗"),
+    ("Risk Analysis", "◇"),
+    ("Diversification", "◌"),
+    ("Insights", "✦"),
+    ("Applied Rules", "▣"),
+    ("Reports", "▤"),
 ]
 
 
@@ -114,7 +114,7 @@ def render_topbar_controls(sample_files: Sequence[str]) -> dict[str, object]:
         """,
         unsafe_allow_html=True,
     )
-    row1 = st.columns([1.7, 1.08, 0.78, 0.8, 0.86], vertical_alignment="bottom")
+    row1 = st.columns([1.45, 0.96, 0.68, 1.34, 0.56, 0.76], vertical_alignment="bottom")
     sample_name = row1[0].selectbox(
         "Dataset",
         sample_options,
@@ -138,23 +138,35 @@ def render_topbar_controls(sample_files: Sequence[str]) -> dict[str, object]:
         label_visibility="collapsed",
         key="risk_free_rate_input",
     )
-    with row1[3].popover("Upload CSV", use_container_width=True):
-        uploaded_file = st.file_uploader("CSV Upload", type=["csv"])
-        st.caption("Uploaded CSV overrides the selected sample dataset.")
-    run_analysis = row1[4].button("Run Analysis", type="primary", use_container_width=True)
+    uploaded_file = row1[3].file_uploader(
+        "CSV Upload",
+        type=["csv"],
+        label_visibility="collapsed",
+        key="csv_upload",
+    )
+    theme = row1[4].selectbox(
+        "Theme",
+        ["Dark", "Light"],
+        index=0,
+        label_visibility="collapsed",
+        key="dashboard_theme",
+    )
+    run_analysis = row1[5].button("Apply Settings", type="primary", use_container_width=True)
 
-    caption_cols = st.columns([1.7, 1.08, 0.78, 0.8, 0.86])
+    caption_cols = st.columns([1.45, 0.96, 0.68, 1.34, 0.56, 0.76])
     caption_cols[0].caption("Sample Dataset")
     caption_cols[1].caption("Mode")
     caption_cols[2].caption("Risk-Free Rate")
-    caption_cols[3].caption("CSV Override")
-    caption_cols[4].caption("Refresh")
+    caption_cols[3].caption("CSV Upload")
+    caption_cols[4].caption("Theme")
+    caption_cols[5].caption("Refresh")
 
     return {
         "uploaded_file": uploaded_file,
         "sample_name": sample_name,
         "mode": mode,
         "risk_free_rate": risk_free_rate,
+        "theme": theme,
         "run_analysis": run_analysis,
         "export_requested": False,
     }

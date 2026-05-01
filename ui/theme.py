@@ -17,8 +17,8 @@ PLOTLY_COLORS = [
 ]
 
 
-def apply_dashboard_style() -> None:
-    """Apply the FinSkillOS dark product shell theme."""
+def apply_dashboard_style(theme: str = "Dark") -> None:
+    """Apply the FinSkillOS product shell theme."""
 
     st.markdown(
         """
@@ -86,9 +86,19 @@ def apply_dashboard_style() -> None:
         }
 
         .main .block-container {
-            padding: 0.78rem 1.25rem 2rem 1.25rem;
+            padding: 0.74rem 1.05rem 1.75rem 1.05rem;
             max-width: 1540px;
             animation: fs-page-in var(--fs-medium) var(--fs-ease) both;
+        }
+        .main .block-container [data-testid="stVerticalBlock"] {
+            gap: 0.66rem;
+        }
+        .main .block-container [data-testid="stHorizontalBlock"] {
+            gap: 0.72rem;
+            margin: 0.08rem 0 0.16rem 0;
+        }
+        [data-testid="column"] > [data-testid="stVerticalBlock"] {
+            gap: 0.46rem;
         }
 
         h1, h2, h3, h4 {
@@ -122,6 +132,17 @@ def apply_dashboard_style() -> None:
             border: 1px solid var(--fs-line);
             background: rgba(11, 18, 31, 0.72);
             max-width: 100%;
+        }
+        div[data-testid="stMarkdownContainer"] h3 {
+            margin: 0.28rem 0 0.16rem 0;
+            line-height: 1.16;
+        }
+        div[data-testid="stMarkdownContainer"] h4 {
+            margin: 0 0 0.16rem 0;
+            line-height: 1.16;
+        }
+        div[data-testid="stMarkdownContainer"] p {
+            margin-bottom: 0.24rem;
         }
         div[data-testid="stPlotlyChart"] {
             min-height: 235px;
@@ -183,6 +204,60 @@ def apply_dashboard_style() -> None:
         [data-testid="stNumberInput"] input:hover,
         [data-testid="stFileUploader"] section:hover {
             border-color: rgba(37, 242, 199, 0.36);
+        }
+        [data-testid="stFileUploader"] {
+            min-width: 0;
+        }
+        [data-testid="stFileUploader"] section {
+            min-height: 2.72rem;
+            max-height: 2.72rem;
+            padding: 0.26rem 0.5rem;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+        }
+        [data-testid="stFileUploader"] section > div {
+            min-width: 0;
+            width: 100%;
+            gap: 0.42rem;
+            align-items: center;
+        }
+        [data-testid="stFileUploader"] [data-testid="stFileUploaderDropzoneInstructions"] {
+            min-width: 0;
+            flex: 1 1 auto;
+        }
+        [data-testid="stFileUploader"] [data-testid="stFileUploaderDropzoneInstructions"] > div {
+            display: none;
+        }
+        [data-testid="stFileUploader"] [data-testid="stFileUploaderDropzoneInstructions"]::before {
+            content: "Drag CSV here";
+            display: block;
+            color: var(--fs-soft);
+            font-size: 0.72rem;
+            font-weight: 760;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        [data-testid="stFileUploader"] section button {
+            min-height: 1.72rem;
+            padding: 0.2rem 0.58rem;
+            border-radius: var(--fs-radius);
+            border-color: rgba(129, 166, 202, 0.22);
+            background: rgba(21, 30, 45, 0.72);
+            color: var(--fs-soft);
+            font-size: 0.72rem;
+            font-weight: 720;
+        }
+        [data-testid="stFileUploader"] small,
+        [data-testid="stFileUploader"] [data-testid="stWidgetLabel"] {
+            display: none;
+        }
+        [data-testid="stCaptionContainer"] p {
+            color: var(--fs-muted);
+            font-size: 0.66rem;
+            line-height: 1.05;
+            margin: -0.06rem 0 0 0;
         }
 
         .fs-brand {
@@ -298,7 +373,7 @@ def apply_dashboard_style() -> None:
             align-items: flex-start;
             justify-content: space-between;
             gap: 0.8rem;
-            margin-bottom: 0.72rem;
+            margin: 0.12rem 0 0.34rem 0;
         }
         .fs-page-title {
             margin: 0;
@@ -356,7 +431,7 @@ def apply_dashboard_style() -> None:
             margin-bottom: 0.28rem;
         }
         .fs-control-caption-compact {
-            margin: 0.1rem 0 0.28rem 0;
+            margin: 0 0 0.34rem 0;
         }
 
         .fs-card-grid {
@@ -381,6 +456,13 @@ def apply_dashboard_style() -> None:
             border-radius: var(--fs-radius) !important;
             background: linear-gradient(180deg, rgba(14, 32, 52, 0.72), rgba(7, 17, 31, 0.78));
             box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+            margin: 0.06rem 0 0.34rem 0;
+        }
+        div[data-testid="stVerticalBlockBorderWrapper"] > div {
+            padding: 0.74rem 0.82rem !important;
+        }
+        div[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stVerticalBlock"] {
+            gap: 0.48rem;
         }
         @keyframes fs-card-in {
             from { opacity: 0; transform: translateY(8px); }
@@ -766,6 +848,8 @@ def apply_dashboard_style() -> None:
         @media (min-width: 1500px) {
             .main .block-container {
                 max-width: 1680px;
+                padding-left: 1rem;
+                padding-right: 1rem;
             }
             div[data-testid="column"] {
                 min-width: 0;
@@ -841,15 +925,183 @@ def apply_dashboard_style() -> None:
         unsafe_allow_html=True,
     )
 
+    if str(theme).lower() == "light":
+        st.markdown(
+            """
+            <style>
+            :root {
+                --fs-bg: #f4f7fb;
+                --fs-bg-soft: #eef4fb;
+                --fs-sidebar: #edf3fa;
+                --fs-panel: rgba(255, 255, 255, 0.94);
+                --fs-panel-strong: rgba(255, 255, 255, 0.98);
+                --fs-panel-hover: rgba(246, 250, 255, 0.98);
+                --fs-line: rgba(36, 48, 68, 0.12);
+                --fs-line-strong: rgba(0, 151, 124, 0.28);
+                --fs-ink: #162033;
+                --fs-muted: #64748b;
+                --fs-soft: #334155;
+                --fs-teal: #009b83;
+                --fs-cyan: #047fa8;
+                --fs-blue: #2563eb;
+                --fs-red: #dc3545;
+                --fs-amber: #b7791f;
+                --fs-purple: #7c3aed;
+                --fs-green: #168a52;
+                --fs-shadow: 0 12px 34px rgba(15, 23, 42, 0.08);
+                --fs-glow: 0 0 0 1px rgba(0, 151, 124, 0.2), 0 10px 24px rgba(0, 151, 124, 0.08);
+            }
+
+            html, body, [data-testid="stAppViewContainer"] {
+                background:
+                    radial-gradient(circle at 18% 0%, rgba(0, 151, 124, 0.08), transparent 26rem),
+                    radial-gradient(circle at 92% 20%, rgba(37, 99, 235, 0.08), transparent 24rem),
+                    linear-gradient(135deg, #f7fbff 0%, #eef4fb 56%, #f8fafc 100%) !important;
+                color: var(--fs-ink);
+            }
+            [data-testid="stHeader"] {
+                background: rgba(248, 250, 252, 0.82);
+                border-bottom: 1px solid var(--fs-line);
+            }
+            [data-testid="stSidebar"] {
+                background:
+                    linear-gradient(180deg, rgba(239, 246, 255, 0.98), rgba(248, 250, 252, 0.98)),
+                    var(--fs-sidebar);
+                border-right: 1px solid var(--fs-line);
+            }
+            div[data-testid="stMetric"],
+            div[data-testid="stVerticalBlockBorderWrapper"],
+            .fs-metric-card,
+            .fs-panel,
+            .fs-rule-card,
+            .fs-insight-card,
+            .fs-empty-state,
+            .fs-sidebar-card {
+                background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(247, 250, 252, 0.94)) !important;
+                border-color: var(--fs-line) !important;
+                box-shadow: var(--fs-shadow);
+            }
+            .fs-kv-table,
+            .fs-table-scroll,
+            div[data-testid="stDataFrame"] {
+                background: rgba(255, 255, 255, 0.88);
+                border-color: var(--fs-line);
+            }
+            .fs-kv-table th,
+            .fs-data-table th {
+                background: rgba(226, 232, 240, 0.68);
+                color: var(--fs-muted);
+            }
+            .fs-kv-table td,
+            .fs-data-table td,
+            [data-testid="stSidebar"] [role="radiogroup"] label p {
+                color: var(--fs-soft);
+            }
+            .fs-validation-row,
+            .fs-insight-row,
+            .fs-insight-selected {
+                background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(248, 250, 252, 0.9)) !important;
+                border-color: var(--fs-line) !important;
+            }
+            .fs-insight-row-fact {
+                background: rgba(0, 151, 124, 0.08) !important;
+                border-color: rgba(0, 151, 124, 0.2) !important;
+            }
+            .fs-insight-row-interpretation {
+                background: rgba(37, 99, 235, 0.08) !important;
+                border-color: rgba(37, 99, 235, 0.18) !important;
+            }
+            .fs-insight-row-caution {
+                background: rgba(183, 121, 31, 0.08) !important;
+                border-color: rgba(183, 121, 31, 0.2) !important;
+            }
+            .fs-validation-icon,
+            .fs-metric-icon {
+                background: rgba(0, 151, 124, 0.1);
+            }
+            .fs-topbar,
+            .fs-page-title,
+            .fs-panel-title,
+            .fs-section-title,
+            .fs-metric-label,
+            .fs-validation-title,
+            .fs-rule-id,
+            .fs-insight-title,
+            h1, h2, h3, h4 {
+                color: var(--fs-ink);
+            }
+            .fs-page-subtitle,
+            .fs-panel-subtitle,
+            .fs-metric-caption,
+            .fs-validation-step,
+            .fs-validation-result,
+            .fs-rule-description,
+            .fs-insight-body {
+                color: var(--fs-muted);
+            }
+            [data-baseweb="select"] > div,
+            [data-testid="stNumberInput"] input,
+            [data-testid="stFileUploader"] section {
+                background: rgba(255, 255, 255, 0.96);
+                border-color: var(--fs-line);
+                color: var(--fs-ink);
+            }
+            [data-testid="stFileUploader"] section button {
+                background: rgba(239, 246, 255, 0.92);
+                color: var(--fs-soft);
+                border-color: var(--fs-line);
+            }
+            [data-testid="stFileUploader"] [data-testid="stFileUploaderDropzoneInstructions"]::before {
+                color: var(--fs-soft);
+            }
+            [data-baseweb="popover"],
+            [data-baseweb="menu"],
+            [role="listbox"] {
+                background: #ffffff !important;
+                color: var(--fs-ink) !important;
+                border-color: var(--fs-line) !important;
+            }
+            [data-baseweb="menu"] li,
+            [role="option"] {
+                color: var(--fs-ink) !important;
+            }
+            [data-baseweb="menu"] li:hover,
+            [role="option"]:hover {
+                background: rgba(0, 151, 124, 0.08) !important;
+            }
+            .stButton > button,
+            .stDownloadButton > button {
+                background: linear-gradient(135deg, rgba(0, 151, 124, 0.92), rgba(8, 145, 178, 0.88));
+                color: #ffffff;
+            }
+            .fs-badge-muted {
+                background: rgba(226, 232, 240, 0.74);
+                color: var(--fs-soft);
+            }
+            </style>
+            """,
+            unsafe_allow_html=True,
+        )
+
 
 def style_plotly_figure(fig: go.Figure) -> go.Figure:
-    """Apply the shared dark chart treatment."""
+    """Apply the shared chart treatment for the selected shell theme."""
+
+    is_light = str(st.session_state.get("dashboard_theme", "Dark")).lower() == "light"
+    template = "plotly_white" if is_light else "plotly_dark"
+    font_color = "#334155" if is_light else "#b8c4d4"
+    muted_color = "#64748b" if is_light else "#7a8ba0"
+    grid_color = "rgba(51, 65, 85, 0.12)" if is_light else "rgba(129, 166, 202, 0.12)"
+    zero_color = "rgba(51, 65, 85, 0.18)" if is_light else "rgba(129, 166, 202, 0.2)"
+    plot_bg = "rgba(255, 255, 255, 0.36)" if is_light else "rgba(2, 8, 18, 0.18)"
+    hover_bg = "#ffffff" if is_light else "#151e2d"
+    hover_border = "rgba(51,65,85,0.18)" if is_light else "rgba(255,255,255,0.14)"
 
     fig.update_layout(
-        template="plotly_dark",
+        template=template,
         paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(2, 8, 18, 0.18)",
-        font=dict(color="#b8c4d4", family="DM Sans, Aptos, Segoe UI, sans-serif", size=11),
+        plot_bgcolor=plot_bg,
+        font=dict(color=font_color, family="DM Sans, Aptos, Segoe UI, sans-serif", size=11),
         colorway=PLOTLY_COLORS,
         margin=dict(l=12, r=12, t=22, b=18),
         legend_title_text="",
@@ -859,11 +1111,11 @@ def style_plotly_figure(fig: go.Figure) -> go.Figure:
             y=1.02,
             xanchor="left",
             x=0,
-            font=dict(size=10, color="#7a8ba0"),
+            font=dict(size=10, color=muted_color),
         ),
         hovermode="x unified",
-        hoverlabel=dict(bgcolor="#151e2d", bordercolor="rgba(255,255,255,0.14)", font_size=11),
+        hoverlabel=dict(bgcolor=hover_bg, bordercolor=hover_border, font_size=11),
     )
-    fig.update_xaxes(gridcolor="rgba(129, 166, 202, 0.12)", zerolinecolor="rgba(129, 166, 202, 0.2)", tickfont=dict(size=10, color="#7a8ba0"), title_font=dict(size=11, color="#7a8ba0"))
-    fig.update_yaxes(gridcolor="rgba(129, 166, 202, 0.12)", zerolinecolor="rgba(129, 166, 202, 0.2)", tickfont=dict(size=10, color="#7a8ba0"), title_font=dict(size=11, color="#7a8ba0"))
+    fig.update_xaxes(gridcolor=grid_color, zerolinecolor=zero_color, tickfont=dict(size=10, color=muted_color), title_font=dict(size=11, color=muted_color))
+    fig.update_yaxes(gridcolor=grid_color, zerolinecolor=zero_color, tickfont=dict(size=10, color=muted_color), title_font=dict(size=11, color=muted_color))
     return fig

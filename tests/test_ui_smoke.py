@@ -6,6 +6,25 @@ from streamlit.testing.v1 import AppTest
 
 
 class StreamlitUiSmokeTests(unittest.TestCase):
+    def test_default_sample_dataset_is_selected(self) -> None:
+        app = AppTest.from_file("app.py", default_timeout=15)
+        app.run()
+        self.assertEqual(len(app.exception), 0)
+        self.assertGreaterEqual(len(app.selectbox), 1)
+        self.assertEqual(app.selectbox[0].value, "multi_asset_portfolio.csv")
+
+    def test_theme_selector_accepts_light_mode(self) -> None:
+        app = AppTest.from_file("app.py", default_timeout=15)
+        app.run()
+        self.assertEqual(len(app.exception), 0)
+        self.assertGreaterEqual(len(app.selectbox), 3)
+        self.assertEqual(app.selectbox[2].value, "Dark")
+
+        app.selectbox[2].set_value("Light")
+        app.run()
+        self.assertEqual(len(app.exception), 0)
+        self.assertEqual(app.selectbox[2].value, "Light")
+
     def test_sample_analysis_renders_all_navigation_tabs(self) -> None:
         app = AppTest.from_file("app.py", default_timeout=15)
         app.run()
@@ -17,14 +36,14 @@ class StreamlitUiSmokeTests(unittest.TestCase):
         self.assertEqual(len(app.exception), 0)
 
         nav_labels = [
-            "OV  Overview",
-            "DP  Data Profile",
-            "RT  Return Analysis",
-            "RK  Risk Analysis",
-            "DV  Diversification",
-            "IN  Insights",
-            "RL  Applied Rules",
-            "RP  Reports",
+            "⌂  Overview",
+            "◎  Data Profile",
+            "↗  Return Analysis",
+            "◇  Risk Analysis",
+            "◌  Diversification",
+            "✦  Insights",
+            "▣  Applied Rules",
+            "▤  Reports",
         ]
         self.assertGreaterEqual(len(app.radio), 1)
         for label in nav_labels:

@@ -1004,15 +1004,13 @@ def render_reports_tab(
 
     with action_col.container(border=True):
         st.markdown("#### Export & Share")
-        availability = [
+        st.caption("Available")
+        available_exports = [
             {"format": "HTML Report", "status": "Available"},
-            {"format": "CSV Rule Audit", "status": "Available"},
-            {"format": "JSON Rule Audit", "status": "Available"},
-            {"format": "PDF / PPTX", "status": "Planned"},
-            {"format": "Share Link", "status": "Planned"},
-            {"format": "Schedule", "status": "Planned"},
+            {"format": "Applied Rules CSV", "status": "Available"},
+            {"format": "Applied Rules JSON", "status": "Available"},
         ]
-        compact_data_table(availability, columns=["format", "status"], max_rows=6)
+        compact_data_table(available_exports, columns=["format", "status"], max_rows=3)
         if html_report:
             st.download_button(
                 "Download HTML",
@@ -1036,7 +1034,14 @@ def render_reports_tab(
             mime="application/json",
             use_container_width=True,
         )
-        st.caption("PDF, PPTX, share links, and scheduled delivery are marked as planned extensions.")
+        st.caption("Planned Extension")
+        planned_exports = [
+            {"format": "PDF Export", "status": "Planned"},
+            {"format": "PPTX Export", "status": "Planned"},
+            {"format": "Share Link", "status": "Planned"},
+            {"format": "Scheduled Report", "status": "Planned"},
+        ]
+        compact_data_table(planned_exports, columns=["format", "status"], max_rows=4)
 
     with summary_col.container(border=True):
         st.markdown("#### Report Summary")

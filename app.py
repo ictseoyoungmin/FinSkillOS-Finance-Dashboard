@@ -461,7 +461,7 @@ def main() -> None:
         layout="wide",
         initial_sidebar_state="expanded",
     )
-    apply_dashboard_style()
+    apply_dashboard_style(theme=str(st.session_state.get("dashboard_theme", "Dark")))
 
     header_slot = st.container()
     controls_slot = st.container()
