@@ -326,10 +326,13 @@ def render_overview_dashboard(
         st.markdown("#### Data Profile")
         st.caption(f"Source: {source_name}")
         profile_rows = _schema_compact_table(schema, profile).astype(str).to_dict("records")
+        profile_rows.extend(
+            [
+                {"item": "Assets", "value": _asset_count(metrics, schema)},
+                {"item": "Quality", "value": _quality_summary(profile)},
+            ]
+        )
         key_value_table(profile_rows)
-        compact_cols = st.columns(2)
-        compact_cols[0].metric("Assets", _asset_count(metrics, schema))
-        compact_cols[1].metric("Quality", _quality_summary(profile))
 
     lower_left, lower_mid, lower_right = st.columns([1.08, 1.08, 1.15])
     with lower_left.container(border=True):

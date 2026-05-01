@@ -13,6 +13,13 @@ from ui.components import empty_state
 from ui.theme import style_plotly_figure
 
 
+PLOTLY_CONFIG = {"displayModeBar": False, "responsive": True}
+
+
+def _render_plotly(fig: go.Figure) -> None:
+    st.plotly_chart(style_plotly_figure(fig), use_container_width=True, config=PLOTLY_CONFIG)
+
+
 def render_cumulative_return_chart(metrics: dict[str, Any] | None, height: int = 320) -> None:
     if not metrics:
         empty_state("Cumulative Return Unavailable", "Run an analysis to generate return series.")
@@ -27,7 +34,7 @@ def render_cumulative_return_chart(metrics: dict[str, Any] | None, height: int =
     fig = px.line(plot_df, x="date", y="indexed_value", color="asset")
     fig.update_layout(height=height)
     fig.update_yaxes(title="Indexed Value")
-    st.plotly_chart(style_plotly_figure(fig), use_container_width=True)
+    _render_plotly(fig)
 
 
 def render_drawdown_chart(metrics: dict[str, Any] | None, height: int = 320) -> None:
@@ -42,7 +49,7 @@ def render_drawdown_chart(metrics: dict[str, Any] | None, height: int = 320) -> 
     fig = px.area(drawdowns, x="date", y="drawdown", color="asset")
     fig.update_layout(height=height)
     fig.update_yaxes(tickformat=".0%", title="Drawdown")
-    st.plotly_chart(style_plotly_figure(fig), use_container_width=True)
+    _render_plotly(fig)
 
 
 def render_correlation_heatmap(metrics: dict[str, Any] | None, height: int = 280) -> None:
@@ -63,7 +70,7 @@ def render_correlation_heatmap(metrics: dict[str, Any] | None, height: int = 280
         aspect="auto",
     )
     fig.update_layout(height=height)
-    st.plotly_chart(style_plotly_figure(fig), use_container_width=True)
+    _render_plotly(fig)
 
 
 def render_risk_return_scatter(metrics: dict[str, Any] | None, height: int = 280) -> None:
@@ -94,7 +101,7 @@ def render_risk_return_scatter(metrics: dict[str, Any] | None, height: int = 280
     fig.update_traces(textposition="top center")
     fig.update_xaxes(tickformat=".0%", title="Volatility")
     fig.update_yaxes(tickformat=".0%", title="Annualized Return")
-    st.plotly_chart(style_plotly_figure(fig), use_container_width=True)
+    _render_plotly(fig)
 
 
 def render_missing_values_chart(profile: dict[str, Any] | None, height: int = 250) -> None:
@@ -131,7 +138,7 @@ def render_missing_values_chart(profile: dict[str, Any] | None, height: int = 25
         fig.update_yaxes(tickformat=".1%", title="Missing Rate", range=[0, min(max_rate * 1.35, 1.0)])
     fig.update_layout(height=height, showlegend=False)
     fig.update_xaxes(title="")
-    st.plotly_chart(style_plotly_figure(fig), use_container_width=True)
+    _render_plotly(fig)
 
 
 def render_frequency_coverage_chart(schema: dict[str, Any] | None, height: int = 250) -> None:
@@ -153,7 +160,7 @@ def render_frequency_coverage_chart(schema: dict[str, Any] | None, height: int =
     fig.update_layout(height=height)
     fig.update_xaxes(title="")
     fig.update_yaxes(title="Rows")
-    st.plotly_chart(style_plotly_figure(fig), use_container_width=True)
+    _render_plotly(fig)
 
 
 def render_return_distribution(metrics: dict[str, Any] | None, height: int = 270) -> None:
@@ -168,7 +175,7 @@ def render_return_distribution(metrics: dict[str, Any] | None, height: int = 270
     fig.update_layout(height=height, bargap=0.04)
     fig.update_xaxes(tickformat=".1%", title="Period Return")
     fig.update_yaxes(title="Frequency")
-    st.plotly_chart(style_plotly_figure(fig), use_container_width=True)
+    _render_plotly(fig)
 
 
 def _portfolio_return_series(metrics: dict[str, Any]) -> pd.DataFrame:
@@ -209,14 +216,11 @@ def render_monthly_returns_heatmap(metrics: dict[str, Any] | None, height: int =
     month_order = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
     heatmap = monthly.pivot_table(index="year", columns="month", values="return", aggfunc="last").reindex(columns=month_order)
     heatmap = heatmap.sort_index(ascending=False)
-    text = heatmap.apply(lambda column: column.map(lambda value: "" if pd.isna(value) else f"{value:.1%}"))
     fig = go.Figure(
         data=go.Heatmap(
             z=heatmap.to_numpy(),
             x=list(heatmap.columns),
             y=list(heatmap.index),
-            text=text.to_numpy(),
-            texttemplate="%{text}",
             colorscale=[
                 [0.0, "#4a1022"],
                 [0.45, "#151e2d"],
@@ -224,12 +228,16 @@ def render_monthly_returns_heatmap(metrics: dict[str, Any] | None, height: int =
                 [1.0, "#00d4a0"],
             ],
             zmid=0,
-            colorbar=dict(title="Return", tickformat=".0%"),
+            xgap=2,
+            ygap=2,
+            colorbar=dict(title="Return", tickformat=".0%", thickness=10, len=0.76),
             hovertemplate="%{y} %{x}<br>Return %{z:.2%}<extra></extra>",
         )
     )
-    fig.update_layout(height=height, margin=dict(l=20, r=20, t=24, b=20), xaxis_title="", yaxis_title="")
-    st.plotly_chart(style_plotly_figure(fig), use_container_width=True)
+    fig.update_layout(height=height, margin=dict(l=12, r=8, t=14, b=12), xaxis_title="", yaxis_title="")
+    fig.update_xaxes(side="bottom", tickfont=dict(size=9))
+    fig.update_yaxes(tickfont=dict(size=9))
+    _render_plotly(fig)
 
 
 def render_var_cvar_distribution(metrics: dict[str, Any] | None, height: int = 285) -> None:
@@ -274,14 +282,21 @@ def render_var_cvar_distribution(metrics: dict[str, Any] | None, height: int = 2
             line_width=1.6,
             line_dash="dash",
             line_color=color,
-            annotation_text=f"{label} {float(value):.2%}",
-            annotation_position="top",
-            annotation_font_color=color,
         )
-    fig.update_layout(height=height, bargap=0.04, showlegend=False)
+        fig.add_trace(
+            go.Scatter(
+                x=[None],
+                y=[None],
+                mode="lines",
+                line=dict(color=color, width=1.6, dash="dash"),
+                name=f"{label} {float(value):.2%}",
+                hoverinfo="skip",
+            )
+        )
+    fig.update_layout(height=height, bargap=0.04, showlegend=True)
     fig.update_xaxes(tickformat=".1%", title="Period Return")
     fig.update_yaxes(title="Frequency")
-    st.plotly_chart(style_plotly_figure(fig), use_container_width=True)
+    _render_plotly(fig)
 
 
 def render_rolling_return_chart(metrics: dict[str, Any] | None, window: int = 63, height: int = 270) -> None:
@@ -307,7 +322,7 @@ def render_rolling_return_chart(metrics: dict[str, Any] | None, window: int = 63
     fig = px.line(plot_df, x="date", y="rolling_return", color="asset")
     fig.update_layout(height=height)
     fig.update_yaxes(tickformat=".0%", title=f"Rolling {window} Period Return")
-    st.plotly_chart(style_plotly_figure(fig), use_container_width=True)
+    _render_plotly(fig)
 
 
 def render_rolling_volatility_chart(metrics: dict[str, Any] | None, periods_per_year: int = 252, window: int = 63, height: int = 300) -> None:
@@ -334,7 +349,7 @@ def render_rolling_volatility_chart(metrics: dict[str, Any] | None, periods_per_
     fig = px.line(plot_df, x="date", y="rolling_volatility", color="asset")
     fig.update_layout(height=height)
     fig.update_yaxes(tickformat=".0%", title="Annualized Volatility")
-    st.plotly_chart(style_plotly_figure(fig), use_container_width=True)
+    _render_plotly(fig)
 
 
 def render_allocation_chart(schema: dict[str, Any] | None, height: int = 280) -> None:
@@ -348,7 +363,7 @@ def render_allocation_chart(schema: dict[str, Any] | None, height: int = 280) ->
         return
     fig = px.pie(plot_df, names="asset", values="weight", hole=0.48)
     fig.update_layout(height=height)
-    st.plotly_chart(style_plotly_figure(fig), use_container_width=True)
+    _render_plotly(fig)
 
 
 def render_risk_contribution_chart(metrics: dict[str, Any] | None, height: int = 280) -> None:
@@ -369,4 +384,4 @@ def render_risk_contribution_chart(metrics: dict[str, Any] | None, height: int =
     fig.update_layout(height=height)
     fig.update_xaxes(tickformat=".0%", title="Share of Asset Volatility")
     fig.update_yaxes(title="")
-    st.plotly_chart(style_plotly_figure(fig), use_container_width=True)
+    _render_plotly(fig)

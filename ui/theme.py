@@ -126,6 +126,9 @@ def apply_dashboard_style() -> None:
         div[data-testid="stPlotlyChart"] {
             min-height: 235px;
         }
+        div[data-testid="stPlotlyChart"] .modebar {
+            display: none !important;
+        }
 
         .stButton > button,
         .stDownloadButton > button,
@@ -846,12 +849,21 @@ def style_plotly_figure(fig: go.Figure) -> go.Figure:
         template="plotly_dark",
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(2, 8, 18, 0.18)",
-        font=dict(color="#c7d5e6", family="Arial, sans-serif"),
+        font=dict(color="#b8c4d4", family="DM Sans, Aptos, Segoe UI, sans-serif", size=11),
         colorway=PLOTLY_COLORS,
-        margin=dict(l=20, r=20, t=44, b=24),
+        margin=dict(l=12, r=12, t=22, b=18),
         legend_title_text="",
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="left",
+            x=0,
+            font=dict(size=10, color="#7a8ba0"),
+        ),
         hovermode="x unified",
+        hoverlabel=dict(bgcolor="#151e2d", bordercolor="rgba(255,255,255,0.14)", font_size=11),
     )
-    fig.update_xaxes(gridcolor="rgba(129, 166, 202, 0.14)", zerolinecolor="rgba(129, 166, 202, 0.22)")
-    fig.update_yaxes(gridcolor="rgba(129, 166, 202, 0.14)", zerolinecolor="rgba(129, 166, 202, 0.22)")
+    fig.update_xaxes(gridcolor="rgba(129, 166, 202, 0.12)", zerolinecolor="rgba(129, 166, 202, 0.2)", tickfont=dict(size=10, color="#7a8ba0"), title_font=dict(size=11, color="#7a8ba0"))
+    fig.update_yaxes(gridcolor="rgba(129, 166, 202, 0.12)", zerolinecolor="rgba(129, 166, 202, 0.2)", tickfont=dict(size=10, color="#7a8ba0"), title_font=dict(size=11, color="#7a8ba0"))
     return fig
