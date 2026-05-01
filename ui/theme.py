@@ -24,27 +24,27 @@ def apply_dashboard_style() -> None:
         """
         <style>
         :root {
-            --fs-bg: #020812;
-            --fs-bg-soft: #07111f;
-            --fs-sidebar: #04101d;
-            --fs-panel: rgba(12, 26, 43, 0.88);
-            --fs-panel-strong: rgba(14, 32, 52, 0.96);
-            --fs-panel-hover: rgba(18, 42, 66, 0.98);
-            --fs-line: rgba(129, 166, 202, 0.22);
-            --fs-line-strong: rgba(37, 242, 199, 0.48);
-            --fs-ink: #eef7ff;
-            --fs-muted: #9db0c6;
-            --fs-soft: #c7d5e6;
-            --fs-teal: #25f2c7;
-            --fs-cyan: #38d7ff;
-            --fs-blue: #38a3ff;
-            --fs-red: #ff5b73;
-            --fs-amber: #f4b740;
+            --fs-bg: #0b0f19;
+            --fs-bg-soft: #111827;
+            --fs-sidebar: #111827;
+            --fs-panel: rgba(21, 30, 45, 0.92);
+            --fs-panel-strong: rgba(26, 37, 64, 0.96);
+            --fs-panel-hover: rgba(31, 45, 69, 0.98);
+            --fs-line: rgba(255, 255, 255, 0.08);
+            --fs-line-strong: rgba(0, 212, 160, 0.44);
+            --fs-ink: #e8edf5;
+            --fs-muted: #7a8ba0;
+            --fs-soft: #b8c4d4;
+            --fs-teal: #00d4a0;
+            --fs-cyan: #35d6ff;
+            --fs-blue: #4f91e8;
+            --fs-red: #f05151;
+            --fs-amber: #f5a623;
             --fs-purple: #a874ff;
             --fs-green: #35d990;
             --fs-radius: 8px;
-            --fs-shadow: 0 18px 60px rgba(0, 0, 0, 0.34);
-            --fs-glow: 0 0 0 1px rgba(37, 242, 199, 0.36), 0 0 28px rgba(37, 242, 199, 0.1);
+            --fs-shadow: 0 10px 34px rgba(0, 0, 0, 0.28);
+            --fs-glow: 0 0 0 1px rgba(0, 212, 160, 0.3), 0 0 22px rgba(0, 212, 160, 0.09);
             --fs-ease: cubic-bezier(0.22, 1, 0.36, 1);
             --fs-fast: 140ms;
             --fs-medium: 240ms;
@@ -52,10 +52,11 @@ def apply_dashboard_style() -> None:
 
         html, body, [data-testid="stAppViewContainer"] {
             background:
-                radial-gradient(circle at 18% 0%, rgba(25, 117, 154, 0.18), transparent 26rem),
-                radial-gradient(circle at 90% 18%, rgba(37, 242, 199, 0.08), transparent 24rem),
-                linear-gradient(135deg, #020812 0%, #06111f 48%, #03101b 100%) !important;
+                radial-gradient(circle at 18% 0%, rgba(0, 212, 160, 0.08), transparent 25rem),
+                radial-gradient(circle at 92% 20%, rgba(79, 145, 232, 0.1), transparent 24rem),
+                linear-gradient(135deg, #0b0f19 0%, #08111f 52%, #0b0f19 100%) !important;
             color: var(--fs-ink);
+            font-family: "DM Sans", "Aptos", "Segoe UI", sans-serif;
         }
 
         [data-testid="stHeader"] {
@@ -66,9 +67,16 @@ def apply_dashboard_style() -> None:
 
         [data-testid="stSidebar"] {
             background:
-                linear-gradient(180deg, rgba(3, 15, 28, 0.98), rgba(4, 14, 24, 0.98)),
+                linear-gradient(180deg, rgba(17, 24, 39, 0.98), rgba(11, 15, 25, 0.98)),
                 var(--fs-sidebar);
             border-right: 1px solid var(--fs-line);
+            min-width: 260px !important;
+            max-width: 260px !important;
+        }
+
+        [data-testid="stSidebar"] > div:first-child {
+            width: 260px;
+            padding: 1.45rem 0.85rem 1.1rem 0.85rem;
         }
 
         [data-testid="stSidebar"] [data-testid="stMarkdownContainer"],
@@ -78,8 +86,8 @@ def apply_dashboard_style() -> None:
         }
 
         .main .block-container {
-            padding: 1.15rem 1.8rem 3rem 1.8rem;
-            max-width: 1640px;
+            padding: 0.78rem 1.25rem 2rem 1.25rem;
+            max-width: 1540px;
             animation: fs-page-in var(--fs-medium) var(--fs-ease) both;
         }
 
@@ -91,14 +99,14 @@ def apply_dashboard_style() -> None:
         div[data-testid="stMetric"] {
             border: 1px solid var(--fs-line);
             border-radius: var(--fs-radius);
-            padding: 0.9rem 1rem;
-            background: linear-gradient(180deg, rgba(15, 33, 54, 0.92), rgba(8, 20, 36, 0.92));
+            padding: 0.72rem 0.82rem;
+            background: linear-gradient(180deg, rgba(21, 30, 45, 0.92), rgba(13, 21, 35, 0.94));
             box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
         }
 
         div[data-testid="stMetricLabel"] {
             color: var(--fs-muted);
-            font-size: 0.76rem;
+            font-size: 0.68rem;
         }
 
         div[data-testid="stMetricValue"] {
@@ -108,29 +116,33 @@ def apply_dashboard_style() -> None:
         div[data-testid="stDataFrame"],
         div[data-testid="stTable"] {
             border-radius: var(--fs-radius);
-            overflow: hidden;
+            overflow: auto;
         }
         div[data-testid="stDataFrame"] {
-            border: 1px solid rgba(129, 166, 202, 0.16);
-            background: rgba(4, 13, 24, 0.64);
+            border: 1px solid var(--fs-line);
+            background: rgba(11, 18, 31, 0.72);
+            max-width: 100%;
         }
         div[data-testid="stPlotlyChart"] {
-            min-height: 260px;
+            min-height: 235px;
         }
 
         .stButton > button,
-        .stDownloadButton > button {
+        .stDownloadButton > button,
+        [data-testid="stPopover"] > button {
             border-radius: var(--fs-radius);
             border: 1px solid rgba(37, 242, 199, 0.42);
             background: linear-gradient(135deg, rgba(0, 128, 126, 0.86), rgba(20, 182, 169, 0.82));
             color: #f3fffd;
             font-weight: 700;
-            min-height: 2.6rem;
+            min-height: 2.25rem;
+            font-size: 0.78rem;
             transition: transform var(--fs-fast) var(--fs-ease), border-color var(--fs-fast) var(--fs-ease), box-shadow var(--fs-fast) var(--fs-ease), filter var(--fs-fast) var(--fs-ease);
         }
 
         .stButton > button:hover,
-        .stDownloadButton > button:hover {
+        .stDownloadButton > button:hover,
+        [data-testid="stPopover"] > button:hover {
             border-color: var(--fs-teal);
             box-shadow: var(--fs-glow);
             transform: translateY(-1px);
@@ -161,6 +173,7 @@ def apply_dashboard_style() -> None:
             border-color: var(--fs-line);
             border-radius: var(--fs-radius);
             color: var(--fs-ink);
+            min-height: 2.25rem;
             transition: border-color var(--fs-fast) var(--fs-ease), box-shadow var(--fs-fast) var(--fs-ease);
         }
         [data-baseweb="select"] > div:hover,
@@ -172,24 +185,25 @@ def apply_dashboard_style() -> None:
         .fs-brand {
             display: flex;
             align-items: center;
-            gap: 0.8rem;
-            margin: 0.6rem 0 1.5rem 0;
-            padding: 0.6rem 0.2rem;
+            gap: 0.64rem;
+            margin: 0.25rem 0 1rem 0;
+            padding: 0.35rem 0.15rem 0.85rem 0.15rem;
+            border-bottom: 1px solid var(--fs-line);
         }
         .fs-logo-mark {
-            width: 42px;
-            height: 42px;
+            width: 32px;
+            height: 32px;
             display: grid;
             place-items: center;
-            border-radius: 12px;
+            border-radius: 8px;
             color: #021019;
             font-weight: 900;
             background: linear-gradient(135deg, var(--fs-teal), var(--fs-blue));
-            box-shadow: 0 0 28px rgba(37, 242, 199, 0.2);
+            box-shadow: 0 0 22px rgba(0, 212, 160, 0.16);
         }
         .fs-brand-title {
             color: var(--fs-ink);
-            font-size: 1.45rem;
+            font-size: 1.12rem;
             font-weight: 830;
             line-height: 1;
         }
@@ -198,8 +212,8 @@ def apply_dashboard_style() -> None:
         }
         .fs-brand-subtitle {
             color: var(--fs-muted);
-            font-size: 0.74rem;
-            margin-top: 0.25rem;
+            font-size: 0.68rem;
+            margin-top: 0.2rem;
         }
 
         .fs-nav-item {
@@ -222,15 +236,24 @@ def apply_dashboard_style() -> None:
         [data-testid="stSidebar"] [role="radiogroup"] {
             display: flex;
             flex-direction: column;
-            gap: 0.18rem;
-            margin-bottom: 1.2rem;
+            gap: 0.1rem;
+            margin-bottom: 0.9rem;
         }
         [data-testid="stSidebar"] [role="radiogroup"] label {
             border: 1px solid transparent;
             border-radius: var(--fs-radius);
-            padding: 0.45rem 0.5rem;
+            padding: 0.48rem 0.62rem;
             background: transparent;
             transition: border-color var(--fs-fast) var(--fs-ease), background var(--fs-fast) var(--fs-ease), color var(--fs-fast) var(--fs-ease), transform var(--fs-fast) var(--fs-ease);
+        }
+        [data-testid="stSidebar"] [role="radiogroup"] label > div:first-child {
+            display: none;
+        }
+        [data-testid="stSidebar"] [role="radiogroup"] label p {
+            color: inherit;
+            font-size: 0.82rem;
+            font-weight: 650;
+            line-height: 1.25;
         }
         [data-testid="stSidebar"] [role="radiogroup"] label:hover {
             border-color: rgba(37, 242, 199, 0.22);
@@ -252,18 +275,18 @@ def apply_dashboard_style() -> None:
         .fs-sidebar-card {
             border: 1px solid var(--fs-line);
             border-radius: var(--fs-radius);
-            background: rgba(13, 29, 48, 0.84);
-            padding: 0.9rem;
-            margin-top: 1rem;
+            background: rgba(21, 30, 45, 0.84);
+            padding: 0.7rem 0.78rem;
+            margin-top: 0.7rem;
         }
         .fs-sidebar-kicker {
             color: var(--fs-muted);
-            font-size: 0.76rem;
+            font-size: 0.64rem;
         }
         .fs-sidebar-value {
             color: var(--fs-ink);
-            font-size: 0.98rem;
-            font-weight: 760;
+            font-size: 0.82rem;
+            font-weight: 720;
             margin-top: 0.15rem;
         }
 
@@ -271,26 +294,26 @@ def apply_dashboard_style() -> None:
             display: flex;
             align-items: flex-start;
             justify-content: space-between;
-            gap: 1rem;
-            margin-bottom: 1rem;
+            gap: 0.8rem;
+            margin-bottom: 0.72rem;
         }
         .fs-page-title {
             margin: 0;
-            font-size: 1.72rem;
-            font-weight: 820;
+            font-size: 1.42rem;
+            font-weight: 760;
             line-height: 1.08;
         }
         .fs-page-subtitle {
             color: var(--fs-soft);
-            margin-top: 0.35rem;
-            font-size: 0.92rem;
+            margin-top: 0.25rem;
+            font-size: 0.78rem;
         }
         .fs-badge-row {
             display: flex;
             align-items: center;
-            gap: 0.45rem;
+            gap: 0.36rem;
             flex-wrap: wrap;
-            margin-top: 0.45rem;
+            margin-top: 0.36rem;
         }
         .fs-badge {
             display: inline-flex;
@@ -300,9 +323,9 @@ def apply_dashboard_style() -> None:
             background: rgba(37, 242, 199, 0.08);
             color: var(--fs-teal);
             border-radius: 999px;
-            padding: 0.25rem 0.55rem;
-            font-size: 0.75rem;
-            font-weight: 730;
+            padding: 0.18rem 0.44rem;
+            font-size: 0.66rem;
+            font-weight: 720;
         }
         .fs-badge-live {
             animation: fs-pulse 1800ms var(--fs-ease) infinite;
@@ -323,18 +346,21 @@ def apply_dashboard_style() -> None:
         }
         .fs-control-caption {
             color: var(--fs-muted);
-            font-size: 0.72rem;
+            font-size: 0.64rem;
             font-weight: 760;
             text-transform: uppercase;
             letter-spacing: 0.03em;
-            margin-bottom: 0.35rem;
+            margin-bottom: 0.28rem;
+        }
+        .fs-control-caption-compact {
+            margin: 0.1rem 0 0.28rem 0;
         }
 
         .fs-card-grid {
             display: grid;
-            gap: 0.72rem;
+            gap: 0.62rem;
             grid-template-columns: repeat(auto-fit, minmax(178px, 1fr));
-            margin: 0.85rem 0 0.75rem 0;
+            margin: 0.68rem 0 0.62rem 0;
         }
         .fs-metric-card,
         .fs-panel,
@@ -378,18 +404,18 @@ def apply_dashboard_style() -> None:
             transform: translateY(-1px);
         }
         .fs-metric-card {
-            min-height: 112px;
-            padding: 1rem;
+            min-height: 92px;
+            padding: 0.72rem 0.82rem;
             display: flex;
-            gap: 0.8rem;
+            gap: 0.68rem;
             align-items: flex-start;
             animation: fs-card-in 240ms ease both;
             overflow-wrap: anywhere;
         }
         .fs-metric-icon {
-            width: 42px;
-            height: 42px;
-            border-radius: 12px;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
             display: grid;
             place-items: center;
             background: rgba(37, 242, 199, 0.1);
@@ -407,64 +433,183 @@ def apply_dashboard_style() -> None:
         .fs-metric-card[data-tone="purple"] .fs-metric-value { color: var(--fs-purple); }
         .fs-metric-label {
             color: var(--fs-soft);
-            font-size: 0.78rem;
-            font-weight: 760;
-            margin-bottom: 0.35rem;
+            font-size: 0.68rem;
+            font-weight: 680;
+            margin-bottom: 0.28rem;
         }
         .fs-metric-value {
             color: var(--fs-teal);
-            font-size: 1.45rem;
-            font-weight: 850;
+            font-size: 1.28rem;
+            font-weight: 760;
             line-height: 1.05;
             overflow-wrap: anywhere;
         }
         .fs-metric-caption {
             color: var(--fs-muted);
-            margin-top: 0.45rem;
-            font-size: 0.76rem;
+            margin-top: 0.34rem;
+            font-size: 0.66rem;
+        }
+        .fs-kv-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 0.65rem 0 0.8rem 0;
+            overflow: hidden;
+            border: 1px solid var(--fs-line);
+            border-radius: var(--fs-radius);
+            background: rgba(6, 16, 30, 0.72);
+            table-layout: fixed;
+        }
+        .fs-kv-table th,
+        .fs-kv-table td {
+            padding: 0.44rem 0.52rem;
+            border-bottom: 1px solid rgba(129, 166, 202, 0.12);
+            color: var(--fs-soft);
+            font-size: 0.72rem;
+            text-align: left;
+            overflow-wrap: anywhere;
+        }
+        .fs-kv-table th {
+            color: var(--fs-muted);
+            background: rgba(129, 166, 202, 0.08);
+            font-size: 0.66rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        .fs-kv-table td:last-child {
+            color: var(--fs-ink);
+            font-weight: 720;
+        }
+        .fs-kv-table tr:last-child td {
+            border-bottom: 0;
+        }
+        .fs-table-scroll {
+            width: 100%;
+            overflow-x: auto;
+            border: 1px solid var(--fs-line);
+            border-radius: var(--fs-radius);
+            background: rgba(6, 16, 30, 0.72);
+        }
+        .fs-data-table {
+            width: 100%;
+            min-width: 480px;
+            border-collapse: collapse;
+            table-layout: auto;
+        }
+        .fs-data-table th,
+        .fs-data-table td {
+            padding: 0.46rem 0.54rem;
+            border-bottom: 1px solid rgba(129, 166, 202, 0.12);
+            color: var(--fs-soft);
+            font-size: 0.7rem;
+            text-align: left;
+            vertical-align: top;
+            white-space: nowrap;
+        }
+        .fs-data-table th {
+            color: var(--fs-muted);
+            background: rgba(129, 166, 202, 0.08);
+            font-size: 0.64rem;
+            font-weight: 760;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        .fs-data-table td {
+            max-width: 260px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .fs-data-table tr:last-child td {
+            border-bottom: 0;
+        }
+        .fs-validation-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .fs-validation-row {
+            display: grid;
+            grid-template-columns: 1.85rem minmax(0, 1fr) auto;
+            align-items: start;
+            gap: 0.62rem;
+            padding: 0.64rem;
+            border: 1px solid rgba(129, 166, 202, 0.18);
+            border-radius: var(--fs-radius);
+            background: linear-gradient(180deg, rgba(21, 30, 45, 0.88), rgba(12, 20, 34, 0.92));
+        }
+        .fs-validation-icon {
+            width: 1.85rem;
+            height: 1.85rem;
+            border-radius: 8px;
+            display: grid;
+            place-items: center;
+            color: var(--fs-teal);
+            background: rgba(37, 242, 199, 0.1);
+            font-weight: 850;
+            flex: 0 0 auto;
+        }
+        .fs-validation-copy {
+            min-width: 0;
+        }
+        .fs-validation-title {
+            color: var(--fs-ink);
+            font-size: 0.78rem;
+            font-weight: 780;
+            white-space: nowrap;
+        }
+        .fs-validation-step,
+        .fs-validation-result {
+            color: var(--fs-muted);
+            font-size: 0.68rem;
+            line-height: 1.35;
+            overflow-wrap: anywhere;
+        }
+        .fs-validation-result {
+            color: var(--fs-soft);
+            margin-top: 0.18rem;
         }
         .fs-panel {
-            padding: 1rem;
-            margin: 0.75rem 0;
+            padding: 0.85rem 0.95rem;
+            margin: 0.62rem 0;
         }
         .fs-panel-header {
             display: flex;
             align-items: flex-start;
             justify-content: space-between;
-            gap: 0.7rem;
-            margin-bottom: 0.8rem;
+            gap: 0.62rem;
+            margin-bottom: 0.62rem;
         }
         .fs-panel-title {
             color: var(--fs-ink);
-            font-size: 1rem;
-            font-weight: 800;
+            font-size: 0.86rem;
+            font-weight: 760;
         }
         .fs-panel-subtitle {
             color: var(--fs-muted);
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             margin-top: 0.15rem;
         }
         .fs-section {
             border-top: 1px solid var(--fs-line);
-            padding-top: 1rem;
-            margin-top: 1.4rem;
+            padding-top: 0.82rem;
+            margin-top: 1.1rem;
         }
         .fs-section-kicker {
             color: var(--fs-teal);
-            font-size: 0.72rem;
+            font-size: 0.64rem;
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 0.04em;
         }
         .fs-section-title {
             color: var(--fs-ink);
-            font-size: 1.18rem;
-            font-weight: 820;
-            margin: 0.12rem 0 0.7rem 0;
+            font-size: 1rem;
+            font-weight: 760;
+            margin: 0.1rem 0 0.58rem 0;
         }
         .fs-rule-card {
-            padding: 0.9rem;
-            min-height: 122px;
+            padding: 0.72rem;
+            min-height: 104px;
             overflow-wrap: anywhere;
         }
         .fs-rule-top {
@@ -472,23 +617,25 @@ def apply_dashboard_style() -> None:
             align-items: center;
             justify-content: space-between;
             gap: 0.6rem;
-            margin-bottom: 0.55rem;
+            margin-bottom: 0.42rem;
         }
         .fs-rule-id {
             color: var(--fs-ink);
-            font-weight: 850;
+            font-size: 0.8rem;
+            font-weight: 780;
+            white-space: nowrap;
         }
         .fs-rule-description,
         .fs-insight-body {
             color: var(--fs-soft);
-            font-size: 0.8rem;
+            font-size: 0.7rem;
         }
         .fs-status {
             display: inline-flex;
             border-radius: 999px;
-            padding: 0.18rem 0.5rem;
-            font-size: 0.7rem;
-            font-weight: 820;
+            padding: 0.13rem 0.42rem;
+            font-size: 0.62rem;
+            font-weight: 760;
             border: 1px solid rgba(37, 242, 199, 0.38);
             color: var(--fs-teal);
             background: rgba(37, 242, 199, 0.1);
@@ -505,9 +652,9 @@ def apply_dashboard_style() -> None:
             background: rgba(255, 91, 115, 0.1);
         }
         .fs-insight-card {
-            padding: 0.9rem;
+            padding: 0.72rem 0.78rem;
             border-left: 3px solid var(--fs-teal);
-            margin-bottom: 0.55rem;
+            margin-bottom: 0.48rem;
             overflow-wrap: anywhere;
         }
         .fs-insight-selected {
@@ -525,13 +672,14 @@ def apply_dashboard_style() -> None:
         }
         .fs-insight-title {
             color: var(--fs-ink);
-            font-weight: 820;
-            margin-bottom: 0.35rem;
+            font-size: 0.78rem;
+            font-weight: 760;
+            margin-bottom: 0.28rem;
         }
         .fs-empty-state {
-            padding: 1.25rem;
+            padding: 1rem;
             text-align: left;
-            min-height: 132px;
+            min-height: 112px;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -549,14 +697,14 @@ def apply_dashboard_style() -> None:
         }
         .fs-empty-title {
             color: var(--fs-ink);
-            font-weight: 830;
-            font-size: 1.05rem;
+            font-weight: 760;
+            font-size: 0.9rem;
             position: relative;
         }
         .fs-empty-message {
             color: var(--fs-muted);
             margin-top: 0.3rem;
-            font-size: 0.86rem;
+            font-size: 0.74rem;
             position: relative;
         }
 

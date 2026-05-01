@@ -24,7 +24,17 @@ from ui.charts import (
     render_rolling_return_chart,
     render_rolling_volatility_chart,
 )
-from ui.components import empty_state, insight_card, metric_card, onboarding_state, rule_card, status_badge
+from ui.components import (
+    compact_data_table,
+    empty_state,
+    insight_card,
+    key_value_table,
+    metric_card,
+    onboarding_state,
+    rule_card,
+    rule_validation_list,
+    status_badge,
+)
 
 
 def _schema_compact_table(schema: dict[str, Any] | None, profile: dict[str, Any] | None) -> pd.DataFrame:
@@ -151,6 +161,11 @@ def _rule_cards_for_prefix(audit: RuleAuditLog, prefixes: set[str], limit: int =
                 status="Passed" if record.get("severity") != "WARNING" else "Review",
                 severity=str(record.get("severity", "INFO")),
             )
+
+
+def _rule_validation_list_for_prefix(audit: RuleAuditLog, prefixes: set[str], limit: int = 6) -> None:
+    records = [record for record in audit.deduplicated_records() if str(record.get("prefix")) in prefixes]
+    rule_validation_list(records, limit=limit)
 
 
 def _require_analysis(df: pd.DataFrame | None, metrics: dict[str, Any] | None = None) -> bool:
@@ -293,7 +308,8 @@ def render_overview_dashboard(
     with top_right.container(border=True):
         st.markdown("#### Data Profile")
         st.caption(f"Source: {source_name}")
-        st.dataframe(_schema_compact_table(schema, profile).astype(str), use_container_width=True, hide_index=True)
+        profile_rows = _schema_compact_table(schema, profile).astype(str).to_dict("records")
+        key_value_table(profile_rows)
         compact_cols = st.columns(2)
         compact_cols[0].metric("Assets", _asset_count(metrics, schema))
         compact_cols[1].metric("Quality", _quality_summary(profile))
@@ -382,40 +398,45 @@ def render_data_profile_tab(
     with kpi_cols[5]:
         metric_card("Frequency", str(profile.get("frequency", "unknown")).title(), f"{profile.get('periods_per_year', 'N/A')} periods/year", "teal", "~")
 
-    left, middle, right = st.columns([1.05, 1.24, 1.05])
-    with left.container(border=True):
-        st.markdown("#### Schema Mapping")
-        st.caption("Raw columns mapped to FinSkillOS standard fields")
-        mapping_table = pd.DataFrame(schema.get("mapping_table", [])) if schema else pd.DataFrame()
-        if mapping_table.empty:
-            empty_state("No Mapping Available", "No standard fields were mapped automatically.")
-        else:
-            st.dataframe(mapping_table.astype(str), use_container_width=True, hide_index=True)
+    work_area, validation_area = st.columns([2.15, 1.0])
+    with work_area:
+        upper_left, upper_right = st.columns([1.0, 1.1])
+        with upper_left.container(border=True):
+            st.markdown("#### Schema Mapping")
+            st.caption("Raw columns mapped to FinSkillOS standard fields")
+            mapping_table = pd.DataFrame(schema.get("mapping_table", [])) if schema else pd.DataFrame()
+            if mapping_table.empty:
+                empty_state("No Mapping Available", "No standard fields were mapped automatically.")
+            else:
+                mapping_cols = [col for col in ["field", "source", "confidence", "rule_id", "status"] if col in mapping_table.columns]
+                compact_data_table(mapping_table.astype(str).to_dict("records"), columns=mapping_cols, max_rows=10)
 
-    with middle.container(border=True):
-        st.markdown("#### Data Quality")
-        st.caption("Completeness and missing value overview")
-        render_missing_values_chart(profile, height=270)
-        warnings = pd.DataFrame(profile.get("quality_warnings", []))
-        if not warnings.empty:
-            st.dataframe(warnings.astype(str), use_container_width=True, hide_index=True)
-        else:
-            st.markdown(status_badge("No blocking quality warnings", "default"), unsafe_allow_html=True)
+        with upper_right.container(border=True):
+            st.markdown("#### Data Quality")
+            st.caption("Completeness and missing value overview")
+            render_missing_values_chart(profile, height=250)
+            warnings = pd.DataFrame(profile.get("quality_warnings", []))
+            if not warnings.empty:
+                warning_cols = [col for col in ["rule_id", "severity", "message"] if col in warnings.columns]
+                compact_data_table(warnings.astype(str).to_dict("records"), columns=warning_cols, max_rows=4)
+            else:
+                st.markdown(status_badge("No blocking quality warnings", "default"), unsafe_allow_html=True)
 
-    with right.container(border=True):
+        lower_left, lower_right = st.columns([1.08, 1.0])
+        with lower_left.container(border=True):
+            st.markdown("#### Sample Data Preview")
+            st.caption("First 10 rows from the loaded dataset")
+            preview = df.head(10).astype(str)
+            compact_data_table(preview.to_dict("records"), columns=list(preview.columns[:8]), max_rows=10)
+        with lower_right.container(border=True):
+            st.markdown("#### Frequency & Coverage")
+            st.caption("Rows observed through standardized time")
+            render_frequency_coverage_chart(schema, height=300)
+
+    with validation_area.container(border=True):
         st.markdown("#### Rule Validation")
-        st.caption("DATA and SCHEMA rules applied during profiling")
-        _rule_cards_for_prefix(audit, {"DATA", "SCHEMA"}, limit=4)
-
-    lower_left, lower_right = st.columns([1.0, 1.0])
-    with lower_left.container(border=True):
-        st.markdown("#### Sample Data Preview")
-        st.caption("First 20 rows from the loaded dataset")
-        st.dataframe(df.head(20), use_container_width=True, hide_index=True)
-    with lower_right.container(border=True):
-        st.markdown("#### Frequency & Coverage")
-        st.caption("Rows observed through standardized time")
-        render_frequency_coverage_chart(schema, height=300)
+        st.caption("Applied data rules and validation status")
+        _rule_validation_list_for_prefix(audit, {"DATA", "SCHEMA"}, limit=6)
 
     numeric_columns = profile.get("numeric_columns", [])[:3]
     st.markdown("### Numeric Distributions")

@@ -17,14 +17,14 @@ class StreamlitUiSmokeTests(unittest.TestCase):
         self.assertEqual(len(app.exception), 0)
 
         nav_labels = [
-            "[Overview] Overview",
-            "[Data] Data Profile",
-            "[Return] Return Analysis",
-            "[Risk] Risk Analysis",
-            "[Diversify] Diversification",
-            "[Insights] Insights",
-            "[Rules] Applied Rules",
-            "[Reports] Reports",
+            "OV  Overview",
+            "DP  Data Profile",
+            "RT  Return Analysis",
+            "RK  Risk Analysis",
+            "DV  Diversification",
+            "IN  Insights",
+            "RL  Applied Rules",
+            "RP  Reports",
         ]
         self.assertGreaterEqual(len(app.radio), 1)
         for label in nav_labels:

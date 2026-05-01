@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 from html import escape
-from typing import Iterator
+from typing import Iterable, Iterator, Sequence
 
 import streamlit as st
 
@@ -48,6 +48,91 @@ def metric_card(label: str, value: str, caption: str, tone: str = "teal", icon: 
         """,
         unsafe_allow_html=True,
     )
+
+
+def key_value_table(rows: Iterable[dict[str, object]], key_label: str = "Item", value_label: str = "Value") -> None:
+    """Render compact key/value data without Streamlit's bright dataframe chrome."""
+
+    body = "".join(
+        f"""
+        <tr>
+          <td>{_html(row.get("item", ""))}</td>
+          <td>{_html(row.get("value", ""))}</td>
+        </tr>
+        """
+        for row in rows
+    )
+    st.markdown(
+        f"""
+        <table class="fs-kv-table">
+          <thead>
+            <tr>
+              <th>{_html(key_label)}</th>
+              <th>{_html(value_label)}</th>
+            </tr>
+          </thead>
+          <tbody>{body}</tbody>
+        </table>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def compact_data_table(rows: Iterable[dict[str, object]], columns: Sequence[str] | None = None, max_rows: int = 10) -> None:
+    """Render a compact dark table for small dashboard summaries."""
+
+    row_list = list(rows)[:max_rows]
+    if not row_list:
+        empty_state("No Rows Available", "This table has no records to display.")
+        return
+    headers = list(columns or row_list[0].keys())
+    header_html = "".join(f"<th>{_html(header)}</th>" for header in headers)
+    body_html = "".join(
+        "<tr>" + "".join(f"<td>{_html(row.get(header, ''))}</td>" for header in headers) + "</tr>"
+        for row in row_list
+    )
+    st.markdown(
+        f"""
+        <div class="fs-table-scroll">
+          <table class="fs-data-table">
+            <thead><tr>{header_html}</tr></thead>
+            <tbody>{body_html}</tbody>
+          </table>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def rule_validation_list(records: Iterable[dict[str, object]], limit: int = 6) -> None:
+    """Render readable rule validation rows for side panels."""
+
+    record_list = list(records)[:limit]
+    if not record_list:
+        empty_state("No Rules Recorded", "No matching validation rules were recorded.")
+        return
+
+    rows = []
+    for record in record_list:
+        severity = str(record.get("severity", "INFO"))
+        tone = TONE_BY_SEVERITY.get(severity.upper(), "default")
+        status = "Review" if severity.upper() == "WARNING" else "Passed"
+        rule_id = _html(record.get("rule_id", "RULE"))
+        step = _html(record.get("step", "Validation rule"))
+        result = _html(record.get("result", "Executed"))
+        rows.append(
+            '<div class="fs-validation-row">'
+            f'<div class="fs-validation-icon">{rule_id[:1]}</div>'
+            '<div class="fs-validation-copy">'
+            f'<div class="fs-validation-title">{rule_id}</div>'
+            f'<div class="fs-validation-step">{step}</div>'
+            f'<div class="fs-validation-result">{result}</div>'
+            "</div>"
+            f"{status_badge(status, tone)}"
+            "</div>"
+        )
+
+    st.markdown(f'<div class="fs-validation-list">{"".join(rows)}</div>', unsafe_allow_html=True)
 
 
 @contextmanager

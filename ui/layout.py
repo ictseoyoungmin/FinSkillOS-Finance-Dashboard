@@ -9,14 +9,14 @@ import streamlit as st
 
 
 NAV_ITEMS = [
-    ("Overview", "[Overview]"),
-    ("Data Profile", "[Data]"),
-    ("Return Analysis", "[Return]"),
-    ("Risk Analysis", "[Risk]"),
-    ("Diversification", "[Diversify]"),
-    ("Insights", "[Insights]"),
-    ("Applied Rules", "[Rules]"),
-    ("Reports", "[Reports]"),
+    ("Overview", "OV"),
+    ("Data Profile", "DP"),
+    ("Return Analysis", "RT"),
+    ("Risk Analysis", "RK"),
+    ("Diversification", "DV"),
+    ("Insights", "IN"),
+    ("Applied Rules", "RL"),
+    ("Reports", "RP"),
 ]
 
 
@@ -41,7 +41,7 @@ def render_sidebar_nav(active_tab: str, source_name: str, mode: str) -> str:
     )
 
     labels = [item[0] for item in NAV_ITEMS]
-    display_labels = [f"{icon} {label}" for label, icon in NAV_ITEMS]
+    display_labels = [f"{icon}  {label}" for label, icon in NAV_ITEMS]
     label_by_display = dict(zip(display_labels, labels, strict=True))
     display_by_label = dict(zip(labels, display_labels, strict=True))
     if active_tab not in labels:
@@ -102,21 +102,24 @@ def render_topbar_controls(sample_files: Sequence[str]) -> dict[str, object]:
 
     st.markdown(
         """
-        <div class="fs-control-panel">
-          <div class="fs-control-caption">Analysis Controls</div>
-        </div>
+        <div class="fs-control-caption fs-control-caption-compact">Analysis Controls</div>
         """,
         unsafe_allow_html=True,
     )
-    row1 = st.columns([1.25, 1.65, 1.1, 0.85, 0.8], vertical_alignment="bottom")
-    uploaded_file = row1[0].file_uploader("CSV Upload", type=["csv"], label_visibility="collapsed")
-    sample_name = row1[1].selectbox("Dataset", ["샘플 없음", *sample_files], label_visibility="collapsed")
-    mode = row1[2].selectbox(
+    row1 = st.columns([1.7, 1.08, 0.78, 0.8, 0.86], vertical_alignment="bottom")
+    sample_name = row1[0].selectbox(
+        "Dataset",
+        ["샘플 없음", *sample_files],
+        label_visibility="collapsed",
+        key="sample_dataset_select",
+    )
+    mode = row1[1].selectbox(
         "Analysis Mode",
         ["Auto Detect", "Single Asset", "Multi Asset", "Allocation"],
         label_visibility="collapsed",
+        key="analysis_mode_select",
     )
-    risk_free_rate = row1[3].number_input(
+    risk_free_rate = row1[2].number_input(
         "Risk-Free Rate",
         min_value=-1.0,
         max_value=1.0,
@@ -124,14 +127,18 @@ def render_topbar_controls(sample_files: Sequence[str]) -> dict[str, object]:
         step=0.005,
         format="%.4f",
         label_visibility="collapsed",
+        key="risk_free_rate_input",
     )
+    with row1[3].popover("Upload CSV", use_container_width=True):
+        uploaded_file = st.file_uploader("CSV Upload", type=["csv"])
+        st.caption("Uploaded CSV overrides the selected sample dataset.")
     run_analysis = row1[4].button("Run Analysis", type="primary", use_container_width=True)
 
-    caption_cols = st.columns([1.25, 1.65, 1.1, 0.85, 0.8])
-    caption_cols[0].caption("Upload CSV")
-    caption_cols[1].caption("Sample Dataset")
-    caption_cols[2].caption("Mode")
-    caption_cols[3].caption("Risk-Free Rate")
+    caption_cols = st.columns([1.7, 1.08, 0.78, 0.8, 0.86])
+    caption_cols[0].caption("Sample Dataset")
+    caption_cols[1].caption("Mode")
+    caption_cols[2].caption("Risk-Free Rate")
+    caption_cols[3].caption("CSV Override")
     caption_cols[4].caption("Refresh")
 
     return {
