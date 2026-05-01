@@ -545,12 +545,19 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             white-space: nowrap;
         }
 
+        .fs-topbar-shell {
+            border: 1px solid var(--fs-line);
+            border-radius: 14px;
+            background: linear-gradient(180deg, rgba(16, 34, 55, 0.88), rgba(12, 25, 42, 0.9));
+            padding: 22px 24px 18px 24px;
+            margin: 0 0 var(--fs-gap-lg) 0;
+        }
         .fs-topbar {
             display: flex;
             align-items: flex-start;
             justify-content: space-between;
             gap: 0.8rem;
-            margin: 0 0 var(--fs-gap-md) 0;
+            margin: 0;
         }
         .fs-page-title {
             margin: 0;
@@ -599,6 +606,15 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             margin: 0 0 var(--fs-gap-lg) 0;
             box-shadow: var(--fs-shadow);
         }
+        .fs-control-shell {
+            margin-bottom: var(--fs-gap-lg);
+        }
+        .fs-control-shell .fs-panel-header {
+            margin-bottom: 0.9rem;
+        }
+        .fs-control-shell [data-testid="stHorizontalBlock"] {
+            align-items: end;
+        }
         .fs-control-caption {
             color: var(--fs-muted);
             font-size: 0.64rem;
@@ -630,14 +646,14 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             transition: transform var(--fs-fast) var(--fs-ease), border-color var(--fs-fast) var(--fs-ease), background var(--fs-fast) var(--fs-ease), box-shadow var(--fs-fast) var(--fs-ease);
         }
         div[data-testid="stVerticalBlockBorderWrapper"] {
-            border-color: var(--fs-line) !important;
-            border-radius: var(--fs-radius) !important;
-            background: rgba(14, 32, 52, 0.68);
-            box-shadow: none;
+            border-color: transparent !important;
+            border-radius: 0 !important;
+            background: transparent !important;
+            box-shadow: none !important;
             margin: 0;
         }
         div[data-testid="stVerticalBlockBorderWrapper"] > div {
-            padding: var(--fs-gap-lg) var(--fs-gap-xl) !important;
+            padding: 0 !important;
         }
         div[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stVerticalBlock"] {
             gap: var(--fs-gap-sm);
@@ -1101,6 +1117,9 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             .fs-topbar {
                 display: block;
             }
+            .fs-topbar-shell {
+                padding: 18px 18px 16px 18px;
+            }
             .fs-page-title {
                 font-size: 1.38rem;
             }
@@ -1212,6 +1231,7 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             }
             div[data-testid="stMetric"],
             div[data-testid="stVerticalBlockBorderWrapper"],
+            .fs-topbar-shell,
             .fs-metric-card,
             .fs-summary-stat,
             .fs-panel,

@@ -7,6 +7,8 @@ from typing import Sequence
 
 import streamlit as st
 
+from ui.components import panel
+
 
 NAV_ITEMS = [
     ("Overview", "⌂"),
@@ -87,19 +89,21 @@ def render_sidebar_nav(active_tab: str, source_name: str, mode: str) -> str:
 def render_topbar(title: str, subtitle: str, active_tab: str, source_name: str, date_range: str) -> None:
     st.markdown(
         f"""
-        <div class="fs-topbar">
-          <div>
-            <h1 class="fs-page-title">{_html(title)}</h1>
-            <div class="fs-page-subtitle">{_html(subtitle)}</div>
-            <div class="fs-badge-row">
-              <span class="fs-badge fs-badge-live">Rule-Governed</span>
-              <span class="fs-badge fs-badge-muted">Generated from Skills.md</span>
-              <span class="fs-badge fs-badge-muted">{_html(active_tab)}</span>
+        <div class="fs-topbar-shell">
+          <div class="fs-topbar">
+            <div>
+              <h1 class="fs-page-title">{_html(title)}</h1>
+              <div class="fs-page-subtitle">{_html(subtitle)}</div>
+              <div class="fs-badge-row">
+                <span class="fs-badge fs-badge-live">Rule-Governed</span>
+                <span class="fs-badge fs-badge-muted">Generated from Skills.md</span>
+                <span class="fs-badge fs-badge-muted">{_html(active_tab)}</span>
+              </div>
             </div>
-          </div>
-          <div class="fs-badge-row">
-            <span class="fs-badge fs-badge-muted">Dataset · {_html(source_name)}</span>
-            <span class="fs-badge fs-badge-muted">Range · {_html(date_range)}</span>
+            <div class="fs-badge-row">
+              <span class="fs-badge fs-badge-muted">Dataset · {_html(source_name)}</span>
+              <span class="fs-badge fs-badge-muted">Range · {_html(date_range)}</span>
+            </div>
           </div>
         </div>
         """,
@@ -118,13 +122,7 @@ def render_topbar_controls(sample_files: Sequence[str]) -> dict[str, object]:
         sample_options = ["샘플 없음"]
         default_index = 0
 
-    with st.container(border=True):
-        st.markdown(
-            """
-            <div class="fs-control-caption">Analysis Controls</div>
-            """,
-            unsafe_allow_html=True,
-        )
+    with panel("Analysis Controls", None, height=176, body_class="fs-control-shell"):
         row = st.columns([1.5, 0.9, 0.72, 1.35, 0.72, 0.82], vertical_alignment="bottom")
         sample_name = row[0].selectbox(
             "Sample Dataset",

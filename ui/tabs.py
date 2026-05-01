@@ -460,14 +460,14 @@ def render_data_profile_tab(
         dist_cols = st.columns(len(numeric_columns))
         for column, col in zip(numeric_columns, dist_cols, strict=False):
             numeric = pd.to_numeric(df[column], errors="coerce").dropna()
-            with col.container(border=True):
-                st.markdown(f"#### {column}")
-                if numeric.empty:
-                    empty_state("Unavailable", "No numeric values after parsing.")
-                else:
-                    st.metric("Mean", f"{numeric.mean():,.4g}")
-                    st.metric("Min / Max", f"{numeric.min():,.4g} / {numeric.max():,.4g}")
-                    st.caption(f"Non-null observations: {len(numeric):,}")
+            with col:
+                with panel(str(column), "Numeric distribution summary", height=220, scroll=True):
+                    if numeric.empty:
+                        empty_state("Unavailable", "No numeric values after parsing.")
+                    else:
+                        st.metric("Mean", f"{numeric.mean():,.4g}")
+                        st.metric("Min / Max", f"{numeric.min():,.4g} / {numeric.max():,.4g}")
+                        st.caption(f"Non-null observations: {len(numeric):,}")
 
 
 def render_return_analysis_tab(
@@ -531,8 +531,7 @@ def render_return_analysis_tab(
         with panel("Rolling Return", rolling_caption, height=366):
             render_rolling_return_chart(metrics, window=min(int(profile.get("periods_per_year", 63)) if profile else 63, 252), height=285)
 
-    with st.container(border=True):
-        st.markdown("#### Period Return Summary")
+    with panel("Period Return Summary", None, scroll=True):
         asset_metrics = pd.DataFrame(metrics.get("asset_metrics", []))
         if asset_metrics.empty:
             empty_state("Metric Table Unavailable", "Asset-level metrics were not generated for this dataset.")
@@ -545,9 +544,7 @@ def render_return_analysis_tab(
             )
             compact_data_table(formatted.to_dict("records"), columns=display_cols, max_rows=8)
 
-    with st.container(border=True):
-        st.markdown("#### Applied Return Rules")
-        st.caption("Rule traceability and execution status for this analysis")
+    with panel("Applied Return Rules", "Rule traceability and execution status for this analysis", scroll=True):
         _rule_validation_list_for_prefix(audit, {"METRIC", "VIS"}, limit=5)
 
 
@@ -624,9 +621,7 @@ def render_risk_analysis_tab(
             ]
             key_value_table(assumptions)
 
-    with st.container(border=True):
-        st.markdown("#### Applied Risk Rules")
-        st.caption("Rule traceability and execution status for this analysis")
+    with panel("Applied Risk Rules", "Rule traceability and execution status for this analysis", scroll=True):
         _rule_validation_list_for_prefix(audit, {"RISK", "METRIC", "SAFE"}, limit=5)
 
 
@@ -702,9 +697,7 @@ def render_diversification_tab(
             else:
                 empty_state("Concentration Unavailable", "Concentration metrics require an allocation weight column.")
 
-    with st.container(border=True):
-        st.markdown("#### Rule Traceability & Data Quality")
-        st.caption("Diversification rules, visualization checks, and data quality status")
+    with panel("Rule Traceability & Data Quality", "Diversification rules, visualization checks, and data quality status", scroll=True):
         _rule_validation_list_for_prefix(audit, {"VIS", "RISK", "DATA", "INSIGHT"}, limit=5)
 
 
@@ -914,9 +907,7 @@ def render_applied_rules_tab(df: pd.DataFrame | None, audit: RuleAuditLog) -> No
                 ]
             )
 
-    with st.container(border=True):
-        st.markdown("#### Representative Rule Validation")
-        st.caption("Readable execution rows for core rule domains")
+    with panel("Representative Rule Validation", "Readable execution rows for core rule domains", scroll=True):
         _rule_validation_list_for_prefix(audit, {"DATA", "SCHEMA", "METRIC", "VIS", "RISK", "INSIGHT", "SAFE"}, limit=6)
 
     st.markdown("### Exceptions")
@@ -1045,7 +1036,5 @@ def render_reports_tab(
                 ]
             )
 
-    with st.container(border=True):
-        st.markdown("#### Report Rules & Validation")
-        st.caption("Rules included in the current export package")
+    with panel("Report Rules & Validation", "Rules included in the current export package", scroll=True):
         _rule_validation_list_for_prefix(audit, {"METRIC", "RISK", "INSIGHT", "SAFE", "AUTO"}, limit=5)
