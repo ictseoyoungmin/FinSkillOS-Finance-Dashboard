@@ -6,6 +6,7 @@ from typing import Any
 
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import streamlit as st
 
 from ui.components import empty_state
@@ -165,6 +166,119 @@ def render_return_distribution(metrics: dict[str, Any] | None, height: int = 270
         return
     fig = px.histogram(returns.dropna(subset=["return"]), x="return", nbins=36, color="asset" if "asset" in returns.columns else None)
     fig.update_layout(height=height, bargap=0.04)
+    fig.update_xaxes(tickformat=".1%", title="Period Return")
+    fig.update_yaxes(title="Frequency")
+    st.plotly_chart(style_plotly_figure(fig), use_container_width=True)
+
+
+def _portfolio_return_series(metrics: dict[str, Any]) -> pd.DataFrame:
+    returns = metrics.get("returns")
+    if not isinstance(returns, pd.DataFrame) or returns.empty or not {"date", "return"}.issubset(returns.columns):
+        return pd.DataFrame()
+    working = returns.copy()
+    working["date"] = pd.to_datetime(working["date"], errors="coerce")
+    working["return"] = pd.to_numeric(working["return"], errors="coerce")
+    working = working.dropna(subset=["date", "return"])
+    if working.empty:
+        return pd.DataFrame()
+    return working.groupby("date", as_index=False)["return"].mean().sort_values("date")
+
+
+def render_monthly_returns_heatmap(metrics: dict[str, Any] | None, height: int = 300) -> None:
+    if not metrics:
+        empty_state("Monthly Returns Unavailable", "Run an analysis to generate monthly return observations.")
+        return
+    portfolio = _portfolio_return_series(metrics)
+    if portfolio.empty:
+        empty_state("Monthly Returns Unavailable", "Monthly heatmap requires dated return observations.")
+        return
+
+    monthly = (
+        portfolio.set_index("date")["return"]
+        .resample("ME")
+        .apply(lambda series: (1.0 + series).prod() - 1.0)
+        .dropna()
+        .reset_index()
+    )
+    if monthly.empty:
+        empty_state("Monthly Returns Unavailable", "Not enough dated returns were available for monthly aggregation.")
+        return
+
+    monthly["year"] = monthly["date"].dt.year.astype(str)
+    monthly["month"] = monthly["date"].dt.strftime("%b")
+    month_order = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    heatmap = monthly.pivot_table(index="year", columns="month", values="return", aggfunc="last").reindex(columns=month_order)
+    heatmap = heatmap.sort_index(ascending=False)
+    text = heatmap.apply(lambda column: column.map(lambda value: "" if pd.isna(value) else f"{value:.1%}"))
+    fig = go.Figure(
+        data=go.Heatmap(
+            z=heatmap.to_numpy(),
+            x=list(heatmap.columns),
+            y=list(heatmap.index),
+            text=text.to_numpy(),
+            texttemplate="%{text}",
+            colorscale=[
+                [0.0, "#4a1022"],
+                [0.45, "#151e2d"],
+                [0.55, "#123027"],
+                [1.0, "#00d4a0"],
+            ],
+            zmid=0,
+            colorbar=dict(title="Return", tickformat=".0%"),
+            hovertemplate="%{y} %{x}<br>Return %{z:.2%}<extra></extra>",
+        )
+    )
+    fig.update_layout(height=height, margin=dict(l=20, r=20, t=24, b=20), xaxis_title="", yaxis_title="")
+    st.plotly_chart(style_plotly_figure(fig), use_container_width=True)
+
+
+def render_var_cvar_distribution(metrics: dict[str, Any] | None, height: int = 285) -> None:
+    if not metrics:
+        empty_state("VaR Distribution Unavailable", "Run an analysis to generate risk observations.")
+        return
+    portfolio = _portfolio_return_series(metrics)
+    if portfolio.empty:
+        empty_state("VaR Distribution Unavailable", "VaR distribution requires dated return observations.")
+        return
+
+    returns = portfolio["return"].dropna()
+    if returns.empty:
+        empty_state("VaR Distribution Unavailable", "No valid returns were available for risk distribution.")
+        return
+    summary = metrics.get("summary", {})
+    var_95 = summary.get("historical_var_95")
+    var_99 = summary.get("historical_var_99")
+    cvar_95 = returns[returns <= var_95].mean() if var_95 is not None and (returns <= var_95).any() else None
+
+    fig = go.Figure()
+    fig.add_trace(
+        go.Histogram(
+            x=returns,
+            nbinsx=36,
+            marker=dict(color="#00d4a0", line=dict(width=0)),
+            opacity=0.82,
+            name="Portfolio Returns",
+            hovertemplate="Return %{x:.2%}<br>Count %{y}<extra></extra>",
+        )
+    )
+    markers = [
+        ("VaR 95%", var_95, "#a78bfa"),
+        ("VaR 99%", var_99, "#f05151"),
+        ("CVaR 95%", cvar_95, "#f5a623"),
+    ]
+    for label, value, color in markers:
+        if value is None or pd.isna(value):
+            continue
+        fig.add_vline(
+            x=float(value),
+            line_width=1.6,
+            line_dash="dash",
+            line_color=color,
+            annotation_text=f"{label} {float(value):.2%}",
+            annotation_position="top",
+            annotation_font_color=color,
+        )
+    fig.update_layout(height=height, bargap=0.04, showlegend=False)
     fig.update_xaxes(tickformat=".1%", title="Period Return")
     fig.update_yaxes(title="Frequency")
     st.plotly_chart(style_plotly_figure(fig), use_container_width=True)

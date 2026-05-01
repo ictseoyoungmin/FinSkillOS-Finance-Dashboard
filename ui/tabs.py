@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from typing import Any
 
 import pandas as pd
@@ -18,7 +19,9 @@ from ui.charts import (
     render_drawdown_chart,
     render_frequency_coverage_chart,
     render_missing_values_chart,
+    render_monthly_returns_heatmap,
     render_return_distribution,
+    render_var_cvar_distribution,
     render_risk_contribution_chart,
     render_risk_return_scatter,
     render_rolling_return_chart,
@@ -523,14 +526,19 @@ def render_return_analysis_tab(
 
     bottom_left, bottom_mid, bottom_right = st.columns([1.0, 1.0, 1.0])
     with bottom_left.container(border=True):
+        st.markdown("#### Monthly Returns Heatmap")
+        st.caption("Portfolio average returns aggregated by month")
+        render_monthly_returns_heatmap(metrics, height=285)
+    with bottom_mid.container(border=True):
         st.markdown("#### Return Distribution")
         st.caption("Period return histogram")
         render_return_distribution(metrics, height=285)
-    with bottom_mid.container(border=True):
+    with bottom_right.container(border=True):
         st.markdown("#### Rolling Return")
         st.caption(rolling_caption)
         render_rolling_return_chart(metrics, window=min(int(profile.get("periods_per_year", 63)) if profile else 63, 252), height=285)
-    with bottom_right.container(border=True):
+
+    with st.container(border=True):
         st.markdown("#### Period Return Summary")
         asset_metrics = pd.DataFrame(metrics.get("asset_metrics", []))
         if asset_metrics.empty:
@@ -603,9 +611,9 @@ def render_risk_analysis_tab(
 
     lower_left, lower_mid, lower_right = st.columns([1.0, 1.0, 1.0])
     with lower_left.container(border=True):
-        st.markdown("#### VaR / Return Distribution")
-        st.caption("Historical return distribution")
-        render_return_distribution(metrics, height=285)
+        st.markdown("#### VaR / CVaR Distribution")
+        st.caption("Historical returns with tail-risk reference lines")
+        render_var_cvar_distribution(metrics, height=285)
     with lower_mid.container(border=True):
         st.markdown("#### Stress Scenario Impact")
         stress = pd.DataFrame(
@@ -803,7 +811,7 @@ def render_insights_tab(
             if evidence_rows.empty:
                 empty_state("No Evidence Rows", "This insight did not expose structured evidence.")
             else:
-                st.dataframe(evidence_rows.astype(str), use_container_width=True, hide_index=True)
+                key_value_table(evidence_rows.rename(columns={"field": "item"}).astype(str).to_dict("records"))
 
     with trace_col.container(border=True):
         st.markdown("#### Insight Validation & Traceability")
@@ -817,18 +825,15 @@ def render_insights_tab(
             if rules_df.empty:
                 empty_state("No Rule References", "No rule IDs were attached to this insight.")
             else:
-                st.dataframe(rules_df.astype(str), use_container_width=True, hide_index=True)
+                rule_cols = [col for col in ["rule_id", "severity", "step", "result"] if col in rules_df.columns]
+                compact_data_table(rules_df.astype(str).to_dict("records"), columns=rule_cols, max_rows=5)
             st.markdown("##### Data Source")
-            st.dataframe(
-                pd.DataFrame(
-                    [
-                        {"item": "Dataset", "value": source_name},
-                        {"item": "Schema", "value": schema.get("schema_type", "unknown") if schema else "unknown"},
-                        {"item": "Date Range", "value": _date_range(schema)},
-                    ]
-                ).astype(str),
-                use_container_width=True,
-                hide_index=True,
+            key_value_table(
+                [
+                    {"item": "Dataset", "value": source_name},
+                    {"item": "Schema", "value": schema.get("schema_type", "unknown") if schema else "unknown"},
+                    {"item": "Date Range", "value": _date_range(schema)},
+                ]
             )
             st.markdown(status_badge("Generated and validated via Skills.md rules", "default"), unsafe_allow_html=True)
 
@@ -879,7 +884,7 @@ def render_applied_rules_tab(df: pd.DataFrame | None, audit: RuleAuditLog) -> No
             empty_state("No Rules Found", "No applied rules match the current search.")
         else:
             display_cols = [col for col in ["order", "rule_id", "prefix", "step", "severity", "result"] if col in rules_df.columns]
-            st.dataframe(rules_df[display_cols].astype(str), use_container_width=True, hide_index=True)
+            compact_data_table(rules_df[display_cols].astype(str).to_dict("records"), columns=display_cols, max_rows=12)
 
     with timeline_col.container(border=True):
         st.markdown("#### Execution Timeline")
@@ -896,7 +901,7 @@ def render_applied_rules_tab(df: pd.DataFrame | None, audit: RuleAuditLog) -> No
         if timeline.empty:
             empty_state("No Timeline", "No rules were executed.")
         else:
-            st.dataframe(timeline.astype(str), use_container_width=True, hide_index=True)
+            compact_data_table(timeline.astype(str).to_dict("records"), columns=["time", "rule", "status"], max_rows=10)
         st.markdown(status_badge("Live trace", "default"), unsafe_allow_html=True)
 
     with graph_col.container(border=True):
@@ -909,35 +914,35 @@ def render_applied_rules_tab(df: pd.DataFrame | None, audit: RuleAuditLog) -> No
                 {"domain": "Safety", "rules": sum(1 for row in records if row.get("prefix") in {"INSIGHT", "SAFE"})},
             ]
         )
-        st.dataframe(dependency.astype(str), use_container_width=True, hide_index=True)
+        compact_data_table(dependency.astype(str).to_dict("records"), columns=["domain", "rules"], max_rows=4)
         st.caption("Hard and soft dependencies are represented by rule domains in this MVP.")
 
     with side_col.container(border=True):
         st.markdown("#### Governance Overview")
         grade = "A+" if summary["blocked"] == 0 and summary["coverage"] >= 5 else "Review"
         st.metric("System Integrity", grade)
-        st.dataframe(
-            pd.DataFrame(
-                [
-                    {"item": "Rule Coverage", "value": f"{summary['coverage']}/{summary['required']}"},
-                    {"item": "Warnings", "value": summary["warnings"]},
-                    {"item": "Blocked", "value": summary["blocked"]},
-                    {"item": "Loaded From", "value": "Skills.md"},
-                ]
-            ).astype(str),
-            use_container_width=True,
-            hide_index=True,
+        key_value_table(
+            [
+                {"item": "Rule Coverage", "value": f"{summary['coverage']}/{summary['required']}"},
+                {"item": "Warnings", "value": summary["warnings"]},
+                {"item": "Blocked", "value": summary["blocked"]},
+                {"item": "Loaded From", "value": "Skills.md"},
+            ]
         )
 
-    st.markdown("### Representative Rule Cards")
-    _rule_cards_for_prefix(audit, {"DATA", "SCHEMA", "METRIC", "VIS", "RISK", "INSIGHT", "SAFE"}, limit=5)
+    with st.container(border=True):
+        st.markdown("#### Representative Rule Validation")
+        st.caption("Readable execution rows for core rule domains")
+        _rule_validation_list_for_prefix(audit, {"DATA", "SCHEMA", "METRIC", "VIS", "RISK", "INSIGHT", "SAFE"}, limit=6)
 
     st.markdown("### Exceptions")
     exceptions = [record for record in records if record.get("severity") == "WARNING"]
     if not exceptions:
         st.markdown(status_badge("No warnings or blocked rules", "default"), unsafe_allow_html=True)
     else:
-        st.dataframe(pd.DataFrame(exceptions).astype(str), use_container_width=True, hide_index=True)
+        exception_df = pd.DataFrame(exceptions)
+        exception_cols = [col for col in ["rule_id", "prefix", "severity", "step", "result"] if col in exception_df.columns]
+        compact_data_table(exception_df.astype(str).to_dict("records"), columns=exception_cols, max_rows=8)
 
 
 def render_reports_tab(
@@ -974,7 +979,7 @@ def render_reports_tab(
     library_col, preview_col, action_col, summary_col = st.columns([1.0, 1.25, 0.82, 0.9])
     with library_col.container(border=True):
         st.markdown("#### Report Library")
-        st.dataframe(_report_library(source_name).astype(str), use_container_width=True, hide_index=True)
+        compact_data_table(_report_library(source_name).astype(str).to_dict("records"), max_rows=8)
 
     with preview_col.container(border=True):
         st.markdown("#### Report Preview")
@@ -991,11 +996,20 @@ def render_reports_tab(
                     {"section": "Disclaimer", "status": "Included"},
                 ]
             )
-            st.dataframe(preview_summary.astype(str), use_container_width=True, hide_index=True)
+            compact_data_table(preview_summary.astype(str).to_dict("records"), columns=["section", "status"], max_rows=8)
             st.caption(f"Preview bytes: {len(html_report.encode('utf-8')):,}")
 
     with action_col.container(border=True):
         st.markdown("#### Export & Share")
+        availability = [
+            {"format": "HTML Report", "status": "Available"},
+            {"format": "CSV Rule Audit", "status": "Available"},
+            {"format": "JSON Rule Audit", "status": "Available"},
+            {"format": "PDF / PPTX", "status": "Planned"},
+            {"format": "Share Link", "status": "Planned"},
+            {"format": "Schedule", "status": "Planned"},
+        ]
+        compact_data_table(availability, columns=["format", "status"], max_rows=6)
         if html_report:
             st.download_button(
                 "Download HTML",
@@ -1012,10 +1026,14 @@ def render_reports_tab(
             mime="text/csv",
             use_container_width=True,
         )
-        st.markdown("#### Schedule Report")
-        st.selectbox("Cadence", ["Manual", "Monthly", "Quarterly"], label_visibility="collapsed")
-        st.text_input("Recipient", value="reviewer@example.com", label_visibility="collapsed")
-        st.caption("Scheduling is a UI placeholder for post-MVP deployment.")
+        st.download_button(
+            "Download Rules JSON",
+            data=json.dumps(records, ensure_ascii=False, indent=2).encode("utf-8"),
+            file_name="finskillos_applied_rules.json",
+            mime="application/json",
+            use_container_width=True,
+        )
+        st.caption("PDF, PPTX, share links, and scheduled delivery are marked as planned extensions.")
 
     with summary_col.container(border=True):
         st.markdown("#### Report Summary")
@@ -1028,20 +1046,18 @@ def render_reports_tab(
                 {"item": "Safety disclaimer", "status": "Included"},
             ]
         )
-        st.dataframe(includes.astype(str), use_container_width=True, hide_index=True)
+        compact_data_table(includes.astype(str).to_dict("records"), columns=["item", "status"], max_rows=6)
         st.markdown("#### Validation Status")
-        st.dataframe(
-            pd.DataFrame(
-                [
-                    {"check": "Rule Coverage", "value": f"{summary['coverage']}/{summary['required']}"},
-                    {"check": "Warnings", "value": summary["warnings"]},
-                    {"check": "Blocked", "value": summary["blocked"]},
-                    {"check": "Schema", "value": schema.get("schema_type", "unknown") if schema else "unknown"},
-                ]
-            ).astype(str),
-            use_container_width=True,
-            hide_index=True,
+        key_value_table(
+            [
+                {"item": "Rule Coverage", "value": f"{summary['coverage']}/{summary['required']}"},
+                {"item": "Warnings", "value": summary["warnings"]},
+                {"item": "Blocked", "value": summary["blocked"]},
+                {"item": "Schema", "value": schema.get("schema_type", "unknown") if schema else "unknown"},
+            ]
         )
 
-    st.markdown("### Report Rules & Validation")
-    _rule_cards_for_prefix(audit, {"METRIC", "RISK", "INSIGHT", "SAFE", "AUTO"}, limit=5)
+    with st.container(border=True):
+        st.markdown("#### Report Rules & Validation")
+        st.caption("Rules included in the current export package")
+        _rule_validation_list_for_prefix(audit, {"METRIC", "RISK", "INSIGHT", "SAFE", "AUTO"}, limit=5)

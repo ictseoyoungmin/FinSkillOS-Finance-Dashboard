@@ -463,7 +463,10 @@ def main() -> None:
     )
     apply_dashboard_style()
 
-    controls = render_topbar_controls(list_sample_files())
+    header_slot = st.container()
+    controls_slot = st.container()
+    with controls_slot:
+        controls = render_topbar_controls(list_sample_files())
     df, source_name = read_uploaded_or_sample(
         controls["uploaded_file"],
         controls["sample_name"],
@@ -508,13 +511,14 @@ def main() -> None:
         source_name=source_name,
         mode=mode,
     )
-    render_topbar(
-        title="Investment Analytics Dashboard" if active_tab == "Overview" else active_tab,
-        subtitle="Skill-Governed Investment Analytics Dashboard",
-        active_tab=active_tab,
-        source_name=source_name,
-        date_range=date_range_label(profile),
-    )
+    with header_slot:
+        render_topbar(
+            title="Investment Analytics Dashboard" if active_tab == "Overview" else active_tab,
+            subtitle="Skill-Governed Investment Analytics Dashboard",
+            active_tab=active_tab,
+            source_name=source_name,
+            date_range=date_range_label(profile),
+        )
 
     if controls["run_analysis"]:
         st.success("Analysis refreshed for the current dataset.")

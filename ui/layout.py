@@ -100,6 +100,14 @@ def render_topbar(title: str, subtitle: str, active_tab: str, source_name: str, 
 def render_topbar_controls(sample_files: Sequence[str]) -> dict[str, object]:
     """Render dataset, mode, rate, and action controls in the main app shell."""
 
+    sample_options = list(sample_files)
+    if sample_options:
+        default_sample = "multi_asset_portfolio.csv"
+        default_index = sample_options.index(default_sample) if default_sample in sample_options else 0
+    else:
+        sample_options = ["샘플 없음"]
+        default_index = 0
+
     st.markdown(
         """
         <div class="fs-control-caption fs-control-caption-compact">Analysis Controls</div>
@@ -109,7 +117,8 @@ def render_topbar_controls(sample_files: Sequence[str]) -> dict[str, object]:
     row1 = st.columns([1.7, 1.08, 0.78, 0.8, 0.86], vertical_alignment="bottom")
     sample_name = row1[0].selectbox(
         "Dataset",
-        ["샘플 없음", *sample_files],
+        sample_options,
+        index=default_index,
         label_visibility="collapsed",
         key="sample_dataset_select",
     )
