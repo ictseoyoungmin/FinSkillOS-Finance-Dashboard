@@ -23,6 +23,10 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
     st.markdown(
         """
         <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
         :root {
             --fs-bg: #0b0f19;
             --fs-bg-soft: #111827;
@@ -48,6 +52,12 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             --fs-ease: cubic-bezier(0.22, 1, 0.36, 1);
             --fs-fast: 140ms;
             --fs-medium: 240ms;
+            --fs-sidebar-width: 240px;
+            --fs-gap-xs: 4px;
+            --fs-gap-sm: 8px;
+            --fs-gap-md: 14px;
+            --fs-gap-lg: 18px;
+            --fs-gap-xl: 24px;
         }
 
         html, body, [data-testid="stAppViewContainer"] {
@@ -60,9 +70,20 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
         }
 
         [data-testid="stHeader"] {
-            background: rgba(2, 8, 18, 0.72);
-            border-bottom: 1px solid rgba(129, 166, 202, 0.12);
-            backdrop-filter: blur(16px);
+            height: 0;
+            background: transparent;
+            border-bottom: 0;
+            backdrop-filter: none;
+        }
+
+        [data-testid="stToolbar"],
+        [data-testid="stDecoration"],
+        [data-testid="stStatusWidget"] {
+            display: none !important;
+        }
+
+        [data-testid="stAppViewContainer"] {
+            display: flex;
         }
 
         [data-testid="stSidebar"] {
@@ -70,13 +91,20 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
                 linear-gradient(180deg, rgba(17, 24, 39, 0.98), rgba(11, 15, 25, 0.98)),
                 var(--fs-sidebar);
             border-right: 1px solid var(--fs-line);
-            min-width: 260px !important;
-            max-width: 260px !important;
+            width: var(--fs-sidebar-width) !important;
+            min-width: var(--fs-sidebar-width) !important;
+            max-width: var(--fs-sidebar-width) !important;
         }
 
         [data-testid="stSidebar"] > div:first-child {
-            width: 260px;
-            padding: 1.45rem 0.85rem 1.1rem 0.85rem;
+            width: var(--fs-sidebar-width);
+            padding: 20px 0 16px 0;
+            overflow-x: hidden;
+        }
+        [data-testid="stSidebarContent"] {
+            width: var(--fs-sidebar-width) !important;
+            padding: 20px 0 16px 0 !important;
+            overflow-x: hidden;
         }
 
         [data-testid="stSidebar"] [data-testid="stMarkdownContainer"],
@@ -85,20 +113,44 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             color: var(--fs-soft);
         }
 
-        .main .block-container {
-            padding: 0.74rem 1.05rem 1.75rem 1.05rem;
-            max-width: 1540px;
+        [data-testid="stMain"],
+        section.main {
+            min-width: 0;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+
+        [data-testid="stMainBlockContainer"],
+        .main .block-container,
+        section.main > div.block-container {
+            padding: 18px 20px 28px 20px !important;
+            max-width: none;
+            width: 100%;
             animation: fs-page-in var(--fs-medium) var(--fs-ease) both;
         }
+        [data-testid="stMainBlockContainer"] [data-testid="stVerticalBlock"],
         .main .block-container [data-testid="stVerticalBlock"] {
-            gap: 0.66rem;
+            gap: var(--fs-gap-md);
         }
+        [data-testid="stMainBlockContainer"] [data-testid="stHorizontalBlock"],
         .main .block-container [data-testid="stHorizontalBlock"] {
-            gap: 0.72rem;
-            margin: 0.08rem 0 0.16rem 0;
+            gap: var(--fs-gap-md);
+            margin: 0;
+            align-items: stretch;
         }
         [data-testid="column"] > [data-testid="stVerticalBlock"] {
-            gap: 0.46rem;
+            gap: var(--fs-gap-sm);
+            height: 100%;
+        }
+        [data-testid="column"] {
+            display: flex;
+        }
+        [data-testid="column"] > div {
+            width: 100%;
+        }
+        [data-testid="stMainBlockContainer"] div[data-testid="stElementContainer"],
+        .main .block-container div[data-testid="stElementContainer"] {
+            margin: 0;
         }
 
         h1, h2, h3, h4 {
@@ -134,21 +186,35 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             max-width: 100%;
         }
         div[data-testid="stMarkdownContainer"] h3 {
-            margin: 0.28rem 0 0.16rem 0;
-            line-height: 1.16;
+            margin: 0 0 var(--fs-gap-xs) 0;
+            line-height: 1.12;
+            font-size: 1.38rem;
         }
         div[data-testid="stMarkdownContainer"] h4 {
-            margin: 0 0 0.16rem 0;
-            line-height: 1.16;
+            margin: 0 0 2px 0;
+            line-height: 1.14;
+            font-size: 1rem;
+        }
+        div[data-testid="stMarkdownContainer"] h5 {
+            margin: var(--fs-gap-sm) 0 var(--fs-gap-xs) 0;
+            line-height: 1.12;
+            font-size: 0.86rem;
         }
         div[data-testid="stMarkdownContainer"] p {
-            margin-bottom: 0.24rem;
+            margin: 0;
         }
         div[data-testid="stPlotlyChart"] {
             min-height: 235px;
+            background: transparent !important;
+            border: 0 !important;
         }
         div[data-testid="stPlotlyChart"] .modebar {
             display: none !important;
+        }
+        div[data-testid="stPlotlyChart"] .js-plotly-plot,
+        div[data-testid="stPlotlyChart"] .plot-container,
+        div[data-testid="stPlotlyChart"] .svg-container {
+            background: transparent !important;
         }
 
         .stButton > button,
@@ -191,27 +257,49 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
         }
 
         [data-baseweb="select"] > div,
+        [data-testid="stTextInput"] input,
+        [data-testid="stTextArea"] textarea,
         [data-testid="stNumberInput"] input,
         [data-testid="stFileUploader"] section {
             background: rgba(7, 17, 31, 0.95);
             border-color: var(--fs-line);
             border-radius: var(--fs-radius);
             color: var(--fs-ink);
-            min-height: 2.25rem;
+            min-height: 2.42rem;
             transition: border-color var(--fs-fast) var(--fs-ease), box-shadow var(--fs-fast) var(--fs-ease);
         }
+        [data-testid="stWidgetLabel"] {
+            min-height: 1rem;
+            margin-bottom: var(--fs-gap-xs);
+        }
+        [data-testid="stWidgetLabel"] p {
+            color: var(--fs-muted);
+            font-size: 0.66rem;
+            font-weight: 760;
+            line-height: 1;
+            letter-spacing: 0.01em;
+            white-space: nowrap;
+        }
         [data-baseweb="select"] > div:hover,
+        [data-testid="stTextInput"] input:hover,
+        [data-testid="stTextArea"] textarea:hover,
         [data-testid="stNumberInput"] input:hover,
         [data-testid="stFileUploader"] section:hover {
             border-color: rgba(37, 242, 199, 0.36);
+        }
+        [data-testid="stTextInput"] input:focus,
+        [data-testid="stTextArea"] textarea:focus,
+        [data-testid="stNumberInput"] input:focus {
+            border-color: rgba(37, 242, 199, 0.48) !important;
+            box-shadow: 0 0 0 1px rgba(37, 242, 199, 0.18);
         }
         [data-testid="stFileUploader"] {
             min-width: 0;
         }
         [data-testid="stFileUploader"] section {
-            min-height: 2.72rem;
-            max-height: 2.72rem;
-            padding: 0.26rem 0.5rem;
+            min-height: 2.42rem;
+            max-height: 2.42rem;
+            padding: 0.34rem 0.58rem;
             display: flex;
             align-items: center;
             overflow: hidden;
@@ -230,7 +318,7 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             display: none;
         }
         [data-testid="stFileUploader"] [data-testid="stFileUploaderDropzoneInstructions"]::before {
-            content: "Drag CSV here";
+            content: "Drop or browse CSV";
             display: block;
             color: var(--fs-soft);
             font-size: 0.72rem;
@@ -240,8 +328,8 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             text-overflow: ellipsis;
         }
         [data-testid="stFileUploader"] section button {
-            min-height: 1.72rem;
-            padding: 0.2rem 0.58rem;
+            min-height: 1.62rem;
+            padding: 0.18rem 0.58rem;
             border-radius: var(--fs-radius);
             border-color: rgba(129, 166, 202, 0.22);
             background: rgba(21, 30, 45, 0.72);
@@ -249,49 +337,69 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             font-size: 0.72rem;
             font-weight: 720;
         }
+        [data-testid="stFileUploader"] input[type="file"] {
+            width: 0.1px;
+            height: 0.1px;
+            opacity: 0;
+            overflow: hidden;
+            position: absolute;
+            z-index: -1;
+        }
         [data-testid="stFileUploader"] small,
-        [data-testid="stFileUploader"] [data-testid="stWidgetLabel"] {
+        [data-testid="stFileUploader"] [data-testid="stFileUploaderFile"] {
             display: none;
         }
         [data-testid="stCaptionContainer"] p {
             color: var(--fs-muted);
             font-size: 0.66rem;
-            line-height: 1.05;
-            margin: -0.06rem 0 0 0;
+            line-height: 1.18;
+            margin: 0 0 var(--fs-gap-sm) 0;
         }
 
         .fs-brand {
             display: flex;
             align-items: center;
-            gap: 0.64rem;
-            margin: 0.25rem 0 1rem 0;
-            padding: 0.35rem 0.15rem 0.85rem 0.15rem;
+            gap: 8px;
+            margin: 0 18px 10px 18px;
+            padding: 0 0 18px 0;
             border-bottom: 1px solid var(--fs-line);
+            min-width: 0;
         }
         .fs-logo-mark {
-            width: 32px;
-            height: 32px;
+            width: 28px;
+            height: 28px;
             display: grid;
             place-items: center;
-            border-radius: 8px;
+            border-radius: 6px;
             color: #021019;
             font-weight: 900;
+            font-size: 0.74rem;
             background: linear-gradient(135deg, var(--fs-teal), var(--fs-blue));
             box-shadow: 0 0 22px rgba(0, 212, 160, 0.16);
         }
         .fs-brand-title {
             color: var(--fs-ink);
-            font-size: 1.12rem;
+            font-size: 0.94rem;
             font-weight: 830;
             line-height: 1;
+            white-space: nowrap;
         }
         .fs-brand-title span {
             color: var(--fs-blue);
         }
         .fs-brand-subtitle {
             color: var(--fs-muted);
-            font-size: 0.68rem;
-            margin-top: 0.2rem;
+            font-size: 0.58rem;
+            margin-top: 0.18rem;
+            white-space: nowrap;
+        }
+        .fs-nav-label {
+            color: var(--fs-muted);
+            font-size: 0.6rem;
+            font-weight: 760;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin: 0 18px 6px 18px;
         }
 
         .fs-nav-item {
@@ -314,14 +422,19 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
         [data-testid="stSidebar"] [role="radiogroup"] {
             display: flex;
             flex-direction: column;
-            gap: 0.1rem;
-            margin-bottom: 0.9rem;
+            gap: 0;
+            margin-bottom: 12px;
+            width: 100%;
         }
         [data-testid="stSidebar"] [role="radiogroup"] label {
             border: 1px solid transparent;
-            border-radius: var(--fs-radius);
-            padding: 0.48rem 0.62rem;
+            border-left: 2px solid transparent;
+            border-radius: 0;
+            padding: 10px 18px;
+            margin: 0;
             background: transparent;
+            width: 100%;
+            min-height: 38px;
             transition: border-color var(--fs-fast) var(--fs-ease), background var(--fs-fast) var(--fs-ease), color var(--fs-fast) var(--fs-ease), transform var(--fs-fast) var(--fs-ease);
         }
         [data-testid="stSidebar"] [role="radiogroup"] label > div:first-child {
@@ -329,24 +442,28 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
         }
         [data-testid="stSidebar"] [role="radiogroup"] label p {
             color: inherit;
-            font-size: 0.82rem;
+            font-size: 0.78rem;
             font-weight: 650;
             line-height: 1.25;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         [data-testid="stSidebar"] [role="radiogroup"] label:hover {
-            border-color: rgba(37, 242, 199, 0.22);
+            border-color: transparent;
+            border-left-color: rgba(37, 242, 199, 0.32);
             background: rgba(37, 242, 199, 0.06);
-            transform: translateX(2px);
         }
         [data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) {
-            border-color: rgba(37, 242, 199, 0.42);
-            background: linear-gradient(90deg, rgba(37, 242, 199, 0.15), rgba(56, 163, 255, 0.06));
-            box-shadow: inset 3px 0 0 var(--fs-teal);
+            border-color: transparent;
+            border-left-color: var(--fs-teal);
+            background: rgba(37, 242, 199, 0.12);
+            box-shadow: none;
             color: var(--fs-teal);
             animation: fs-nav-lock var(--fs-medium) var(--fs-ease) both;
         }
         .fs-nav-icon {
-            width: 1.35rem;
+            width: 1rem;
             color: inherit;
             text-align: center;
         }
@@ -354,8 +471,23 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             border: 1px solid var(--fs-line);
             border-radius: var(--fs-radius);
             background: rgba(21, 30, 45, 0.84);
-            padding: 0.7rem 0.78rem;
-            margin-top: 0.7rem;
+            padding: 10px 12px;
+            min-width: 0;
+        }
+        .fs-sidebar-footer {
+            margin-top: auto;
+            padding: 12px 18px 0 18px;
+            border-top: 1px solid var(--fs-line);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .fs-portfolio-card {
+            border: 1px solid var(--fs-line);
+            border-radius: var(--fs-radius);
+            background: rgba(21, 30, 45, 0.84);
+            padding: 10px 12px;
+            min-width: 0;
         }
         .fs-sidebar-kicker {
             color: var(--fs-muted);
@@ -366,6 +498,51 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             font-size: 0.82rem;
             font-weight: 720;
             margin-top: 0.15rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .fs-status-dot {
+            width: 0.42rem;
+            height: 0.42rem;
+            border-radius: 999px;
+            display: inline-block;
+            margin-right: 0.32rem;
+            background: var(--fs-teal);
+            box-shadow: 0 0 0 3px rgba(37, 242, 199, 0.08);
+        }
+        .fs-user-row {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            padding: 0.12rem 0;
+        }
+        .fs-user-avatar {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 999px;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(135deg, var(--fs-blue), var(--fs-purple));
+            color: #f8fbff;
+            font-size: 0.68rem;
+            font-weight: 820;
+            flex: 0 0 auto;
+        }
+        .fs-user-copy {
+            min-width: 0;
+        }
+        .fs-user-name {
+            color: var(--fs-ink);
+            font-size: 0.78rem;
+            font-weight: 760;
+            white-space: nowrap;
+        }
+        .fs-user-plan {
+            color: var(--fs-muted);
+            font-size: 0.64rem;
+            margin-top: 0.12rem;
+            white-space: nowrap;
         }
 
         .fs-topbar {
@@ -373,7 +550,7 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             align-items: flex-start;
             justify-content: space-between;
             gap: 0.8rem;
-            margin: 0.12rem 0 0.34rem 0;
+            margin: 0 0 var(--fs-gap-md) 0;
         }
         .fs-page-title {
             margin: 0;
@@ -418,8 +595,8 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             border: 1px solid var(--fs-line);
             border-radius: var(--fs-radius);
             background: linear-gradient(180deg, rgba(12, 26, 43, 0.78), rgba(7, 17, 31, 0.86));
-            padding: 0.85rem;
-            margin: 0.6rem 0 1rem 0;
+            padding: var(--fs-gap-md);
+            margin: 0 0 var(--fs-gap-lg) 0;
             box-shadow: var(--fs-shadow);
         }
         .fs-control-caption {
@@ -431,16 +608,17 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             margin-bottom: 0.28rem;
         }
         .fs-control-caption-compact {
-            margin: 0 0 0.34rem 0;
+            margin: 0 0 var(--fs-gap-xs) 0;
         }
 
         .fs-card-grid {
             display: grid;
-            gap: 0.62rem;
+            gap: var(--fs-gap-md);
             grid-template-columns: repeat(auto-fit, minmax(178px, 1fr));
-            margin: 0.68rem 0 0.62rem 0;
+            margin: var(--fs-gap-md) 0;
         }
         .fs-metric-card,
+        .fs-summary-stat,
         .fs-panel,
         .fs-rule-card,
         .fs-insight-card,
@@ -454,15 +632,15 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
         div[data-testid="stVerticalBlockBorderWrapper"] {
             border-color: var(--fs-line) !important;
             border-radius: var(--fs-radius) !important;
-            background: linear-gradient(180deg, rgba(14, 32, 52, 0.72), rgba(7, 17, 31, 0.78));
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
-            margin: 0.06rem 0 0.34rem 0;
+            background: rgba(14, 32, 52, 0.68);
+            box-shadow: none;
+            margin: 0;
         }
         div[data-testid="stVerticalBlockBorderWrapper"] > div {
-            padding: 0.74rem 0.82rem !important;
+            padding: var(--fs-gap-lg) var(--fs-gap-xl) !important;
         }
         div[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stVerticalBlock"] {
-            gap: 0.48rem;
+            gap: var(--fs-gap-sm);
         }
         @keyframes fs-card-in {
             from { opacity: 0; transform: translateY(8px); }
@@ -473,8 +651,8 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             to { opacity: 1; transform: translateY(0); }
         }
         @keyframes fs-nav-lock {
-            from { box-shadow: inset 0 0 0 var(--fs-teal), 0 0 0 rgba(37, 242, 199, 0); }
-            to { box-shadow: inset 3px 0 0 var(--fs-teal), 0 0 26px rgba(37, 242, 199, 0.08); }
+            from { background: rgba(37, 242, 199, 0.04); }
+            to { background: rgba(37, 242, 199, 0.12); }
         }
         @keyframes fs-pulse {
             0%, 100% { box-shadow: 0 0 0 0 rgba(37, 242, 199, 0.0); }
@@ -489,10 +667,10 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             transform: translateY(-1px);
         }
         .fs-metric-card {
-            min-height: 92px;
-            padding: 0.72rem 0.82rem;
+            min-height: 88px;
+            padding: var(--fs-gap-md);
             display: flex;
-            gap: 0.68rem;
+            gap: var(--fs-gap-sm);
             align-items: flex-start;
             animation: fs-card-in 240ms ease both;
             overflow-wrap: anywhere;
@@ -520,7 +698,7 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             color: var(--fs-soft);
             font-size: 0.68rem;
             font-weight: 680;
-            margin-bottom: 0.28rem;
+            margin-bottom: var(--fs-gap-xs);
         }
         .fs-metric-value {
             color: var(--fs-teal);
@@ -531,14 +709,38 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
         }
         .fs-metric-caption {
             color: var(--fs-muted);
-            margin-top: 0.34rem;
+            margin-top: var(--fs-gap-xs);
             font-size: 0.66rem;
+        }
+        .fs-summary-stat {
+            min-height: 56px;
+            padding: var(--fs-gap-sm) var(--fs-gap-md);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .fs-summary-label {
+            color: var(--fs-ink);
+            font-size: 0.82rem;
+            font-weight: 760;
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+        .fs-summary-value {
+            color: var(--fs-soft);
+            font-size: 0.86rem;
+            line-height: 1.25;
+            margin-top: var(--fs-gap-xs);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         .fs-kv-table {
             width: 100%;
             border-collapse: separate;
             border-spacing: 0;
-            margin: 0.65rem 0 0.8rem 0;
+            margin: var(--fs-gap-sm) 0 0 0;
             overflow: hidden;
             border: 1px solid var(--fs-line);
             border-radius: var(--fs-radius);
@@ -610,7 +812,7 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
         .fs-validation-list {
             display: flex;
             flex-direction: column;
-            gap: 0.5rem;
+            gap: var(--fs-gap-sm);
         }
         .fs-validation-row {
             display: grid;
@@ -654,8 +856,13 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             margin-top: 0.18rem;
         }
         .fs-panel {
-            padding: 0.85rem 0.95rem;
-            margin: 0.62rem 0;
+            padding: var(--fs-gap-md) var(--fs-gap-lg);
+            margin: 0;
+        }
+        .fs-panel-shell {
+            height: var(--fs-panel-height, auto);
+            display: flex;
+            flex-direction: column;
         }
         .fs-panel-header {
             display: flex;
@@ -663,6 +870,7 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             justify-content: space-between;
             gap: 0.62rem;
             margin-bottom: 0.62rem;
+            flex: 0 0 auto;
         }
         .fs-panel-title {
             color: var(--fs-ink);
@@ -674,10 +882,31 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             font-size: 0.7rem;
             margin-top: 0.15rem;
         }
+        .fs-panel-body {
+            display: flex;
+            flex-direction: column;
+            gap: var(--fs-gap-sm);
+            min-height: 0;
+        }
+        .fs-panel-scroll .fs-panel-body {
+            flex: 1 1 auto;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .fs-panel-scroll .fs-panel-body::-webkit-scrollbar {
+            width: 5px;
+        }
+        .fs-panel-scroll .fs-panel-body::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .fs-panel-scroll .fs-panel-body::-webkit-scrollbar-thumb {
+            background: rgba(129, 166, 202, 0.28);
+            border-radius: 999px;
+        }
         .fs-section {
             border-top: 1px solid var(--fs-line);
-            padding-top: 0.82rem;
-            margin-top: 1.1rem;
+            padding-top: var(--fs-gap-lg);
+            margin-top: var(--fs-gap-lg);
         }
         .fs-section-kicker {
             color: var(--fs-teal);
@@ -690,11 +919,11 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             color: var(--fs-ink);
             font-size: 1rem;
             font-weight: 760;
-            margin: 0.1rem 0 0.58rem 0;
+            margin: 2px 0 var(--fs-gap-md) 0;
         }
         .fs-rule-card {
-            padding: 0.72rem;
-            min-height: 104px;
+            padding: var(--fs-gap-md);
+            min-height: 100px;
             overflow-wrap: anywhere;
         }
         .fs-rule-top {
@@ -737,13 +966,13 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             background: rgba(255, 91, 115, 0.1);
         }
         .fs-insight-card {
-            padding: 0.68rem 0.72rem;
+            padding: var(--fs-gap-md);
             border-left: 3px solid var(--fs-teal);
-            margin-bottom: 0.48rem;
+            margin-bottom: var(--fs-gap-sm);
             overflow-wrap: anywhere;
             display: flex;
             flex-direction: column;
-            gap: 0.42rem;
+            gap: var(--fs-gap-sm);
         }
         .fs-insight-selected {
             border-color: rgba(37, 242, 199, 0.5);
@@ -766,7 +995,7 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             align-items: center;
             justify-content: space-between;
             gap: 0.5rem;
-            margin-bottom: 0.06rem;
+            margin-bottom: 0;
         }
         .fs-insight-row {
             display: flex;
@@ -846,10 +1075,12 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
         }
 
         @media (min-width: 1500px) {
-            .main .block-container {
-                max-width: 1680px;
-                padding-left: 1rem;
-                padding-right: 1rem;
+            [data-testid="stMainBlockContainer"],
+            .main .block-container,
+            section.main > div.block-container {
+                max-width: none;
+                padding-left: 20px !important;
+                padding-right: 20px !important;
             }
             div[data-testid="column"] {
                 min-width: 0;
@@ -857,10 +1088,15 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
         }
 
         @media (max-width: 980px) {
-            .main .block-container {
-                padding-left: 1rem;
-                padding-right: 1rem;
-                padding-top: 0.9rem;
+            :root {
+                --fs-sidebar-width: 232px;
+            }
+            [data-testid="stMainBlockContainer"],
+            .main .block-container,
+            section.main > div.block-container {
+                padding-left: 16px !important;
+                padding-right: 16px !important;
+                padding-top: 16px !important;
             }
             .fs-topbar {
                 display: block;
@@ -889,9 +1125,11 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
         }
 
         @media (max-width: 760px) {
-            .main .block-container {
-                padding-left: 0.7rem;
-                padding-right: 0.7rem;
+            [data-testid="stMainBlockContainer"],
+            .main .block-container,
+            section.main > div.block-container {
+                padding-left: 12px !important;
+                padding-right: 12px !important;
             }
             .fs-page-title {
                 font-size: 1.16rem;
@@ -908,6 +1146,9 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             }
             .fs-sidebar-card {
                 padding: 0.72rem;
+            }
+            .fs-sidebar-footer {
+                padding: 10px 18px 0 18px;
             }
             div[data-testid="stPlotlyChart"] {
                 min-height: 220px;
@@ -948,8 +1189,8 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
                 --fs-amber: #b7791f;
                 --fs-purple: #7c3aed;
                 --fs-green: #168a52;
-                --fs-shadow: 0 12px 34px rgba(15, 23, 42, 0.08);
-                --fs-glow: 0 0 0 1px rgba(0, 151, 124, 0.2), 0 10px 24px rgba(0, 151, 124, 0.08);
+                --fs-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+                --fs-glow: 0 0 0 1px rgba(0, 151, 124, 0.18), 0 8px 18px rgba(0, 151, 124, 0.06);
             }
 
             html, body, [data-testid="stAppViewContainer"] {
@@ -972,10 +1213,12 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             div[data-testid="stMetric"],
             div[data-testid="stVerticalBlockBorderWrapper"],
             .fs-metric-card,
+            .fs-summary-stat,
             .fs-panel,
             .fs-rule-card,
             .fs-insight-card,
             .fs-empty-state,
+            .fs-portfolio-card,
             .fs-sidebar-card {
                 background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(247, 250, 252, 0.94)) !important;
                 border-color: var(--fs-line) !important;
@@ -1040,6 +1283,8 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
                 color: var(--fs-muted);
             }
             [data-baseweb="select"] > div,
+            [data-testid="stTextInput"] input,
+            [data-testid="stTextArea"] textarea,
             [data-testid="stNumberInput"] input,
             [data-testid="stFileUploader"] section {
                 background: rgba(255, 255, 255, 0.96);
@@ -1093,7 +1338,7 @@ def style_plotly_figure(fig: go.Figure) -> go.Figure:
     muted_color = "#64748b" if is_light else "#7a8ba0"
     grid_color = "rgba(51, 65, 85, 0.12)" if is_light else "rgba(129, 166, 202, 0.12)"
     zero_color = "rgba(51, 65, 85, 0.18)" if is_light else "rgba(129, 166, 202, 0.2)"
-    plot_bg = "rgba(255, 255, 255, 0.36)" if is_light else "rgba(2, 8, 18, 0.18)"
+    plot_bg = "rgba(0,0,0,0)"
     hover_bg = "#ffffff" if is_light else "#151e2d"
     hover_border = "rgba(51,65,85,0.18)" if is_light else "rgba(255,255,255,0.14)"
 

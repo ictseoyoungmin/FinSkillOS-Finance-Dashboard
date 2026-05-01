@@ -36,6 +36,7 @@ def render_sidebar_nav(active_tab: str, source_name: str, mode: str) -> str:
             <div class="fs-brand-subtitle">Rule-governed analytics</div>
           </div>
         </div>
+        <div class="fs-nav-label">Workspace</div>
         """,
         unsafe_allow_html=True,
     )
@@ -56,17 +57,26 @@ def render_sidebar_nav(active_tab: str, source_name: str, mode: str) -> str:
 
     st.sidebar.markdown(
         f"""
-        <div class="fs-sidebar-card">
-          <div class="fs-sidebar-kicker">Dataset</div>
-          <div class="fs-sidebar-value">{_html(source_name)}</div>
-        </div>
-        <div class="fs-sidebar-card">
-          <div class="fs-sidebar-kicker">Analysis Mode</div>
-          <div class="fs-sidebar-value">{_html(mode)}</div>
-        </div>
-        <div class="fs-sidebar-card">
-          <div class="fs-sidebar-kicker">System</div>
-          <div class="fs-sidebar-value">All systems operational</div>
+        <div class="fs-sidebar-footer">
+          <div class="fs-portfolio-card">
+            <div class="fs-sidebar-kicker">Dataset</div>
+            <div class="fs-sidebar-value">{_html(source_name)}</div>
+          </div>
+          <div class="fs-portfolio-card">
+            <div class="fs-sidebar-kicker">Analysis Mode</div>
+            <div class="fs-sidebar-value">{_html(mode)}</div>
+          </div>
+          <div class="fs-sidebar-card">
+            <div class="fs-sidebar-kicker">System</div>
+            <div class="fs-sidebar-value"><span class="fs-status-dot"></span>All systems operational</div>
+          </div>
+          <div class="fs-user-row">
+            <div class="fs-user-avatar">FS</div>
+            <div class="fs-user-copy">
+              <div class="fs-user-name">FinSkillOS Console</div>
+              <div class="fs-user-plan">Reference layout synced</div>
+            </div>
+          </div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -108,58 +118,50 @@ def render_topbar_controls(sample_files: Sequence[str]) -> dict[str, object]:
         sample_options = ["샘플 없음"]
         default_index = 0
 
-    st.markdown(
-        """
-        <div class="fs-control-caption fs-control-caption-compact">Analysis Controls</div>
-        """,
-        unsafe_allow_html=True,
-    )
-    row1 = st.columns([1.45, 0.96, 0.68, 1.34, 0.56, 0.76], vertical_alignment="bottom")
-    sample_name = row1[0].selectbox(
-        "Dataset",
-        sample_options,
-        index=default_index,
-        label_visibility="collapsed",
-        key="sample_dataset_select",
-    )
-    mode = row1[1].selectbox(
-        "Analysis Mode",
-        ["Auto Detect", "Single Asset", "Multi Asset", "Allocation"],
-        label_visibility="collapsed",
-        key="analysis_mode_select",
-    )
-    risk_free_rate = row1[2].number_input(
-        "Risk-Free Rate",
-        min_value=-1.0,
-        max_value=1.0,
-        value=0.0,
-        step=0.005,
-        format="%.4f",
-        label_visibility="collapsed",
-        key="risk_free_rate_input",
-    )
-    uploaded_file = row1[3].file_uploader(
-        "CSV Upload",
-        type=["csv"],
-        label_visibility="collapsed",
-        key="csv_upload",
-    )
-    theme = row1[4].selectbox(
-        "Theme",
-        ["Dark", "Light"],
-        index=0,
-        label_visibility="collapsed",
-        key="dashboard_theme",
-    )
-    run_analysis = row1[5].button("Apply Settings", type="primary", use_container_width=True)
-
-    caption_cols = st.columns([1.45, 0.96, 0.68, 1.34, 0.56, 0.76])
-    caption_cols[0].caption("Sample Dataset")
-    caption_cols[1].caption("Mode")
-    caption_cols[2].caption("Risk-Free Rate")
-    caption_cols[3].caption("CSV Upload")
-    caption_cols[4].caption("Theme")
-    caption_cols[5].caption("Refresh")
+    with st.container(border=True):
+        st.markdown(
+            """
+            <div class="fs-control-caption">Analysis Controls</div>
+            """,
+            unsafe_allow_html=True,
+        )
+        row = st.columns([1.5, 0.9, 0.72, 1.35, 0.72, 0.82], vertical_alignment="bottom")
+        sample_name = row[0].selectbox(
+            "Sample Dataset",
+            sample_options,
+            index=default_index,
+            key="sample_dataset_select",
+        )
+        mode = row[1].selectbox(
+            "Mode",
+            ["Auto Detect", "Single Asset", "Multi Asset", "Allocation"],
+            key="analysis_mode_select",
+        )
+        risk_free_rate = row[2].number_input(
+            "Risk-Free Rate",
+            min_value=-1.0,
+            max_value=1.0,
+            value=0.0,
+            step=0.005,
+            format="%.4f",
+            key="risk_free_rate_input",
+        )
+        with row[3]:
+            uploaded_file = st.file_uploader(
+                "CSV Upload",
+                type=["csv"],
+                accept_multiple_files=False,
+                key="csv_upload",
+            )
+            if uploaded_file is not None:
+                st.caption(uploaded_file.name)
+        theme = row[4].selectbox(
+            "Theme",
+            ["Dark", "Light"],
+            index=0,
+            key="dashboard_theme",
+        )
+        run_analysis = row[5].button("Apply Settings", type="primary", use_container_width=True)
 
     return {
         "uploaded_file": uploaded_file,

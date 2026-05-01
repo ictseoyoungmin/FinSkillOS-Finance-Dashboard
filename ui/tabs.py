@@ -34,9 +34,11 @@ from ui.components import (
     key_value_table,
     metric_card,
     onboarding_state,
+    panel,
     rule_card,
     rule_validation_list,
     status_badge,
+    summary_stat_card,
 )
 
 
@@ -314,49 +316,43 @@ def render_overview_dashboard(
         metric_card("Risk Level", risk_level, "Rule-based classification", "amber", "◇")
 
     top_left, top_mid, top_right = st.columns([1.45, 1.0, 0.88])
-    with top_left.container(border=True):
-        st.markdown("#### Executive Summary")
-        st.caption("Cumulative return over time")
-        render_cumulative_return_chart(metrics, height=310)
-    with top_mid.container(border=True):
-        st.markdown("#### Risk Analysis")
-        st.caption("Drawdown behavior")
-        render_drawdown_chart(metrics, height=310)
-    with top_right.container(border=True):
-        st.markdown("#### Data Profile")
-        st.caption(f"Source: {source_name}")
-        profile_rows = _schema_compact_table(schema, profile).astype(str).to_dict("records")
-        profile_rows.extend(
-            [
-                {"item": "Assets", "value": _asset_count(metrics, schema)},
-                {"item": "Quality", "value": _quality_summary(profile)},
-            ]
-        )
-        key_value_table(profile_rows)
+    with top_left:
+        with panel("Executive Summary", "Cumulative return over time", height=392):
+            render_cumulative_return_chart(metrics, height=310)
+    with top_mid:
+        with panel("Risk Analysis", "Drawdown behavior", height=392):
+            render_drawdown_chart(metrics, height=310)
+    with top_right:
+        with panel("Data Profile", f"Source: {source_name}", height=392, scroll=True):
+            profile_rows = _schema_compact_table(schema, profile).astype(str).to_dict("records")
+            profile_rows.extend(
+                [
+                    {"item": "Assets", "value": _asset_count(metrics, schema)},
+                    {"item": "Quality", "value": _quality_summary(profile)},
+                ]
+            )
+            key_value_table(profile_rows)
 
     lower_left, lower_mid, lower_right = st.columns([1.08, 1.08, 1.15])
-    with lower_left.container(border=True):
-        st.markdown("#### Correlation & Diversification")
-        st.caption("Asset relationship overview")
-        render_correlation_heatmap(metrics, height=285)
-    with lower_mid.container(border=True):
-        st.markdown("#### Risk vs. Return")
-        st.caption("Annualized return versus volatility")
-        render_risk_return_scatter(metrics, height=285)
-    with lower_right.container(border=True):
-        st.markdown("#### Rule-Based Insights")
-        st.caption("Fact, interpretation, and caution generated from Skills.md rules")
-        items = (insights or {}).get("insights", [])
-        if not items:
-            empty_state("No Insights Generated", "The insight engine did not produce evidence-linked cards for this dataset.")
-        for item in items[:3]:
-            insight_card(
-                category=str(item.get("category", "Insight")),
-                fact=str(item.get("fact", "")),
-                interpretation=str(item.get("interpretation", "")),
-                caution=str(item.get("caution", "")),
-                severity=str(item.get("severity", "INFO")),
-            )
+    with lower_left:
+        with panel("Correlation & Diversification", "Asset relationship overview", height=382):
+            render_correlation_heatmap(metrics, height=285)
+    with lower_mid:
+        with panel("Risk vs. Return", "Annualized return versus volatility", height=382):
+            render_risk_return_scatter(metrics, height=285)
+    with lower_right:
+        with panel("Rule-Based Insights", "Fact, interpretation, and caution generated from Skills.md rules", height=382, scroll=True):
+            items = (insights or {}).get("insights", [])
+            if not items:
+                empty_state("No Insights Generated", "The insight engine did not produce evidence-linked cards for this dataset.")
+            for item in items[:3]:
+                insight_card(
+                    category=str(item.get("category", "Insight")),
+                    fact=str(item.get("fact", "")),
+                    interpretation=str(item.get("interpretation", "")),
+                    caution=str(item.get("caution", "")),
+                    severity=str(item.get("severity", "INFO")),
+                )
 
     records = audit.deduplicated_records()
     st.markdown("### Applied Skill Rules")
@@ -374,9 +370,12 @@ def render_overview_dashboard(
 
     footer_cols = st.columns([1.2, 1.0, 1.0, 1.15])
     coverage = audit.has_prefixes(["DATA", "SCHEMA", "METRIC", "VIS", "INSIGHT", "SAFE"])
-    footer_cols[0].markdown(f"**Rules Executed**  \n{len(records):,}")
-    footer_cols[1].markdown(f"**Coverage**  \n{sum(coverage.values())}/{len(coverage)} categories")
-    footer_cols[2].markdown(f"**Schema**  \n{schema.get('schema_type', 'unknown') if schema else 'unknown'}")
+    with footer_cols[0]:
+        summary_stat_card("Rules Executed", f"{len(records):,}")
+    with footer_cols[1]:
+        summary_stat_card("Coverage", f"{sum(coverage.values())}/{len(coverage)} categories")
+    with footer_cols[2]:
+        summary_stat_card("Schema", str(schema.get("schema_type", "unknown") if schema else "unknown"))
     with footer_cols[3]:
         if analysis_result is not None:
             html_report = build_html_report(analysis_result)
@@ -421,42 +420,37 @@ def render_data_profile_tab(
     work_area, validation_area = st.columns([2.15, 1.0])
     with work_area:
         upper_left, upper_right = st.columns([1.0, 1.1])
-        with upper_left.container(border=True):
-            st.markdown("#### Schema Mapping")
-            st.caption("Raw columns mapped to FinSkillOS standard fields")
-            mapping_table = pd.DataFrame(schema.get("mapping_table", [])) if schema else pd.DataFrame()
-            if mapping_table.empty:
-                empty_state("No Mapping Available", "No standard fields were mapped automatically.")
-            else:
-                mapping_cols = [col for col in ["field", "source", "confidence", "rule_id", "status"] if col in mapping_table.columns]
-                compact_data_table(mapping_table.astype(str).to_dict("records"), columns=mapping_cols, max_rows=10)
+        with upper_left:
+            with panel("Schema Mapping", "Raw columns mapped to FinSkillOS standard fields", height=404, scroll=True):
+                mapping_table = pd.DataFrame(schema.get("mapping_table", [])) if schema else pd.DataFrame()
+                if mapping_table.empty:
+                    empty_state("No Mapping Available", "No standard fields were mapped automatically.")
+                else:
+                    mapping_cols = [col for col in ["field", "source", "confidence", "rule_id", "status"] if col in mapping_table.columns]
+                    compact_data_table(mapping_table.astype(str).to_dict("records"), columns=mapping_cols, max_rows=10)
 
-        with upper_right.container(border=True):
-            st.markdown("#### Data Quality")
-            st.caption("Completeness and missing value overview")
-            render_missing_values_chart(profile, height=250)
-            warnings = pd.DataFrame(profile.get("quality_warnings", []))
-            if not warnings.empty:
-                warning_cols = [col for col in ["rule_id", "severity", "message"] if col in warnings.columns]
-                compact_data_table(warnings.astype(str).to_dict("records"), columns=warning_cols, max_rows=4)
-            else:
-                st.markdown(status_badge("No blocking quality warnings", "default"), unsafe_allow_html=True)
+        with upper_right:
+            with panel("Data Quality", "Completeness and missing value overview", height=404, scroll=True):
+                render_missing_values_chart(profile, height=250)
+                warnings = pd.DataFrame(profile.get("quality_warnings", []))
+                if not warnings.empty:
+                    warning_cols = [col for col in ["rule_id", "severity", "message"] if col in warnings.columns]
+                    compact_data_table(warnings.astype(str).to_dict("records"), columns=warning_cols, max_rows=4)
+                else:
+                    st.markdown(status_badge("No blocking quality warnings", "default"), unsafe_allow_html=True)
 
         lower_left, lower_right = st.columns([1.08, 1.0])
-        with lower_left.container(border=True):
-            st.markdown("#### Sample Data Preview")
-            st.caption("First 10 rows from the loaded dataset")
-            preview = df.head(10).astype(str)
-            compact_data_table(preview.to_dict("records"), columns=list(preview.columns[:8]), max_rows=10)
-        with lower_right.container(border=True):
-            st.markdown("#### Frequency & Coverage")
-            st.caption("Rows observed through standardized time")
-            render_frequency_coverage_chart(schema, height=300)
+        with lower_left:
+            with panel("Sample Data Preview", "First 10 rows from the loaded dataset", height=356, scroll=True):
+                preview = df.head(10).astype(str)
+                compact_data_table(preview.to_dict("records"), columns=list(preview.columns[:8]), max_rows=10)
+        with lower_right:
+            with panel("Frequency & Coverage", "Rows observed through standardized time", height=356):
+                render_frequency_coverage_chart(schema, height=300)
 
-    with validation_area.container(border=True):
-        st.markdown("#### Rule Validation")
-        st.caption("Applied data rules and validation status")
-        _rule_validation_list_for_prefix(audit, {"DATA", "SCHEMA"}, limit=6)
+    with validation_area:
+        with panel("Rule Validation", "Applied data rules and validation status", height=776, scroll=True):
+            _rule_validation_list_for_prefix(audit, {"DATA", "SCHEMA"}, limit=6)
 
     numeric_columns = profile.get("numeric_columns", [])[:3]
     st.markdown("### Numeric Distributions")
@@ -509,37 +503,33 @@ def render_return_analysis_tab(
         metric_card("Data Sufficiency", str(summary.get("data_sufficiency", "N/A")), "Observation quality", "blue", "DQ")
 
     top_left, top_right = st.columns([1.38, 1.0])
-    with top_left.container(border=True):
-        st.markdown("#### Cumulative Return")
-        st.caption("Portfolio or asset indexed cumulative return")
-        render_cumulative_return_chart(metrics, height=340)
-    with top_right.container(border=True):
-        st.markdown("#### Return Insights")
-        items = [item for item in (insights or {}).get("insights", []) if item.get("category") in {"return", "sharpe", "data_quality"}]
-        if not items:
-            empty_state("No Return Insights", "No return-specific insight was generated.")
-        for item in items[:3]:
-            insight_card(
-                category=str(item.get("category", "return")),
-                fact=str(item.get("fact", "")),
-                interpretation=str(item.get("interpretation", "")),
-                caution=str(item.get("caution", "")),
-                severity=str(item.get("severity", "INFO")),
-            )
+    with top_left:
+        with panel("Cumulative Return", "Portfolio or asset indexed cumulative return", height=420):
+            render_cumulative_return_chart(metrics, height=340)
+    with top_right:
+        with panel("Return Insights", None, height=420, scroll=True):
+            items = [item for item in (insights or {}).get("insights", []) if item.get("category") in {"return", "sharpe", "data_quality"}]
+            if not items:
+                empty_state("No Return Insights", "No return-specific insight was generated.")
+            for item in items[:3]:
+                insight_card(
+                    category=str(item.get("category", "return")),
+                    fact=str(item.get("fact", "")),
+                    interpretation=str(item.get("interpretation", "")),
+                    caution=str(item.get("caution", "")),
+                    severity=str(item.get("severity", "INFO")),
+                )
 
     bottom_left, bottom_mid, bottom_right = st.columns([1.0, 1.0, 1.0])
-    with bottom_left.container(border=True):
-        st.markdown("#### Monthly Returns Heatmap")
-        st.caption("Portfolio average returns aggregated by month")
-        render_monthly_returns_heatmap(metrics, height=285)
-    with bottom_mid.container(border=True):
-        st.markdown("#### Return Distribution")
-        st.caption("Period return histogram")
-        render_return_distribution(metrics, height=285)
-    with bottom_right.container(border=True):
-        st.markdown("#### Rolling Return")
-        st.caption(rolling_caption)
-        render_rolling_return_chart(metrics, window=min(int(profile.get("periods_per_year", 63)) if profile else 63, 252), height=285)
+    with bottom_left:
+        with panel("Monthly Returns Heatmap", "Portfolio average returns aggregated by month", height=366):
+            render_monthly_returns_heatmap(metrics, height=285)
+    with bottom_mid:
+        with panel("Return Distribution", "Period return histogram", height=366):
+            render_return_distribution(metrics, height=285)
+    with bottom_right:
+        with panel("Rolling Return", rolling_caption, height=366):
+            render_rolling_return_chart(metrics, window=min(int(profile.get("periods_per_year", 63)) if profile else 63, 252), height=285)
 
     with st.container(border=True):
         st.markdown("#### Period Return Summary")
@@ -590,52 +580,49 @@ def render_risk_analysis_tab(
         metric_card("Risk Level", str(summary.get("risk_level", "UNKNOWN")), "Rule-based classification", "amber", "RL")
 
     top_left, top_mid, top_right = st.columns([1.2, 1.05, 0.82])
-    with top_left.container(border=True):
-        st.markdown("#### Underwater Drawdown")
-        st.caption("Cumulative drawdown through time")
-        render_drawdown_chart(metrics, height=330)
-    with top_mid.container(border=True):
-        st.markdown("#### Rolling Volatility")
-        st.caption("Annualized rolling volatility")
-        render_rolling_volatility_chart(metrics, periods_per_year=periods, window=min(periods, 252), height=330)
-    with top_right.container(border=True):
-        st.markdown("#### Risk Commentary")
-        items = [item for item in (insights or {}).get("insights", []) if item.get("category") in {"drawdown", "volatility", "data_quality"}]
-        if not items:
-            empty_state("No Risk Insights", "No risk-specific insight was generated.")
-        for item in items[:3]:
-            insight_card(
-                category=str(item.get("category", "risk")),
-                fact=str(item.get("fact", "")),
-                interpretation=str(item.get("interpretation", "")),
-                caution=str(item.get("caution", "")),
-                severity=str(item.get("severity", "INFO")),
-            )
+    with top_left:
+        with panel("Underwater Drawdown", "Cumulative drawdown through time", height=408):
+            render_drawdown_chart(metrics, height=330)
+    with top_mid:
+        with panel("Rolling Volatility", "Annualized rolling volatility", height=408):
+            render_rolling_volatility_chart(metrics, periods_per_year=periods, window=min(periods, 252), height=330)
+    with top_right:
+        with panel("Risk Commentary", None, height=408, scroll=True):
+            items = [item for item in (insights or {}).get("insights", []) if item.get("category") in {"drawdown", "volatility", "data_quality"}]
+            if not items:
+                empty_state("No Risk Insights", "No risk-specific insight was generated.")
+            for item in items[:3]:
+                insight_card(
+                    category=str(item.get("category", "risk")),
+                    fact=str(item.get("fact", "")),
+                    interpretation=str(item.get("interpretation", "")),
+                    caution=str(item.get("caution", "")),
+                    severity=str(item.get("severity", "INFO")),
+                )
 
     lower_left, lower_mid, lower_right = st.columns([1.0, 1.0, 1.0])
-    with lower_left.container(border=True):
-        st.markdown("#### VaR / CVaR Distribution")
-        st.caption("Historical returns with tail-risk reference lines")
-        render_var_cvar_distribution(metrics, height=285)
-    with lower_mid.container(border=True):
-        st.markdown("#### Stress Scenario Impact")
-        stress = pd.DataFrame(
-            [
-                {"scenario": "Observed worst period", "impact": format_percent(summary.get("max_drawdown")), "severity": summary.get("drawdown_risk_level", "UNKNOWN")},
-                {"scenario": "Volatility regime", "impact": format_percent(summary.get("annualized_volatility")), "severity": summary.get("volatility_risk_level", "UNKNOWN")},
-                {"scenario": "Data sufficiency", "impact": str(summary.get("data_sufficiency", "N/A")), "severity": "INFO"},
+    with lower_left:
+        with panel("VaR / CVaR Distribution", "Historical returns with tail-risk reference lines", height=364):
+            render_var_cvar_distribution(metrics, height=285)
+    with lower_mid:
+        with panel("Stress Scenario Impact", None, height=364, scroll=True):
+            stress = pd.DataFrame(
+                [
+                    {"scenario": "Observed worst period", "impact": format_percent(summary.get("max_drawdown")), "severity": summary.get("drawdown_risk_level", "UNKNOWN")},
+                    {"scenario": "Volatility regime", "impact": format_percent(summary.get("annualized_volatility")), "severity": summary.get("volatility_risk_level", "UNKNOWN")},
+                    {"scenario": "Data sufficiency", "impact": str(summary.get("data_sufficiency", "N/A")), "severity": "INFO"},
+                ]
+            )
+            compact_data_table(stress.astype(str).to_dict("records"), columns=["scenario", "impact", "severity"], max_rows=5)
+    with lower_right:
+        with panel("Data Profile & Assumptions", None, height=364, scroll=True):
+            assumptions = [
+                {"item": "Return Frequency", "value": str(profile.get("frequency", "unknown")).title() if profile else "N/A"},
+                {"item": "Periods / Year", "value": periods},
+                {"item": "Observation Count", "value": summary.get("observation_count", "N/A")},
+                {"item": "Risk-Free Rate", "value": "Applied from user input"},
             ]
-        )
-        compact_data_table(stress.astype(str).to_dict("records"), columns=["scenario", "impact", "severity"], max_rows=5)
-    with lower_right.container(border=True):
-        st.markdown("#### Data Profile & Assumptions")
-        assumptions = [
-            {"item": "Return Frequency", "value": str(profile.get("frequency", "unknown")).title() if profile else "N/A"},
-            {"item": "Periods / Year", "value": periods},
-            {"item": "Observation Count", "value": summary.get("observation_count", "N/A")},
-            {"item": "Risk-Free Rate", "value": "Applied from user input"},
-        ]
-        key_value_table(assumptions)
+            key_value_table(assumptions)
 
     with st.container(border=True):
         st.markdown("#### Applied Risk Rules")
@@ -674,50 +661,46 @@ def render_diversification_tab(
         metric_card("Cash Exposure", _cash_exposure(schema), "Cash-like asset labels", "teal", "CA")
 
     top_left, top_mid, top_right = st.columns([1.1, 1.0, 0.95])
-    with top_left.container(border=True):
-        st.markdown("#### Correlation Heatmap")
-        st.caption("Pearson correlation across asset returns")
-        render_correlation_heatmap(metrics, height=350)
-    with top_mid.container(border=True):
-        st.markdown("#### Portfolio Allocation")
-        st.caption("Weight-based exposure when available")
-        render_allocation_chart(schema, height=350)
-    with top_right.container(border=True):
-        st.markdown("#### Diversification Insights")
-        items = [item for item in (insights or {}).get("insights", []) if item.get("category") in {"correlation", "concentration", "data_quality"}]
-        if not items:
-            empty_state("No Diversification Insights", "Correlation or allocation-specific insight was not generated.")
-        for item in items[:3]:
-            insight_card(
-                category=str(item.get("category", "diversification")),
-                fact=str(item.get("fact", "")),
-                interpretation=str(item.get("interpretation", "")),
-                caution=str(item.get("caution", "")),
-                severity=str(item.get("severity", "INFO")),
-            )
+    with top_left:
+        with panel("Correlation Heatmap", "Pearson correlation across asset returns", height=428):
+            render_correlation_heatmap(metrics, height=350)
+    with top_mid:
+        with panel("Portfolio Allocation", "Weight-based exposure when available", height=428):
+            render_allocation_chart(schema, height=350)
+    with top_right:
+        with panel("Diversification Insights", None, height=428, scroll=True):
+            items = [item for item in (insights or {}).get("insights", []) if item.get("category") in {"correlation", "concentration", "data_quality"}]
+            if not items:
+                empty_state("No Diversification Insights", "Correlation or allocation-specific insight was not generated.")
+            for item in items[:3]:
+                insight_card(
+                    category=str(item.get("category", "diversification")),
+                    fact=str(item.get("fact", "")),
+                    interpretation=str(item.get("interpretation", "")),
+                    caution=str(item.get("caution", "")),
+                    severity=str(item.get("severity", "INFO")),
+                )
 
     bottom_left, bottom_mid, bottom_right = st.columns([1.0, 1.0, 1.0])
-    with bottom_left.container(border=True):
-        st.markdown("#### Risk Contribution")
-        st.caption("Volatility-weighted asset contribution proxy")
-        render_risk_contribution_chart(metrics, height=290)
-    with bottom_mid.container(border=True):
-        st.markdown("#### Risk vs. Return")
-        st.caption("Asset comparison")
-        render_risk_return_scatter(metrics, height=290)
-    with bottom_right.container(border=True):
-        st.markdown("#### Concentration Analysis")
-        if allocation:
-            allocation_rows = [
-                {"item": "Concentration Level", "value": allocation.get("concentration_level", "N/A")},
-                {"item": "HHI", "value": format_ratio(allocation.get("hhi"))},
-                {"item": "Largest Weight", "value": largest_weight},
-                {"item": "Largest Asset", "value": largest_asset},
-                {"item": "Cash Exposure", "value": _cash_exposure(schema)},
-            ]
-            key_value_table(allocation_rows)
-        else:
-            empty_state("Concentration Unavailable", "Concentration metrics require an allocation weight column.")
+    with bottom_left:
+        with panel("Risk Contribution", "Volatility-weighted asset contribution proxy", height=370):
+            render_risk_contribution_chart(metrics, height=290)
+    with bottom_mid:
+        with panel("Risk vs. Return", "Asset comparison", height=370):
+            render_risk_return_scatter(metrics, height=290)
+    with bottom_right:
+        with panel("Concentration Analysis", None, height=370, scroll=True):
+            if allocation:
+                allocation_rows = [
+                    {"item": "Concentration Level", "value": allocation.get("concentration_level", "N/A")},
+                    {"item": "HHI", "value": format_ratio(allocation.get("hhi"))},
+                    {"item": "Largest Weight", "value": largest_weight},
+                    {"item": "Largest Asset", "value": largest_asset},
+                    {"item": "Cash Exposure", "value": _cash_exposure(schema)},
+                ]
+                key_value_table(allocation_rows)
+            else:
+                empty_state("Concentration Unavailable", "Concentration metrics require an allocation weight column.")
 
     with st.container(border=True):
         st.markdown("#### Rule Traceability & Data Quality")
@@ -754,91 +737,90 @@ def render_insights_tab(
         metric_card("Risk Level", str(summary.get("risk_level", "UNKNOWN")), "Rule-classified", "amber", "RL")
 
     st.markdown("### Executive Insight Summary")
-    with st.container(border=True):
+    with panel("Executive Insight Summary", "Generated and validated via Skills.md rules.", scroll=True):
         if items:
             lead = items[0]
             st.markdown(
                 f"Across `{source_name}`, FinSkillOS generated **{len(items)}** evidence-linked insight(s). "
                 f"The lead signal is **{lead.get('category', 'insight')}** with severity **{lead.get('severity', 'INFO')}**."
             )
-            st.caption("Generated and validated via Skills.md rules.")
         else:
             empty_state("No Insights Generated", "The insight engine did not produce evidence-linked insight cards for this dataset.")
 
     feed_col, detail_col, trace_col = st.columns([0.92, 1.35, 0.86])
-    with feed_col.container(border=True):
-        st.markdown("#### Insight Feed")
-        if not items:
-            empty_state("Empty Feed", "No insight cards are available.")
-        for idx, item in enumerate(items):
-            label = f"{idx + 1}. {str(item.get('category', 'Insight')).title()} · {item.get('severity', 'INFO')}"
-            if st.button(label, key=f"insight_select_{idx}", use_container_width=True):
-                st.session_state["selected_insight_index"] = idx
-                selected_index, selected = idx, item
-            insight_card(
-                category=str(item.get("category", "Insight")),
-                fact=str(item.get("fact", "")),
-                interpretation=str(item.get("interpretation", "")),
-                caution=str(item.get("caution", "")),
-                severity=str(item.get("severity", "INFO")),
-                selected=idx == selected_index,
-            )
+    with feed_col:
+        with panel("Insight Feed", None, height=760, scroll=True):
+            if not items:
+                empty_state("Empty Feed", "No insight cards are available.")
+            for idx, item in enumerate(items):
+                label = f"{idx + 1}. {str(item.get('category', 'Insight')).title()} · {item.get('severity', 'INFO')}"
+                if st.button(label, key=f"insight_select_{idx}", use_container_width=True):
+                    st.session_state["selected_insight_index"] = idx
+                    selected_index, selected = idx, item
+                insight_card(
+                    category=str(item.get("category", "Insight")),
+                    fact=str(item.get("fact", "")),
+                    interpretation=str(item.get("interpretation", "")),
+                    caution=str(item.get("caution", "")),
+                    severity=str(item.get("severity", "INFO")),
+                    selected=idx == selected_index,
+                )
 
-    with detail_col.container(border=True):
-        st.markdown("#### Selected Insight")
-        if selected is None:
-            empty_state("No Selection", "Select an insight from the feed to inspect its evidence.")
-        else:
-            insight_card(
-                category=str(selected.get("category", "Insight")),
-                fact=str(selected.get("fact", "")),
-                interpretation=str(selected.get("interpretation", "")),
-                caution=str(selected.get("caution", "")),
-                severity=str(selected.get("severity", "INFO")),
-                selected=True,
-            )
-            st.markdown("##### Supporting Visualization")
-            evidence = selected.get("evidence", {})
-            chart_name = str(evidence.get("chart", ""))
-            if "drawdown" in chart_name:
-                render_drawdown_chart(metrics, height=285)
-            elif "correlation" in chart_name:
-                render_correlation_heatmap(metrics, height=285)
+    with detail_col:
+        with panel("Selected Insight", None, height=760, scroll=True):
+            if selected is None:
+                empty_state("No Selection", "Select an insight from the feed to inspect its evidence.")
             else:
-                render_cumulative_return_chart(metrics, height=285)
+                insight_card(
+                    category=str(selected.get("category", "Insight")),
+                    fact=str(selected.get("fact", "")),
+                    interpretation=str(selected.get("interpretation", "")),
+                    caution=str(selected.get("caution", "")),
+                    severity=str(selected.get("severity", "INFO")),
+                    selected=True,
+                )
+                st.markdown("##### Supporting Visualization")
+                evidence = selected.get("evidence", {})
+                chart_name = str(evidence.get("chart", ""))
+                if "drawdown" in chart_name:
+                    render_drawdown_chart(metrics, height=285)
+                elif "correlation" in chart_name:
+                    render_correlation_heatmap(metrics, height=285)
+                else:
+                    render_cumulative_return_chart(metrics, height=285)
 
-            evidence_rows = pd.DataFrame(
-                [{"field": key, "value": value} for key, value in dict(evidence).items()]
-            )
-            st.markdown("##### Evidence Sources")
-            if evidence_rows.empty:
-                empty_state("No Evidence Rows", "This insight did not expose structured evidence.")
-            else:
-                key_value_table(evidence_rows.rename(columns={"field": "item"}).astype(str).to_dict("records"))
+                evidence_rows = pd.DataFrame(
+                    [{"field": key, "value": value} for key, value in dict(evidence).items()]
+                )
+                st.markdown("##### Evidence Sources")
+                if evidence_rows.empty:
+                    empty_state("No Evidence Rows", "This insight did not expose structured evidence.")
+                else:
+                    key_value_table(evidence_rows.rename(columns={"field": "item"}).astype(str).to_dict("records"))
 
-    with trace_col.container(border=True):
-        st.markdown("#### Insight Validation & Traceability")
-        records = _rule_records(audit)
-        if selected is None:
-            empty_state("No Traceability", "Select an insight to inspect its referenced rules.")
-        else:
-            rule_ids = [str(rule_id) for rule_id in selected.get("rule_ids", [])]
-            st.markdown("##### Rules Applied")
-            rules_df = _rule_reference_rows(rule_ids, records)
-            if rules_df.empty:
-                empty_state("No Rule References", "No rule IDs were attached to this insight.")
+    with trace_col:
+        with panel("Insight Validation & Traceability", None, height=760, scroll=True):
+            records = _rule_records(audit)
+            if selected is None:
+                empty_state("No Traceability", "Select an insight to inspect its referenced rules.")
             else:
-                rule_cols = [col for col in ["rule_id", "severity", "step", "result"] if col in rules_df.columns]
-                compact_data_table(rules_df.astype(str).to_dict("records"), columns=rule_cols, max_rows=5)
-            st.markdown("##### Data Source")
-            key_value_table(
-                [
-                    {"item": "Dataset", "value": source_name},
-                    {"item": "Schema", "value": schema.get("schema_type", "unknown") if schema else "unknown"},
-                    {"item": "Date Range", "value": _date_range(schema)},
-                ]
-            )
-            st.markdown(status_badge("Generated and validated via Skills.md rules", "default"), unsafe_allow_html=True)
+                rule_ids = [str(rule_id) for rule_id in selected.get("rule_ids", [])]
+                st.markdown("##### Rules Applied")
+                rules_df = _rule_reference_rows(rule_ids, records)
+                if rules_df.empty:
+                    empty_state("No Rule References", "No rule IDs were attached to this insight.")
+                else:
+                    rule_cols = [col for col in ["rule_id", "severity", "step", "result"] if col in rules_df.columns]
+                    compact_data_table(rules_df.astype(str).to_dict("records"), columns=rule_cols, max_rows=5)
+                st.markdown("##### Data Source")
+                key_value_table(
+                    [
+                        {"item": "Dataset", "value": source_name},
+                        {"item": "Schema", "value": schema.get("schema_type", "unknown") if schema else "unknown"},
+                        {"item": "Date Range", "value": _date_range(schema)},
+                    ]
+                )
+                st.markdown(status_badge("Generated and validated via Skills.md rules", "default"), unsafe_allow_html=True)
 
     st.markdown("### Pinned Insights & Next Steps")
     next_cols = st.columns(4)
@@ -876,62 +858,61 @@ def render_applied_rules_tab(df: pd.DataFrame | None, audit: RuleAuditLog) -> No
         metric_card("Avg Execution", "local", "In-process rules", "blue", "TM")
 
     table_col, timeline_col, graph_col, side_col = st.columns([1.35, 0.78, 0.9, 0.82])
-    with table_col.container(border=True):
-        st.markdown("#### Rules Table")
-        search = st.text_input("Search rules", placeholder="Search by rule ID, prefix, step, or result...", label_visibility="collapsed")
-        rules_df = pd.DataFrame(records)
-        if search and not rules_df.empty:
-            mask = rules_df.astype(str).apply(lambda col: col.str.contains(search, case=False, na=False)).any(axis=1)
-            rules_df = rules_df[mask]
-        if rules_df.empty:
-            empty_state("No Rules Found", "No applied rules match the current search.")
-        else:
-            display_cols = [col for col in ["order", "rule_id", "prefix", "step", "severity", "result"] if col in rules_df.columns]
-            compact_data_table(rules_df[display_cols].astype(str).to_dict("records"), columns=display_cols, max_rows=12)
+    with table_col:
+        with panel("Rules Table", None, height=520, scroll=True):
+            search = st.text_input("Search rules", placeholder="Search by rule ID, prefix, step, or result...", label_visibility="collapsed")
+            rules_df = pd.DataFrame(records)
+            if search and not rules_df.empty:
+                mask = rules_df.astype(str).apply(lambda col: col.str.contains(search, case=False, na=False)).any(axis=1)
+                rules_df = rules_df[mask]
+            if rules_df.empty:
+                empty_state("No Rules Found", "No applied rules match the current search.")
+            else:
+                display_cols = [col for col in ["order", "rule_id", "prefix", "step", "severity", "result"] if col in rules_df.columns]
+                compact_data_table(rules_df[display_cols].astype(str).to_dict("records"), columns=display_cols, max_rows=12)
 
-    with timeline_col.container(border=True):
-        st.markdown("#### Execution Timeline")
-        timeline = pd.DataFrame(
-            [
-                {
-                    "time": f"T+{idx:02d}",
-                    "rule": record.get("rule_id"),
-                    "status": "warning" if record.get("severity") == "WARNING" else "passed",
-                }
-                for idx, record in enumerate(records[:10], start=1)
-            ]
-        )
-        if timeline.empty:
-            empty_state("No Timeline", "No rules were executed.")
-        else:
-            compact_data_table(timeline.astype(str).to_dict("records"), columns=["time", "rule", "status"], max_rows=10)
-        st.markdown(status_badge("Live trace", "default"), unsafe_allow_html=True)
+    with timeline_col:
+        with panel("Execution Timeline", None, height=520, scroll=True):
+            timeline = pd.DataFrame(
+                [
+                    {
+                        "time": f"T+{idx:02d}",
+                        "rule": record.get("rule_id"),
+                        "status": "warning" if record.get("severity") == "WARNING" else "passed",
+                    }
+                    for idx, record in enumerate(records[:10], start=1)
+                ]
+            )
+            if timeline.empty:
+                empty_state("No Timeline", "No rules were executed.")
+            else:
+                compact_data_table(timeline.astype(str).to_dict("records"), columns=["time", "rule", "status"], max_rows=10)
+            st.markdown(status_badge("Live trace", "default"), unsafe_allow_html=True)
 
-    with graph_col.container(border=True):
-        st.markdown("#### Rule Dependency Graph")
-        dependency = pd.DataFrame(
-            [
-                {"domain": "Data Quality", "rules": sum(1 for row in records if row.get("prefix") in {"DATA", "SCHEMA"})},
-                {"domain": "Metrics", "rules": sum(1 for row in records if row.get("prefix") in {"METRIC", "RISK"})},
-                {"domain": "Visualization", "rules": sum(1 for row in records if row.get("prefix") == "VIS")},
-                {"domain": "Safety", "rules": sum(1 for row in records if row.get("prefix") in {"INSIGHT", "SAFE"})},
-            ]
-        )
-        compact_data_table(dependency.astype(str).to_dict("records"), columns=["domain", "rules"], max_rows=4)
-        st.caption("Hard and soft dependencies are represented by rule domains in this MVP.")
+    with graph_col:
+        with panel("Rule Dependency Graph", "Hard and soft dependencies are represented by rule domains in this MVP.", height=520, scroll=True):
+            dependency = pd.DataFrame(
+                [
+                    {"domain": "Data Quality", "rules": sum(1 for row in records if row.get("prefix") in {"DATA", "SCHEMA"})},
+                    {"domain": "Metrics", "rules": sum(1 for row in records if row.get("prefix") in {"METRIC", "RISK"})},
+                    {"domain": "Visualization", "rules": sum(1 for row in records if row.get("prefix") == "VIS")},
+                    {"domain": "Safety", "rules": sum(1 for row in records if row.get("prefix") in {"INSIGHT", "SAFE"})},
+                ]
+            )
+            compact_data_table(dependency.astype(str).to_dict("records"), columns=["domain", "rules"], max_rows=4)
 
-    with side_col.container(border=True):
-        st.markdown("#### Governance Overview")
-        grade = "A+" if summary["blocked"] == 0 and summary["coverage"] >= 5 else "Review"
-        st.metric("System Integrity", grade)
-        key_value_table(
-            [
-                {"item": "Rule Coverage", "value": f"{summary['coverage']}/{summary['required']}"},
-                {"item": "Warnings", "value": summary["warnings"]},
-                {"item": "Blocked", "value": summary["blocked"]},
-                {"item": "Loaded From", "value": "Skills.md"},
-            ]
-        )
+    with side_col:
+        with panel("Governance Overview", None, height=520, scroll=True):
+            grade = "A+" if summary["blocked"] == 0 and summary["coverage"] >= 5 else "Review"
+            st.metric("System Integrity", grade)
+            key_value_table(
+                [
+                    {"item": "Rule Coverage", "value": f"{summary['coverage']}/{summary['required']}"},
+                    {"item": "Warnings", "value": summary["warnings"]},
+                    {"item": "Blocked", "value": summary["blocked"]},
+                    {"item": "Loaded From", "value": "Skills.md"},
+                ]
+            )
 
     with st.container(border=True):
         st.markdown("#### Representative Rule Validation")
@@ -980,90 +961,89 @@ def render_reports_tab(
         metric_card("Delivery Status", "Healthy", "Local export ready", "teal", "OK")
 
     library_col, preview_col, action_col, summary_col = st.columns([1.0, 1.25, 0.82, 0.9])
-    with library_col.container(border=True):
-        st.markdown("#### Report Library")
-        compact_data_table(_report_library(source_name).astype(str).to_dict("records"), max_rows=8)
+    with library_col:
+        with panel("Report Library", None, height=700, scroll=True):
+            compact_data_table(_report_library(source_name).astype(str).to_dict("records"), max_rows=8)
 
-    with preview_col.container(border=True):
-        st.markdown("#### Report Preview")
-        if not html_report:
-            empty_state("Preview Unavailable", "Report preview requires an analysis result.")
-        else:
-            preview_summary = pd.DataFrame(
-                [
-                    {"section": "Dataset Summary", "status": "Included"},
-                    {"section": "Schema Mapping", "status": "Included"},
-                    {"section": "Metric Summary", "status": "Included"},
-                    {"section": "Risk Insights", "status": "Included"},
-                    {"section": "Applied Rules", "status": f"{len(records)} rows"},
-                    {"section": "Disclaimer", "status": "Included"},
-                ]
-            )
-            compact_data_table(preview_summary.astype(str).to_dict("records"), columns=["section", "status"], max_rows=8)
-            st.caption(f"Preview bytes: {len(html_report.encode('utf-8')):,}")
+    with preview_col:
+        with panel("Report Preview", None, height=700, scroll=True):
+            if not html_report:
+                empty_state("Preview Unavailable", "Report preview requires an analysis result.")
+            else:
+                preview_summary = pd.DataFrame(
+                    [
+                        {"section": "Dataset Summary", "status": "Included"},
+                        {"section": "Schema Mapping", "status": "Included"},
+                        {"section": "Metric Summary", "status": "Included"},
+                        {"section": "Risk Insights", "status": "Included"},
+                        {"section": "Applied Rules", "status": f"{len(records)} rows"},
+                        {"section": "Disclaimer", "status": "Included"},
+                    ]
+                )
+                compact_data_table(preview_summary.astype(str).to_dict("records"), columns=["section", "status"], max_rows=8)
+                st.caption(f"Preview bytes: {len(html_report.encode('utf-8')):,}")
 
-    with action_col.container(border=True):
-        st.markdown("#### Export & Share")
-        st.caption("Available")
-        available_exports = [
-            {"format": "HTML Report", "status": "Available"},
-            {"format": "Applied Rules CSV", "status": "Available"},
-            {"format": "Applied Rules JSON", "status": "Available"},
-        ]
-        compact_data_table(available_exports, columns=["format", "status"], max_rows=3)
-        if html_report:
+    with action_col:
+        with panel("Export & Share", "Available", height=700, scroll=True):
+            available_exports = [
+                {"format": "HTML Report", "status": "Available"},
+                {"format": "Applied Rules CSV", "status": "Available"},
+                {"format": "Applied Rules JSON", "status": "Available"},
+            ]
+            compact_data_table(available_exports, columns=["format", "status"], max_rows=3)
+            if html_report:
+                st.download_button(
+                    "Download HTML",
+                    data=html_report.encode("utf-8"),
+                    file_name="finskillos_analysis_report.html",
+                    mime="text/html",
+                    use_container_width=True,
+                )
+            rules_df = pd.DataFrame(records)
             st.download_button(
-                "Download HTML",
-                data=html_report.encode("utf-8"),
-                file_name="finskillos_analysis_report.html",
-                mime="text/html",
+                "Download Rules CSV",
+                data=rules_df.to_csv(index=False).encode("utf-8-sig"),
+                file_name="finskillos_applied_rules.csv",
+                mime="text/csv",
                 use_container_width=True,
             )
-        rules_df = pd.DataFrame(records)
-        st.download_button(
-            "Download Rules CSV",
-            data=rules_df.to_csv(index=False).encode("utf-8-sig"),
-            file_name="finskillos_applied_rules.csv",
-            mime="text/csv",
-            use_container_width=True,
-        )
-        st.download_button(
-            "Download Rules JSON",
-            data=json.dumps(records, ensure_ascii=False, indent=2).encode("utf-8"),
-            file_name="finskillos_applied_rules.json",
-            mime="application/json",
-            use_container_width=True,
-        )
-        st.caption("Planned Extension")
-        planned_exports = [
-            {"format": "PDF Export", "status": "Planned"},
-            {"format": "PPTX Export", "status": "Planned"},
-            {"format": "Share Link", "status": "Planned"},
-            {"format": "Scheduled Report", "status": "Planned"},
-        ]
-        compact_data_table(planned_exports, columns=["format", "status"], max_rows=4)
+            st.download_button(
+                "Download Rules JSON",
+                data=json.dumps(records, ensure_ascii=False, indent=2).encode("utf-8"),
+                file_name="finskillos_applied_rules.json",
+                mime="application/json",
+                use_container_width=True,
+            )
+            st.caption("Planned Extension")
+            planned_exports = [
+                {"format": "PDF Export", "status": "Planned"},
+                {"format": "PPTX Export", "status": "Planned"},
+                {"format": "Share Link", "status": "Planned"},
+                {"format": "Scheduled Report", "status": "Planned"},
+            ]
+            compact_data_table(planned_exports, columns=["format", "status"], max_rows=4)
 
-    with summary_col.container(border=True):
-        st.markdown("#### Report Summary")
-        includes = pd.DataFrame(
-            [
-                {"item": "Executive summary with key metrics", "status": "Included"},
-                {"item": "Risk and return analysis", "status": "Included"},
-                {"item": "Schema and data profile", "status": "Included"},
-                {"item": "Rule audit trail", "status": "Included"},
-                {"item": "Safety disclaimer", "status": "Included"},
-            ]
-        )
-        compact_data_table(includes.astype(str).to_dict("records"), columns=["item", "status"], max_rows=6)
-        st.markdown("#### Validation Status")
-        key_value_table(
-            [
-                {"item": "Rule Coverage", "value": f"{summary['coverage']}/{summary['required']}"},
-                {"item": "Warnings", "value": summary["warnings"]},
-                {"item": "Blocked", "value": summary["blocked"]},
-                {"item": "Schema", "value": schema.get("schema_type", "unknown") if schema else "unknown"},
-            ]
-        )
+    with summary_col:
+        with panel("Report Summary", None, height=700, scroll=True):
+            includes = pd.DataFrame(
+                [
+                    {"item": "Executive summary with key metrics", "status": "Included"},
+                    {"item": "Risk and return analysis", "status": "Included"},
+                    {"item": "Schema and data profile", "status": "Included"},
+                    {"item": "Rule audit trail", "status": "Included"},
+                    {"item": "Safety disclaimer", "status": "Included"},
+                ]
+            )
+            compact_data_table(includes.astype(str).to_dict("records"), columns=["item", "status"], max_rows=6)
+            st.markdown("#### Validation Status")
+            key_value_table(
+                [
+                    {"item": "Rule Coverage", "value": f"{summary['coverage']}/{summary['required']}"},
+                    {"item": "Warnings", "value": summary["warnings"]},
+                    {"item": "Blocked", "value": summary["blocked"]},
+                    {"item": "Schema", "value": schema.get("schema_type", "unknown") if schema else "unknown"},
+                ]
+            )
 
     with st.container(border=True):
         st.markdown("#### Report Rules & Validation")

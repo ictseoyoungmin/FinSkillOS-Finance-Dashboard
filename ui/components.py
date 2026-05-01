@@ -50,6 +50,18 @@ def metric_card(label: str, value: str, caption: str, tone: str = "teal", icon: 
     )
 
 
+def summary_stat_card(label: str, value: str) -> None:
+    st.markdown(
+        f"""
+        <div class="fs-summary-stat">
+          <div class="fs-summary-label">{_html(label)}</div>
+          <div class="fs-summary-value">{_html(value)}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 def key_value_table(rows: Iterable[dict[str, object]], key_label: str = "Item", value_label: str = "Value") -> None:
     """Render compact key/value data without Streamlit's bright dataframe chrome."""
 
@@ -136,12 +148,26 @@ def rule_validation_list(records: Iterable[dict[str, object]], limit: int = 6) -
 
 
 @contextmanager
-def panel(title: str, subtitle: str | None = None, action: str | None = None) -> Iterator[None]:
+def panel(
+    title: str,
+    subtitle: str | None = None,
+    action: str | None = None,
+    *,
+    height: int | None = None,
+    scroll: bool = False,
+    body_class: str | None = None,
+) -> Iterator[None]:
     action_html = f"<div>{action}</div>" if action else ""
     subtitle_html = f'<div class="fs-panel-subtitle">{_html(subtitle)}</div>' if subtitle else ""
+    class_names = ["fs-panel", "fs-panel-shell"]
+    if scroll:
+        class_names.append("fs-panel-scroll")
+    if body_class:
+        class_names.append(body_class)
+    style_attr = f' style="--fs-panel-height: {height}px;"' if height else ""
     st.markdown(
         f"""
-        <div class="fs-panel">
+        <div class="{' '.join(class_names)}"{style_attr}>
           <div class="fs-panel-header">
             <div>
               <div class="fs-panel-title">{_html(title)}</div>
@@ -149,13 +175,14 @@ def panel(title: str, subtitle: str | None = None, action: str | None = None) ->
             </div>
             {action_html}
           </div>
+          <div class="fs-panel-body">
         """,
         unsafe_allow_html=True,
     )
     try:
         yield
     finally:
-        st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown("</div></div>", unsafe_allow_html=True)
 
 
 def section_header(number: int, title: str, rule_id: str | None = None) -> None:
