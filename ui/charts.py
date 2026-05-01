@@ -105,11 +105,30 @@ def render_missing_values_chart(profile: dict[str, Any] | None, height: int = 25
         empty_state("Missingness Unavailable", "No column missingness profile was produced.")
         return
     plot_df = pd.DataFrame(
-        [{"column": column, "missing_rate": rate} for column, rate in missing.items()]
+        [{"column": column, "missing_rate": float(rate), "completeness": 1.0 - float(rate)} for column, rate in missing.items()]
     ).sort_values("missing_rate", ascending=False)
-    fig = px.bar(plot_df, x="column", y="missing_rate")
-    fig.update_layout(height=height)
-    fig.update_yaxes(tickformat=".1%", title="Missing Rate")
+    if plot_df["missing_rate"].max() <= 0:
+        fig = px.bar(
+            plot_df,
+            x="column",
+            y="completeness",
+            text=plot_df["completeness"].map(lambda value: f"{value:.1%}"),
+            color_discrete_sequence=["#00d4a0"],
+        )
+        fig.update_traces(textposition="outside", cliponaxis=False, marker_line_width=0)
+        fig.update_yaxes(tickformat=".0%", title="Completeness", range=[0, 1.08])
+    else:
+        fig = px.bar(
+            plot_df,
+            x="column",
+            y="missing_rate",
+            text=plot_df["missing_rate"].map(lambda value: f"{value:.1%}"),
+            color_discrete_sequence=["#f05151"],
+        )
+        max_rate = max(float(plot_df["missing_rate"].max()), 0.01)
+        fig.update_traces(textposition="outside", cliponaxis=False, marker_line_width=0)
+        fig.update_yaxes(tickformat=".1%", title="Missing Rate", range=[0, min(max_rate * 1.35, 1.0)])
+    fig.update_layout(height=height, showlegend=False)
     fig.update_xaxes(title="")
     st.plotly_chart(style_plotly_figure(fig), use_container_width=True)
 

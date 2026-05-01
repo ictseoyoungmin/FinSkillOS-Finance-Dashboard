@@ -168,6 +168,20 @@ def _rule_validation_list_for_prefix(audit: RuleAuditLog, prefixes: set[str], li
     rule_validation_list(records, limit=limit)
 
 
+def _format_metric_table(df: pd.DataFrame, percent_cols: set[str] | None = None, ratio_cols: set[str] | None = None) -> pd.DataFrame:
+    percent_cols = percent_cols or set()
+    ratio_cols = ratio_cols or set()
+    formatted = df.copy()
+    for col in formatted.columns:
+        if col in percent_cols:
+            formatted[col] = formatted[col].map(lambda value: format_percent(value))
+        elif col in ratio_cols:
+            formatted[col] = formatted[col].map(lambda value: format_ratio(value))
+        else:
+            formatted[col] = formatted[col].astype(str)
+    return formatted
+
+
 def _require_analysis(df: pd.DataFrame | None, metrics: dict[str, Any] | None = None) -> bool:
     if df is None or metrics is None:
         onboarding_state(
@@ -523,10 +537,17 @@ def render_return_analysis_tab(
             empty_state("Metric Table Unavailable", "Asset-level metrics were not generated for this dataset.")
         else:
             display_cols = [col for col in ["asset", "total_return", "annualized_return", "annualized_volatility", "sharpe_ratio"] if col in asset_metrics.columns]
-            st.dataframe(asset_metrics[display_cols].astype(str), use_container_width=True, hide_index=True)
+            formatted = _format_metric_table(
+                asset_metrics[display_cols],
+                percent_cols={"total_return", "annualized_return", "annualized_volatility"},
+                ratio_cols={"sharpe_ratio"},
+            )
+            compact_data_table(formatted.to_dict("records"), columns=display_cols, max_rows=8)
 
-    st.markdown("### Applied Return Rules")
-    _rule_cards_for_prefix(audit, {"METRIC", "VIS"}, limit=5)
+    with st.container(border=True):
+        st.markdown("#### Applied Return Rules")
+        st.caption("Rule traceability and execution status for this analysis")
+        _rule_validation_list_for_prefix(audit, {"METRIC", "VIS"}, limit=5)
 
 
 def render_risk_analysis_tab(
@@ -594,21 +615,21 @@ def render_risk_analysis_tab(
                 {"scenario": "Data sufficiency", "impact": str(summary.get("data_sufficiency", "N/A")), "severity": "INFO"},
             ]
         )
-        st.dataframe(stress.astype(str), use_container_width=True, hide_index=True)
+        compact_data_table(stress.astype(str).to_dict("records"), columns=["scenario", "impact", "severity"], max_rows=5)
     with lower_right.container(border=True):
         st.markdown("#### Data Profile & Assumptions")
-        assumptions = pd.DataFrame(
-            [
-                {"item": "Return Frequency", "value": str(profile.get("frequency", "unknown")).title() if profile else "N/A"},
-                {"item": "Periods / Year", "value": periods},
-                {"item": "Observation Count", "value": summary.get("observation_count", "N/A")},
-                {"item": "Risk-Free Rate", "value": "Applied from user input"},
-            ]
-        )
-        st.dataframe(assumptions.astype(str), use_container_width=True, hide_index=True)
+        assumptions = [
+            {"item": "Return Frequency", "value": str(profile.get("frequency", "unknown")).title() if profile else "N/A"},
+            {"item": "Periods / Year", "value": periods},
+            {"item": "Observation Count", "value": summary.get("observation_count", "N/A")},
+            {"item": "Risk-Free Rate", "value": "Applied from user input"},
+        ]
+        key_value_table(assumptions)
 
-    st.markdown("### Applied Risk Rules")
-    _rule_cards_for_prefix(audit, {"RISK", "METRIC", "SAFE"}, limit=5)
+    with st.container(border=True):
+        st.markdown("#### Applied Risk Rules")
+        st.caption("Rule traceability and execution status for this analysis")
+        _rule_validation_list_for_prefix(audit, {"RISK", "METRIC", "SAFE"}, limit=5)
 
 
 def render_diversification_tab(
