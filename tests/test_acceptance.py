@@ -7,6 +7,8 @@ import pandas as pd
 
 from engine.chart_planner import plan_charts
 from engine.data_profiler import profile_dataframe
+from engine.history_enricher import fetch_history_for_holdings, is_holdings_snapshot
+import engine.history_enricher as history_enricher
 from engine.insight_engine import _contains_forbidden, _safe_insight, generate_insights
 from engine.metrics import compute_metrics
 from engine.report_builder import build_html_report
@@ -83,6 +85,74 @@ class AcceptanceTests(unittest.TestCase):
         self.assertIn("risk_return_scatter", available_chart_ids)
         self.assertIn("correlation_heatmap", available_chart_ids)
         self.assertTrue(result["metrics"]["asset_metrics"])
+
+    def test_holdings_snapshot_is_allocation_not_return_series(self) -> None:
+        df = pd.DataFrame(
+            [
+                {
+                    "ticker": "AAA",
+                    "as_of_date": "2026-05-01",
+                    "current_price": 100.0,
+                    "unrealized_return": 0.05,
+                    "effective_exposure_weight": 0.65,
+                    "quantity": 10,
+                    "market_value_net": 1000.0,
+                },
+                {
+                    "ticker": "BBB",
+                    "as_of_date": "2026-05-01",
+                    "current_price": 50.0,
+                    "unrealized_return": -0.02,
+                    "effective_exposure_weight": 0.35,
+                    "quantity": 20,
+                    "market_value_net": 1000.0,
+                },
+            ]
+        )
+        profile = profile_dataframe(df)
+        schema = infer_schema(df, profile, mode="Auto Detect")
+        metrics = compute_metrics(schema["standardized_df"], schema, profile=profile)
+
+        self.assertEqual(schema["schema_type"], "allocation")
+        self.assertTrue(metrics["returns"].empty)
+        self.assertEqual(metrics["summary"]["allocation"]["concentration_level"], "HIGH")
+        self.assertIn("holdings snapshot", metrics["summary"]["missing_reasons"][0])
+
+    def test_holdings_snapshot_can_expand_to_price_history(self) -> None:
+        class FakeTicker:
+            def __init__(self, ticker: str) -> None:
+                self.ticker = ticker
+
+            def history(self, start: str, end: str, interval: str, auto_adjust: bool) -> pd.DataFrame:
+                return pd.DataFrame(
+                    {
+                        "Date": pd.date_range("2026-01-01", periods=6, freq="D"),
+                        "Close": [100, 101, 102, 103, 104, 105],
+                        "Adj Close": [100, 101, 102, 103, 104, 105],
+                    }
+                )
+
+        class FakeYf:
+            Ticker = FakeTicker
+
+        original_yf = history_enricher.yf
+        history_enricher.yf = FakeYf()
+        try:
+            holdings = pd.DataFrame(
+                [
+                    {"ticker": "AAA", "yahoo_ticker": "AAA", "quantity": 10, "effective_exposure_weight": 0.6, "market_value_net": 600},
+                    {"ticker": "BBB", "yahoo_ticker": "BBB", "quantity": 20, "effective_exposure_weight": 0.4, "market_value_net": 400},
+                ]
+            )
+            history, log = fetch_history_for_holdings(holdings)
+        finally:
+            history_enricher.yf = original_yf
+
+        self.assertTrue(is_holdings_snapshot(holdings))
+        self.assertEqual(len(history), 12)
+        self.assertEqual(set(history["asset"]), {"AAA", "BBB"})
+        self.assertTrue({"date", "asset", "price", "weight"}.issubset(history.columns))
+        self.assertEqual(set(log["status"]), {"ok"})
 
     def test_forbidden_advice_is_blocked_from_insights_and_report(self) -> None:
         unsafe = {

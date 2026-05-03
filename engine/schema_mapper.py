@@ -196,6 +196,24 @@ def _schema_type(df: pd.DataFrame, mapping: dict[str, dict[str, Any]]) -> str:
     has_weight = "weight" in mapping
     numeric_columns = [column for column in df.columns if pd.api.types.is_numeric_dtype(df[column])]
 
+    source_names = {str(details.get("source", "")).lower() for details in mapping.values()}
+    all_names = {str(column).lower() for column in df.columns} | source_names
+    holdings_markers = {
+        "quantity",
+        "avg_buy_price",
+        "current_price",
+        "market_value",
+        "cost_basis",
+        "unrealized_pnl",
+        "unrealized_return",
+        "portfolio_weight",
+        "effective_exposure",
+    }
+    looks_like_holdings = has_weight and has_asset and any(
+        any(marker in name for marker in holdings_markers) for name in all_names
+    )
+    if looks_like_holdings:
+        return "allocation"
     if has_weight and "asset" in mapping and not has_date:
         return "allocation"
     if has_date and not has_asset and len(numeric_columns) >= 2:

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -312,9 +313,24 @@ def render_rolling_return_chart(metrics: dict[str, Any] | None, window: int = 63
     working = working.dropna(subset=["date", "return"]).sort_values(["asset", "date"] if "asset" in working.columns else ["date"])
     if "asset" not in working.columns:
         working["asset"] = "Portfolio"
-    working["rolling_return"] = working.groupby("asset")["return"].transform(
-        lambda series: (1.0 + series).rolling(window=min(window, max(len(series), 1)), min_periods=5).apply(lambda values: values.prod() - 1.0, raw=True)
-    )
+    working["return"] = pd.to_numeric(working["return"], errors="coerce")
+    working = working.dropna(subset=["return"])
+    try:
+        requested_window = max(1, int(window))
+    except (TypeError, ValueError):
+        requested_window = 63
+    min_periods = 5
+
+    def _rolling_compound(series: pd.Series) -> pd.Series:
+        effective_window = min(requested_window, len(series))
+        if effective_window < min_periods:
+            return pd.Series(np.nan, index=series.index)
+        return (1.0 + series).rolling(window=effective_window, min_periods=min_periods).apply(
+            lambda values: values.prod() - 1.0,
+            raw=True,
+        )
+
+    working["rolling_return"] = working.groupby("asset")["return"].transform(_rolling_compound)
     plot_df = working.dropna(subset=["rolling_return"])
     if plot_df.empty:
         empty_state("Rolling Return Unavailable", "Not enough observations for the selected rolling window.")
@@ -338,7 +354,16 @@ def render_rolling_volatility_chart(metrics: dict[str, Any] | None, periods_per_
     working = working.dropna(subset=["date", "return"]).sort_values(["asset", "date"] if "asset" in working.columns else ["date"])
     if "asset" not in working.columns:
         working["asset"] = "Portfolio"
-    effective_window = min(window, max(len(working), 1))
+    working["return"] = pd.to_numeric(working["return"], errors="coerce")
+    working = working.dropna(subset=["return"])
+    try:
+        requested_window = max(1, int(window))
+    except (TypeError, ValueError):
+        requested_window = 63
+    effective_window = min(requested_window, max(len(working), 1))
+    if effective_window < 5:
+        empty_state("Rolling Volatility Unavailable", "Not enough observations for the selected rolling window.")
+        return
     working["rolling_volatility"] = working.groupby("asset")["return"].transform(
         lambda series: series.rolling(window=effective_window, min_periods=5).std() * (periods_per_year ** 0.5)
     )

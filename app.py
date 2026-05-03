@@ -7,6 +7,7 @@ import streamlit as st
 
 from engine.chart_planner import plan_charts
 from engine.data_profiler import profile_dataframe
+from engine.history_enricher import fetch_history_for_holdings, is_holdings_snapshot
 from engine.insight_engine import generate_insights
 from engine.metrics import compute_metrics
 from engine.rule_engine import RuleAuditLog
@@ -99,6 +100,40 @@ def add_chart_rules(audit: RuleAuditLog, chart_plan: list[dict[str, object]]) ->
         )
 
 
+@st.cache_data(ttl=900, show_spinner=False)
+def _cached_holdings_history(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+    return fetch_history_for_holdings(df)
+
+
+def enrich_holdings_snapshot(df: pd.DataFrame, audit: RuleAuditLog) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Attach fetched price history when an uploaded CSV is a holdings snapshot."""
+
+    if not is_holdings_snapshot(df):
+        return df, pd.DataFrame()
+
+    history_df, log_df = _cached_holdings_history(df)
+    ok_count = int((log_df.get("status", pd.Series(dtype=str)) == "ok").sum()) if not log_df.empty else 0
+    if history_df.empty:
+        audit.add(
+            rule_id="DATA-HISTORY-001",
+            step="history_enrichment",
+            condition="Holdings snapshot includes ticker fields but no historical price rows.",
+            action="Attempt optional yfinance price-history enrichment.",
+            result="No price history was attached; allocation snapshot analysis will be used.",
+            severity="WARNING",
+        )
+        return df, log_df
+
+    audit.add(
+        rule_id="DATA-HISTORY-001",
+        step="history_enrichment",
+        condition="Holdings snapshot includes ticker fields.",
+        action="Fetch recent daily price history and convert it to `date, asset, price, weight` format.",
+        result=f"{len(history_df):,} price rows attached for {ok_count} ticker(s).",
+    )
+    return history_df, log_df
+
+
 def main() -> None:
     st.set_page_config(
         page_title="FinSkillOS",
@@ -125,6 +160,7 @@ def main() -> None:
     analysis_result = None
     chart_plan: list[dict[str, object]] = []
     if df is not None:
+        df, history_log = enrich_holdings_snapshot(df, audit)
         profile = profile_dataframe(df)
         audit.extend(profile["applied_rules"])
         schema = infer_schema(df, profile, mode=mode)

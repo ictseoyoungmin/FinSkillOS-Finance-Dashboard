@@ -282,6 +282,30 @@ def _correlation_matrix(returns_df: pd.DataFrame) -> pd.DataFrame:
     return wide.corr()
 
 
+def _portfolio_return_source(returns_df: pd.DataFrame) -> pd.Series:
+    if "date" not in returns_df.columns:
+        return returns_df["return"]
+
+    if "weight" not in returns_df.columns:
+        return returns_df.groupby("date", dropna=False)["return"].mean()
+
+    working = returns_df.copy()
+    working["weight"] = pd.to_numeric(working["weight"], errors="coerce")
+    working["return"] = pd.to_numeric(working["return"], errors="coerce")
+
+    def _weighted(group: pd.DataFrame) -> float:
+        valid = group.dropna(subset=["return"])
+        if valid.empty:
+            return np.nan
+        weights = valid["weight"].fillna(0.0)
+        total_weight = float(weights.sum())
+        if total_weight <= 0:
+            return float(valid["return"].mean())
+        return float((valid["return"] * weights / total_weight).sum())
+
+    return working.groupby("date", dropna=False).apply(_weighted, include_groups=False)
+
+
 def _allocation_metrics(std_df: pd.DataFrame) -> dict[str, Any]:
     if "weight" not in std_df.columns:
         return {}
@@ -335,12 +359,18 @@ def compute_metrics(
         }
 
     allocation = _allocation_metrics(std_df)
-    returns_df = _returns_from_standardized(std_df, audit)
+    schema_type = str(schema.get("schema_type", "unknown"))
+    returns_df = pd.DataFrame() if schema_type == "allocation" else _returns_from_standardized(std_df, audit)
 
     if returns_df.empty:
+        reason = (
+            "Allocation or holdings snapshot does not provide historical return observations."
+            if schema_type == "allocation"
+            else "No price or return field available for time-series metrics."
+        )
         summary = {
             "risk_level": "UNKNOWN",
-            "missing_reasons": ["No price or return field available for time-series metrics."],
+            "missing_reasons": [reason],
             "allocation": allocation,
         }
         _add_metric_rules(audit, False, summary, False, bool(allocation))
@@ -358,7 +388,7 @@ def compute_metrics(
     multi_asset = returns_df["asset"].nunique(dropna=True) > 1
     if multi_asset:
         asset_metrics, cumulative_df, drawdown_df = _asset_metric_table(returns_df, periods, risk_free_rate)
-        summary_source = returns_df.groupby("date", dropna=False)["return"].mean() if "date" in returns_df.columns else returns_df["return"]
+        summary_source = _portfolio_return_source(returns_df)
         dates = summary_source.index.to_series() if "date" in returns_df.columns else None
         summary, _ = _series_metrics(summary_source, dates, periods, risk_free_rate)
         correlation = _correlation_matrix(returns_df)
