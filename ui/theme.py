@@ -52,7 +52,7 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             --fs-ease: cubic-bezier(0.22, 1, 0.36, 1);
             --fs-fast: 140ms;
             --fs-medium: 240ms;
-            --fs-sidebar-width: 240px;
+            --fs-sidebar-width: 208px;
             --fs-gap-xs: 4px;
             --fs-gap-sm: 8px;
             --fs-gap-md: 14px;
@@ -292,6 +292,42 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
         [data-testid="stNumberInput"] input:focus {
             border-color: rgba(37, 242, 199, 0.48) !important;
             box-shadow: 0 0 0 1px rgba(37, 242, 199, 0.18);
+        }
+        [data-testid="stNumberInputContainer"] {
+            border-radius: var(--fs-radius) !important;
+            overflow: hidden !important;
+        }
+        [data-testid="stNumberInputContainer"] > div:last-child {
+            background: rgba(7, 17, 31, 0.95) !important;
+            background-color: rgba(7, 17, 31, 0.95) !important;
+            border: 1px solid var(--fs-line) !important;
+            border-left: 0 !important;
+            border-radius: 0 var(--fs-radius) var(--fs-radius) 0 !important;
+        }
+        [data-testid="stNumberInput"] button {
+            background: rgba(7, 17, 31, 0.95) !important;
+            background-color: rgba(7, 17, 31, 0.95) !important;
+            border-color: var(--fs-line) !important;
+            color: var(--fs-soft) !important;
+            min-height: 2.42rem !important;
+            transition: border-color var(--fs-fast) var(--fs-ease), color var(--fs-fast) var(--fs-ease);
+        }
+        [data-testid="stNumberInputStepDown"],
+        [data-testid="stNumberInputStepUp"] {
+            background: transparent !important;
+            background-color: transparent !important;
+            border: 0 !important;
+            border-left: 1px solid var(--fs-line) !important;
+            border-radius: 0 !important;
+            color: var(--fs-soft) !important;
+        }
+        [data-testid="stNumberInput"] button:hover {
+            border-color: rgba(37, 242, 199, 0.36) !important;
+            color: var(--fs-ink) !important;
+        }
+        [data-testid="stNumberInput"] button svg {
+            color: currentColor !important;
+            fill: currentColor !important;
         }
         [data-testid="stFileUploader"] {
             min-width: 0;
@@ -549,33 +585,33 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             border: 1px solid var(--fs-line);
             border-radius: 14px;
             background: linear-gradient(180deg, rgba(16, 34, 55, 0.88), rgba(12, 25, 42, 0.9));
-            padding: 18px 20px 14px 20px;
+            padding: 12px 16px 10px 16px;
             margin: 0 0 var(--fs-gap-sm) 0;
         }
         .fs-topbar {
             display: flex;
             align-items: flex-start;
             justify-content: space-between;
-            gap: 0.8rem;
+            gap: 0.65rem;
             margin: 0;
         }
         .fs-page-title {
             margin: 0;
-            font-size: 1.42rem;
+            font-size: 1.18rem;
             font-weight: 760;
             line-height: 1.08;
         }
         .fs-page-subtitle {
             color: var(--fs-soft);
-            margin-top: 0.25rem;
-            font-size: 0.78rem;
+            margin-top: 0.2rem;
+            font-size: 0.7rem;
         }
         .fs-badge-row {
             display: flex;
             align-items: center;
             gap: 0.36rem;
             flex-wrap: wrap;
-            margin-top: 0.36rem;
+            margin-top: 0.28rem;
         }
         .fs-badge {
             display: inline-flex;
@@ -585,8 +621,8 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             background: rgba(37, 242, 199, 0.08);
             color: var(--fs-teal);
             border-radius: 999px;
-            padding: 0.18rem 0.44rem;
-            font-size: 0.66rem;
+            padding: 0.14rem 0.4rem;
+            font-size: 0.6rem;
             font-weight: 720;
         }
         .fs-badge-live {
@@ -610,7 +646,7 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             margin-bottom: var(--fs-gap-sm);
         }
         .fs-control-shell .fs-panel-header {
-            margin-bottom: 0.48rem;
+            margin-bottom: 0.28rem;
         }
         .fs-control-shell [data-testid="stHorizontalBlock"] {
             align-items: end;
@@ -646,17 +682,34 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             transition: transform var(--fs-fast) var(--fs-ease), border-color var(--fs-fast) var(--fs-ease), background var(--fs-fast) var(--fs-ease), box-shadow var(--fs-fast) var(--fs-ease);
         }
         div[data-testid="stVerticalBlockBorderWrapper"] {
+            border-color: transparent !important;
+            border-radius: 0 !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            margin: 0;
+        }
+        div[data-testid="stVerticalBlockBorderWrapper"] > div {
+            padding: 0 !important;
+        }
+        div[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stVerticalBlock"] {
+            gap: var(--fs-gap-sm);
+        }
+        .fs-row-spacer {
+            height: var(--fs-gap-sm);
+            min-height: var(--fs-gap-sm);
+        }
+        .fs-row-spacer-sm {
+            height: var(--fs-gap-xs);
+            min-height: var(--fs-gap-xs);
+        }
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell) {
             border: 1px solid var(--fs-line) !important;
             border-radius: var(--fs-radius) !important;
             background: linear-gradient(180deg, rgba(14, 32, 52, 0.92), rgba(7, 17, 31, 0.94)) !important;
             box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
-            margin: 0;
         }
-        div[data-testid="stVerticalBlockBorderWrapper"] > div {
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell) > div {
             padding: var(--fs-gap-md) var(--fs-gap-lg) !important;
-        }
-        div[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stVerticalBlock"] {
-            gap: var(--fs-gap-sm);
         }
         @keyframes fs-card-in {
             from { opacity: 0; transform: translateY(8px); }
@@ -965,6 +1018,7 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             background: linear-gradient(180deg, rgba(14, 32, 52, 0.72), rgba(7, 17, 31, 0.76));
             padding: 0.42rem 0.52rem;
             min-height: 48px;
+            margin-bottom: 0.45rem;
         }
         .fs-rule-chip-main {
             min-width: 0;
@@ -1140,7 +1194,7 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
         [data-testid="stMainBlockContainer"],
         .main .block-container,
         section.main > div.block-container {
-            padding: 0.45rem 0.85rem 1.15rem 0.85rem !important;
+            padding: 0.35rem 0.7rem 1rem 0.7rem !important;
             max-width: 1760px !important;
         }
 
@@ -1154,11 +1208,35 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
 
         div[data-testid="stVerticalBlockBorderWrapper"] {
             padding: 0 !important;
-            border-radius: 10px !important;
-            margin-bottom: 0.45rem !important;
+            border-color: transparent !important;
+            border-radius: 0 !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            margin-bottom: 0 !important;
         }
 
         div[data-testid="stVerticalBlockBorderWrapper"] > div {
+            padding: 0 !important;
+        }
+
+        .fs-row-spacer {
+            height: 0.45rem;
+            min-height: 0.45rem;
+        }
+
+        .fs-row-spacer-sm {
+            height: 0.28rem;
+            min-height: 0.28rem;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell) {
+            border: 1px solid var(--fs-line) !important;
+            border-radius: 10px !important;
+            background: linear-gradient(180deg, rgba(14, 32, 52, 0.92), rgba(7, 17, 31, 0.94)) !important;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell) > div {
             padding: 0.55rem 0.62rem !important;
         }
 
@@ -1187,29 +1265,29 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
         }
 
         .fs-metric-card {
-            min-height: 72px !important;
-            padding: 0.54rem 0.62rem !important;
-            gap: 0.5rem !important;
+            min-height: 64px !important;
+            padding: 0.46rem 0.54rem !important;
+            gap: 0.42rem !important;
         }
 
         .fs-metric-icon {
-            width: 26px !important;
-            height: 26px !important;
-            border-radius: 7px !important;
+            width: 23px !important;
+            height: 23px !important;
+            border-radius: 6px !important;
         }
 
         .fs-metric-label {
-            font-size: 0.64rem !important;
-            margin-bottom: 0.18rem !important;
+            font-size: 0.58rem !important;
+            margin-bottom: 0.14rem !important;
         }
 
         .fs-metric-value {
-            font-size: 1.08rem !important;
+            font-size: 0.98rem !important;
         }
 
         .fs-metric-caption {
-            font-size: 0.61rem !important;
-            margin-top: 0.22rem !important;
+            font-size: 0.56rem !important;
+            margin-top: 0.18rem !important;
         }
 
         .fs-rule-card {

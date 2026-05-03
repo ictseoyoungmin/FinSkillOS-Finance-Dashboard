@@ -369,6 +369,7 @@ def render_overview_dashboard(
                 severity=str(record.get("severity", "INFO")),
             )
 
+    st.markdown('<div class="fs-row-spacer"></div>', unsafe_allow_html=True)
     footer_cols = st.columns([1.2, 1.0, 1.0, 1.15])
     coverage = audit.has_prefixes(["DATA", "SCHEMA", "METRIC", "VIS", "INSIGHT", "SAFE"])
     with footer_cols[0]:
@@ -389,6 +390,7 @@ def render_overview_dashboard(
             )
         else:
             st.markdown(status_badge("Report unavailable", "warning"), unsafe_allow_html=True)
+    st.markdown('<div class="fs-row-spacer fs-row-spacer-sm"></div>', unsafe_allow_html=True)
 
 
 def render_data_profile_tab(

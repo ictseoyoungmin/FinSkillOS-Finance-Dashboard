@@ -122,7 +122,7 @@ def render_topbar_controls(sample_files: Sequence[str]) -> dict[str, object]:
         sample_options = ["샘플 없음"]
         default_index = 0
 
-    with panel("Analysis Controls", None, height=136, body_class="fs-control-shell"):
+    with panel("Analysis Controls", None, height=112, body_class="fs-control-shell"):
         row = st.columns(
             [1.55, 0.95, 0.72, 1.0, 0.78, 0.82],
             gap="small",

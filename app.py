@@ -237,8 +237,8 @@ def main() -> None:
             analysis_result=analysis_result,
         )
 
-    with st.expander("Skills.md 기반 구현 참조", expanded=False):
-        st.write("이 앱은 `FinSkillOS_skills` 문서 세트의 Rule ID와 구현 계약을 기준으로 개발됩니다.")
+    with st.expander("Skills.md Implementation Reference", expanded=False):
+        st.write("This app follows the Rule IDs and implementation contracts from the `FinSkillOS_skills` documentation set.")
         st.write(f"Skills directory: `{SKILLS_DIR}`")
 
 
