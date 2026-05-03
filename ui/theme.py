@@ -53,6 +53,7 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             --fs-fast: 140ms;
             --fs-medium: 240ms;
             --fs-sidebar-width: 208px;
+            --fs-sidebar-pad-x: 12px;
             --fs-gap-xs: 4px;
             --fs-gap-sm: 8px;
             --fs-gap-md: 14px;
@@ -105,6 +106,10 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             width: var(--fs-sidebar-width) !important;
             padding: 20px 0 16px 0 !important;
             overflow-x: hidden;
+        }
+        [data-testid="stSidebarUserContent"] {
+            padding-left: 6px !important;
+            padding-right: 6px !important;
         }
 
         [data-testid="stSidebar"] [data-testid="stMarkdownContainer"],
@@ -396,7 +401,7 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             display: flex;
             align-items: center;
             gap: 8px;
-            margin: 0 18px 10px 18px;
+            margin: 0 var(--fs-sidebar-pad-x) 10px var(--fs-sidebar-pad-x);
             padding: 0 0 18px 0;
             border-bottom: 1px solid var(--fs-line);
             min-width: 0;
@@ -435,7 +440,7 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             font-weight: 760;
             letter-spacing: 0.08em;
             text-transform: uppercase;
-            margin: 0 18px 6px 18px;
+            margin: 0 var(--fs-sidebar-pad-x) 6px var(--fs-sidebar-pad-x);
         }
 
         .fs-nav-item {
@@ -466,7 +471,7 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             border: 1px solid transparent;
             border-left: 2px solid transparent;
             border-radius: 0;
-            padding: 10px 18px;
+            padding: 10px var(--fs-sidebar-pad-x);
             margin: 0;
             background: transparent;
             width: 100%;
@@ -507,12 +512,12 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             border: 1px solid var(--fs-line);
             border-radius: var(--fs-radius);
             background: rgba(21, 30, 45, 0.84);
-            padding: 10px 12px;
+            padding: 10px 10px;
             min-width: 0;
         }
         .fs-sidebar-footer {
             margin-top: auto;
-            padding: 12px 18px 0 18px;
+            padding: 12px var(--fs-sidebar-pad-x) 0 var(--fs-sidebar-pad-x);
             border-top: 1px solid var(--fs-line);
             display: flex;
             flex-direction: column;
@@ -522,7 +527,7 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             border: 1px solid var(--fs-line);
             border-radius: var(--fs-radius);
             background: rgba(21, 30, 45, 0.84);
-            padding: 10px 12px;
+            padding: 10px 10px;
             min-width: 0;
         }
         .fs-sidebar-kicker {
@@ -1423,7 +1428,7 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
                 padding: 0.72rem;
             }
             .fs-sidebar-footer {
-                padding: 10px 18px 0 18px;
+                padding: 10px var(--fs-sidebar-pad-x) 0 var(--fs-sidebar-pad-x);
             }
             div[data-testid="stPlotlyChart"] {
                 min-height: 220px;
