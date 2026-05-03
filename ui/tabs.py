@@ -585,13 +585,13 @@ def render_risk_analysis_tab(
 
     top_left, top_mid, top_right = st.columns([1.2, 1.05, 0.82])
     with top_left:
-        with panel("Underwater Drawdown", "Cumulative drawdown through time", height=365):
+        with panel("Underwater Drawdown", "Cumulative drawdown through time", height=365, body_class="fs-panel-lean"):
             render_drawdown_chart(metrics, height=285)
     with top_mid:
-        with panel("Rolling Volatility", "Annualized rolling volatility", height=365):
+        with panel("Rolling Volatility", "Annualized rolling volatility", height=365, body_class="fs-panel-lean"):
             render_rolling_volatility_chart(metrics, periods_per_year=periods, window=min(periods, 252), height=285)
     with top_right:
-        with panel("Risk Commentary", None, height=365, scroll=True):
+        with panel("Risk Commentary", None, height=365, scroll=True, body_class="fs-panel-lean"):
             items = [item for item in (insights or {}).get("insights", []) if item.get("category") in {"drawdown", "volatility", "data_quality"}]
             if not items:
                 empty_state("No Risk Insights", "No risk-specific insight was generated.")
@@ -607,10 +607,10 @@ def render_risk_analysis_tab(
 
     lower_left, lower_mid, lower_right = st.columns([1.0, 1.0, 1.0])
     with lower_left:
-        with panel("VaR / CVaR Distribution", "Historical returns with tail-risk reference lines", height=324):
+        with panel("VaR / CVaR Distribution", "Historical returns with tail-risk reference lines", height=324, body_class="fs-panel-lean"):
             render_var_cvar_distribution(metrics, height=245)
     with lower_mid:
-        with panel("Stress Scenario Impact", None, height=324, scroll=True):
+        with panel("Stress Scenario Impact", None, height=324, scroll=True, body_class="fs-panel-lean"):
             stress = pd.DataFrame(
                 [
                     {"scenario": "Observed worst period", "impact": format_percent(summary.get("max_drawdown")), "severity": summary.get("drawdown_risk_level", "UNKNOWN")},

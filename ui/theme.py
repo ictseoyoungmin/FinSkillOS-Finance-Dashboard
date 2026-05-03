@@ -34,6 +34,11 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             --fs-panel: rgba(21, 30, 45, 0.92);
             --fs-panel-strong: rgba(26, 37, 64, 0.96);
             --fs-panel-hover: rgba(31, 45, 69, 0.98);
+            --fs-card-bg: linear-gradient(180deg, rgba(14, 32, 52, 0.92), rgba(7, 17, 31, 0.94));
+            --fs-panel-card-bg: linear-gradient(180deg, rgba(12, 27, 45, 0.9), rgba(7, 17, 31, 0.95));
+            --fs-control-bg: linear-gradient(180deg, rgba(12, 26, 43, 0.78), rgba(7, 17, 31, 0.86));
+            --fs-table-bg: rgba(6, 16, 30, 0.72);
+            --fs-table-header-bg: rgba(129, 166, 202, 0.08);
             --fs-line: rgba(255, 255, 255, 0.08);
             --fs-line-strong: rgba(0, 212, 160, 0.44);
             --fs-ink: #e8edf5;
@@ -336,6 +341,8 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
         }
         [data-testid="stFileUploader"] {
             min-width: 0;
+            min-height: 2.42rem;
+            position: relative;
         }
         [data-testid="stFileUploader"] section {
             min-height: 2.42rem;
@@ -368,6 +375,9 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             overflow: hidden;
             text-overflow: ellipsis;
         }
+        [data-testid="stFileUploader"]:has([data-testid="stFileUploaderFile"]) [data-testid="stFileUploaderDropzoneInstructions"]::before {
+            content: "";
+        }
         [data-testid="stFileUploader"] section button {
             min-height: 1.62rem;
             padding: 0.18rem 0.58rem;
@@ -386,9 +396,59 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             position: absolute;
             z-index: -1;
         }
-        [data-testid="stFileUploader"] small,
-        [data-testid="stFileUploader"] [data-testid="stFileUploaderFile"] {
+        [data-testid="stFileUploader"] small {
             display: none;
+        }
+        [data-testid="stFileUploader"] [data-testid="stFileUploaderFile"] {
+            display: flex !important;
+            align-items: center !important;
+            gap: 0.28rem !important;
+            position: absolute !important;
+            left: 0.22rem;
+            right: 0.22rem;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 2;
+            max-width: 100%;
+            min-height: 1.55rem !important;
+            height: 1.72rem !important;
+            margin-top: 0 !important;
+            padding: 0.16rem 0.28rem !important;
+            border: 0 !important;
+            border-radius: 8px !important;
+            background: rgba(7, 17, 31, 0.96) !important;
+            color: var(--fs-soft) !important;
+            font-size: 0.62rem !important;
+            line-height: 1 !important;
+            overflow: hidden;
+        }
+        [data-testid="stFileUploader"] [data-testid="stFileUploaderFile"] > div:first-child {
+            display: none !important;
+        }
+        [data-testid="stFileUploader"] [data-testid="stFileUploaderFile"] > div {
+            min-width: 0 !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            white-space: nowrap !important;
+        }
+        [data-testid="stFileUploader"] [data-testid="stFileUploaderFileName"] {
+            max-width: 100% !important;
+            color: var(--fs-soft) !important;
+            font-size: 0.62rem !important;
+            font-weight: 650 !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            white-space: nowrap !important;
+        }
+        [data-testid="stFileUploader"] [data-testid="stFileUploaderFile"] button {
+            width: 0.88rem !important;
+            height: 0.88rem !important;
+            min-width: 0.88rem !important;
+            min-height: 0.88rem !important;
+            padding: 0 !important;
+            border: 1px solid rgba(129, 166, 202, 0.22) !important;
+            background: rgba(7, 17, 31, 0.7) !important;
+            color: var(--fs-soft) !important;
         }
         [data-testid="stCaptionContainer"] p {
             color: var(--fs-muted);
@@ -642,7 +702,7 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
         .fs-control-panel {
             border: 1px solid var(--fs-line);
             border-radius: var(--fs-radius);
-            background: linear-gradient(180deg, rgba(12, 26, 43, 0.78), rgba(7, 17, 31, 0.86));
+            background: var(--fs-control-bg);
             padding: var(--fs-gap-md);
             margin: 0 0 var(--fs-gap-lg) 0;
             box-shadow: var(--fs-shadow);
@@ -682,7 +742,7 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
         .fs-empty-state {
             border: 1px solid var(--fs-line);
             border-radius: var(--fs-radius);
-            background: linear-gradient(180deg, rgba(14, 32, 52, 0.92), rgba(7, 17, 31, 0.94));
+            background: var(--fs-card-bg);
             box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
             transition: transform var(--fs-fast) var(--fs-ease), border-color var(--fs-fast) var(--fs-ease), background var(--fs-fast) var(--fs-ease), box-shadow var(--fs-fast) var(--fs-ease);
         }
@@ -710,11 +770,29 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
         div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell) {
             border: 1px solid var(--fs-line) !important;
             border-radius: var(--fs-radius) !important;
-            background: linear-gradient(180deg, rgba(14, 32, 52, 0.92), rgba(7, 17, 31, 0.94)) !important;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+            background: var(--fs-panel-card-bg) !important;
+            box-shadow: var(--fs-shadow);
         }
         div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell) > div {
             padding: var(--fs-gap-md) var(--fs-gap-lg) !important;
+        }
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-lean) {
+            border: 1px solid var(--fs-line) !important;
+            border-radius: var(--fs-radius) !important;
+            background: var(--fs-panel-card-bg) !important;
+            box-shadow: var(--fs-shadow) !important;
+        }
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-lean) > div {
+            padding: 0.45rem 0.55rem !important;
+        }
+        .fs-panel-lean .fs-panel-header {
+            margin-bottom: 0.35rem;
+        }
+        .fs-panel-lean .fs-insight-card,
+        .fs-panel-lean .fs-table-scroll,
+        .fs-panel-lean .fs-kv-table,
+        .fs-panel-lean .fs-empty-state {
+            box-shadow: none !important;
         }
         @keyframes fs-card-in {
             from { opacity: 0; transform: translateY(8px); }
@@ -747,18 +825,29 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             gap: var(--fs-gap-sm);
             align-items: flex-start;
             animation: fs-card-in 240ms ease both;
-            overflow-wrap: anywhere;
+            overflow-wrap: normal;
+            margin-bottom: 0.42rem;
         }
         .fs-metric-icon {
-            width: 32px;
-            height: 32px;
+            width: 2rem;
+            height: 2rem;
             border-radius: 8px;
             display: grid;
             place-items: center;
             background: rgba(37, 242, 199, 0.1);
             color: var(--fs-teal);
-            flex: 0 0 auto;
+            flex: 0 0 2rem;
+            font-size: 0.62rem;
             font-weight: 900;
+            letter-spacing: -0.02em;
+            line-height: 1;
+            overflow: hidden;
+            overflow-wrap: normal;
+            white-space: nowrap;
+            word-break: keep-all;
+        }
+        .fs-metric-copy {
+            min-width: 0;
         }
         .fs-metric-card[data-tone="blue"] .fs-metric-icon,
         .fs-metric-card[data-tone="blue"] .fs-metric-value { color: var(--fs-blue); }
@@ -818,7 +907,7 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             overflow: hidden;
             border: 1px solid var(--fs-line);
             border-radius: var(--fs-radius);
-            background: rgba(6, 16, 30, 0.72);
+            background: var(--fs-table-bg);
             table-layout: fixed;
         }
         .fs-kv-table th,
@@ -832,7 +921,7 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
         }
         .fs-kv-table th {
             color: var(--fs-muted);
-            background: rgba(129, 166, 202, 0.08);
+            background: var(--fs-table-header-bg);
             font-size: 0.66rem;
             text-transform: uppercase;
             letter-spacing: 0.03em;
@@ -849,7 +938,7 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             overflow-x: auto;
             border: 1px solid var(--fs-line);
             border-radius: var(--fs-radius);
-            background: rgba(6, 16, 30, 0.72);
+            background: var(--fs-table-bg);
         }
         .fs-data-table {
             width: 100%;
@@ -869,7 +958,7 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
         }
         .fs-data-table th {
             color: var(--fs-muted);
-            background: rgba(129, 166, 202, 0.08);
+            background: var(--fs-table-header-bg);
             font-size: 0.64rem;
             font-weight: 760;
             text-transform: uppercase;
@@ -1237,12 +1326,34 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
         div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell) {
             border: 1px solid var(--fs-line) !important;
             border-radius: 10px !important;
-            background: linear-gradient(180deg, rgba(14, 32, 52, 0.92), rgba(7, 17, 31, 0.94)) !important;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+            background: var(--fs-panel-card-bg) !important;
+            box-shadow: var(--fs-shadow);
         }
 
         div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell) > div {
             padding: 0.55rem 0.62rem !important;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-lean) {
+            border: 1px solid var(--fs-line) !important;
+            border-radius: 10px !important;
+            background: var(--fs-panel-card-bg) !important;
+            box-shadow: var(--fs-shadow) !important;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-lean) > div {
+            padding: 0.38rem 0.42rem !important;
+        }
+
+        .fs-panel-lean .fs-panel-header {
+            margin-bottom: 0.28rem !important;
+        }
+
+        .fs-panel-lean .fs-insight-card,
+        .fs-panel-lean .fs-table-scroll,
+        .fs-panel-lean .fs-kv-table,
+        .fs-panel-lean .fs-empty-state {
+            box-shadow: none !important;
         }
 
         div[data-testid="stVerticalBlockBorderWrapper"] h4,
@@ -1457,6 +1568,11 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
                 --fs-panel: rgba(255, 255, 255, 0.94);
                 --fs-panel-strong: rgba(255, 255, 255, 0.98);
                 --fs-panel-hover: rgba(246, 250, 255, 0.98);
+                --fs-card-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(247, 250, 252, 0.94));
+                --fs-panel-card-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(247, 250, 252, 0.95));
+                --fs-control-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(242, 247, 252, 0.96));
+                --fs-table-bg: rgba(255, 255, 255, 0.9);
+                --fs-table-header-bg: rgba(226, 232, 240, 0.7);
                 --fs-line: rgba(36, 48, 68, 0.12);
                 --fs-line-strong: rgba(0, 151, 124, 0.28);
                 --fs-ink: #162033;
@@ -1501,7 +1617,7 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             .fs-empty-state,
             .fs-portfolio-card,
             .fs-sidebar-card {
-                background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(247, 250, 252, 0.94)) !important;
+                background: var(--fs-card-bg) !important;
                 border-color: var(--fs-line) !important;
                 box-shadow: var(--fs-shadow);
             }
@@ -1511,23 +1627,23 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
                 box-shadow: none !important;
             }
             div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell) {
-                background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(247, 250, 252, 0.95)) !important;
+                background: var(--fs-panel-card-bg) !important;
                 border-color: var(--fs-line) !important;
                 box-shadow: var(--fs-shadow);
             }
             div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-control-shell) {
-                background: linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(242, 247, 252, 0.96)) !important;
+                background: var(--fs-control-bg) !important;
                 border-color: rgba(36, 48, 68, 0.14) !important;
             }
             .fs-kv-table,
             .fs-table-scroll,
             div[data-testid="stDataFrame"] {
-                background: rgba(255, 255, 255, 0.9) !important;
+                background: var(--fs-table-bg) !important;
                 border-color: var(--fs-line) !important;
             }
             .fs-kv-table th,
             .fs-data-table th {
-                background: rgba(226, 232, 240, 0.7) !important;
+                background: var(--fs-table-header-bg) !important;
                 color: var(--fs-muted) !important;
             }
             .fs-kv-table td,

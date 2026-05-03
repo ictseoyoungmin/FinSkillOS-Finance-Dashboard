@@ -155,8 +155,6 @@ def render_topbar_controls(sample_files: Sequence[str]) -> dict[str, object]:
                 accept_multiple_files=False,
                 key="csv_upload",
             )
-            if uploaded_file is not None:
-                st.caption(uploaded_file.name)
         theme = row[4].selectbox(
             "Theme",
             ["Dark", "Light"],

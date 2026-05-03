@@ -39,7 +39,7 @@ def metric_card(label: str, value: str, caption: str, tone: str = "teal", icon: 
         f"""
         <div class="fs-metric-card" data-tone="{_html(tone)}">
           <div class="fs-metric-icon">{_html(icon)}</div>
-          <div>
+          <div class="fs-metric-copy">
             <div class="fs-metric-label">{_html(label)}</div>
             <div class="fs-metric-value">{_html(value)}</div>
             <div class="fs-metric-caption">{_html(caption)}</div>
