@@ -1486,7 +1486,6 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
                 border-right: 1px solid var(--fs-line);
             }
             div[data-testid="stMetric"],
-            div[data-testid="stVerticalBlockBorderWrapper"],
             .fs-topbar-shell,
             .fs-metric-card,
             .fs-summary-stat,
@@ -1501,21 +1500,39 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
                 border-color: var(--fs-line) !important;
                 box-shadow: var(--fs-shadow);
             }
+            div[data-testid="stVerticalBlockBorderWrapper"] {
+                background: transparent !important;
+                border-color: transparent !important;
+                box-shadow: none !important;
+            }
+            div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell) {
+                background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(247, 250, 252, 0.95)) !important;
+                border-color: var(--fs-line) !important;
+                box-shadow: var(--fs-shadow);
+            }
+            div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-control-shell) {
+                background: linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(242, 247, 252, 0.96)) !important;
+                border-color: rgba(36, 48, 68, 0.14) !important;
+            }
             .fs-kv-table,
             .fs-table-scroll,
             div[data-testid="stDataFrame"] {
-                background: rgba(255, 255, 255, 0.88);
-                border-color: var(--fs-line);
+                background: rgba(255, 255, 255, 0.9) !important;
+                border-color: var(--fs-line) !important;
             }
             .fs-kv-table th,
             .fs-data-table th {
-                background: rgba(226, 232, 240, 0.68);
-                color: var(--fs-muted);
+                background: rgba(226, 232, 240, 0.7) !important;
+                color: var(--fs-muted) !important;
             }
             .fs-kv-table td,
             .fs-data-table td,
             [data-testid="stSidebar"] [role="radiogroup"] label p {
-                color: var(--fs-soft);
+                color: var(--fs-soft) !important;
+            }
+            .fs-data-table td,
+            .fs-kv-table td {
+                border-color: rgba(36, 48, 68, 0.1) !important;
             }
             .fs-validation-row,
             .fs-insight-row,
@@ -1564,14 +1581,33 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             [data-testid="stTextArea"] textarea,
             [data-testid="stNumberInput"] input,
             [data-testid="stFileUploader"] section {
-                background: rgba(255, 255, 255, 0.96);
-                border-color: var(--fs-line);
-                color: var(--fs-ink);
+                background: rgba(255, 255, 255, 0.96) !important;
+                border-color: var(--fs-line) !important;
+                color: var(--fs-ink) !important;
+            }
+            [data-testid="stNumberInputContainer"] > div:last-child {
+                background: rgba(255, 255, 255, 0.96) !important;
+                background-color: rgba(255, 255, 255, 0.96) !important;
+                border-color: var(--fs-line) !important;
+            }
+            [data-testid="stNumberInput"] button,
+            [data-testid="stNumberInputStepDown"],
+            [data-testid="stNumberInputStepUp"] {
+                background: transparent !important;
+                background-color: transparent !important;
+                border-color: var(--fs-line) !important;
+                color: var(--fs-soft) !important;
+            }
+            [data-testid="stWidgetLabel"] p {
+                color: var(--fs-muted) !important;
+            }
+            [data-baseweb="select"] svg {
+                color: var(--fs-muted) !important;
             }
             [data-testid="stFileUploader"] section button {
-                background: rgba(239, 246, 255, 0.92);
-                color: var(--fs-soft);
-                border-color: var(--fs-line);
+                background: rgba(239, 246, 255, 0.92) !important;
+                color: var(--fs-soft) !important;
+                border-color: var(--fs-line) !important;
             }
             [data-testid="stFileUploader"] [data-testid="stFileUploaderDropzoneInstructions"]::before {
                 color: var(--fs-soft);
