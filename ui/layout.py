@@ -122,8 +122,12 @@ def render_topbar_controls(sample_files: Sequence[str]) -> dict[str, object]:
         sample_options = ["샘플 없음"]
         default_index = 0
 
-    with panel("Analysis Controls", None, height=176, body_class="fs-control-shell"):
-        row = st.columns([1.5, 0.9, 0.72, 1.35, 0.72, 0.82], vertical_alignment="bottom")
+    with panel("Analysis Controls", None, height=136, body_class="fs-control-shell"):
+        row = st.columns(
+            [1.55, 0.95, 0.72, 1.0, 0.78, 0.82],
+            gap="small",
+            vertical_alignment="bottom",
+        )
         sample_name = row[0].selectbox(
             "Sample Dataset",
             sample_options,
@@ -159,7 +163,7 @@ def render_topbar_controls(sample_files: Sequence[str]) -> dict[str, object]:
             index=0,
             key="dashboard_theme",
         )
-        run_analysis = row[5].button("Apply Settings", type="primary", use_container_width=True)
+        run_analysis = row[5].button("Generate Dashboard", type="primary", use_container_width=True)
 
     return {
         "uploaded_file": uploaded_file,

@@ -36,6 +36,7 @@ from ui.components import (
     onboarding_state,
     panel,
     rule_card,
+    rule_chip,
     rule_validation_list,
     status_badge,
     summary_stat_card,
@@ -317,13 +318,13 @@ def render_overview_dashboard(
 
     top_left, top_mid, top_right = st.columns([1.45, 1.0, 0.88])
     with top_left:
-        with panel("Executive Summary", "Cumulative return over time", height=392):
-            render_cumulative_return_chart(metrics, height=310)
+        with panel("Executive Summary", "Cumulative return over time", height=360):
+            render_cumulative_return_chart(metrics, height=280)
     with top_mid:
-        with panel("Risk Analysis", "Drawdown behavior", height=392):
-            render_drawdown_chart(metrics, height=310)
+        with panel("Risk Analysis", "Drawdown behavior", height=360):
+            render_drawdown_chart(metrics, height=280)
     with top_right:
-        with panel("Data Profile", f"Source: {source_name}", height=392, scroll=True):
+        with panel("Data Profile", f"Source: {source_name}", height=360, scroll=True):
             profile_rows = _schema_compact_table(schema, profile).astype(str).to_dict("records")
             profile_rows.extend(
                 [
@@ -335,13 +336,13 @@ def render_overview_dashboard(
 
     lower_left, lower_mid, lower_right = st.columns([1.08, 1.08, 1.15])
     with lower_left:
-        with panel("Correlation & Diversification", "Asset relationship overview", height=382):
-            render_correlation_heatmap(metrics, height=285)
+        with panel("Correlation & Diversification", "Asset relationship overview", height=340):
+            render_correlation_heatmap(metrics, height=245)
     with lower_mid:
-        with panel("Risk vs. Return", "Annualized return versus volatility", height=382):
-            render_risk_return_scatter(metrics, height=285)
+        with panel("Risk vs. Return", "Annualized return versus volatility", height=340):
+            render_risk_return_scatter(metrics, height=245)
     with lower_right:
-        with panel("Rule-Based Insights", "Fact, interpretation, and caution generated from Skills.md rules", height=382, scroll=True):
+        with panel("Rule-Based Insights", "Fact, interpretation, and caution generated from Skills.md rules", height=340, scroll=True):
             items = (insights or {}).get("insights", [])
             if not items:
                 empty_state("No Insights Generated", "The insight engine did not produce evidence-linked cards for this dataset.")
@@ -352,18 +353,18 @@ def render_overview_dashboard(
                     interpretation=str(item.get("interpretation", "")),
                     caution=str(item.get("caution", "")),
                     severity=str(item.get("severity", "INFO")),
+                    compact=True,
                 )
 
     records = audit.deduplicated_records()
     st.markdown("### Applied Skill Rules")
     st.caption("Rule traceability and execution status for this analysis")
-    rule_cols = st.columns(5)
+    rule_cols = st.columns(5, gap="small")
     for column, record in zip(rule_cols, records[:5], strict=False):
         with column:
-            rule_card(
+            rule_chip(
                 rule_id=str(record.get("rule_id", "RULE")),
                 title=str(record.get("step", "rule")),
-                description=str(record.get("result", "")),
                 status="Passed" if record.get("severity") != "WARNING" else "Review",
                 severity=str(record.get("severity", "INFO")),
             )
@@ -461,13 +462,16 @@ def render_data_profile_tab(
         for column, col in zip(numeric_columns, dist_cols, strict=False):
             numeric = pd.to_numeric(df[column], errors="coerce").dropna()
             with col:
-                with panel(str(column), "Numeric distribution summary", height=220, scroll=True):
-                    if numeric.empty:
-                        empty_state("Unavailable", "No numeric values after parsing.")
-                    else:
-                        st.metric("Mean", f"{numeric.mean():,.4g}")
-                        st.metric("Min / Max", f"{numeric.min():,.4g} / {numeric.max():,.4g}")
-                        st.caption(f"Non-null observations: {len(numeric):,}")
+                if numeric.empty:
+                    empty_state("Unavailable", f"{column} has no numeric values after parsing.")
+                else:
+                    metric_card(
+                        str(column),
+                        f"{numeric.mean():,.4g}",
+                        f"Min {numeric.min():,.4g} · Max {numeric.max():,.4g} · N {len(numeric):,}",
+                        "teal",
+                        "#",
+                    )
 
 
 def render_return_analysis_tab(
@@ -504,10 +508,10 @@ def render_return_analysis_tab(
 
     top_left, top_right = st.columns([1.38, 1.0])
     with top_left:
-        with panel("Cumulative Return", "Portfolio or asset indexed cumulative return", height=420):
-            render_cumulative_return_chart(metrics, height=340)
+        with panel("Cumulative Return", "Portfolio or asset indexed cumulative return", height=380):
+            render_cumulative_return_chart(metrics, height=300)
     with top_right:
-        with panel("Return Insights", None, height=420, scroll=True):
+        with panel("Return Insights", None, height=380, scroll=True):
             items = [item for item in (insights or {}).get("insights", []) if item.get("category") in {"return", "sharpe", "data_quality"}]
             if not items:
                 empty_state("No Return Insights", "No return-specific insight was generated.")
@@ -518,18 +522,19 @@ def render_return_analysis_tab(
                     interpretation=str(item.get("interpretation", "")),
                     caution=str(item.get("caution", "")),
                     severity=str(item.get("severity", "INFO")),
+                    compact=True,
                 )
 
     bottom_left, bottom_mid, bottom_right = st.columns([1.0, 1.0, 1.0])
     with bottom_left:
-        with panel("Monthly Returns Heatmap", "Portfolio average returns aggregated by month", height=366):
-            render_monthly_returns_heatmap(metrics, height=285)
+        with panel("Monthly Returns Heatmap", "Portfolio average returns aggregated by month", height=326):
+            render_monthly_returns_heatmap(metrics, height=245)
     with bottom_mid:
-        with panel("Return Distribution", "Period return histogram", height=366):
-            render_return_distribution(metrics, height=285)
+        with panel("Return Distribution", "Period return histogram", height=326):
+            render_return_distribution(metrics, height=245)
     with bottom_right:
-        with panel("Rolling Return", rolling_caption, height=366):
-            render_rolling_return_chart(metrics, window=min(int(profile.get("periods_per_year", 63)) if profile else 63, 252), height=285)
+        with panel("Rolling Return", rolling_caption, height=326):
+            render_rolling_return_chart(metrics, window=min(int(profile.get("periods_per_year", 63)) if profile else 63, 252), height=245)
 
     with panel("Period Return Summary", None, scroll=True):
         asset_metrics = pd.DataFrame(metrics.get("asset_metrics", []))
@@ -578,13 +583,13 @@ def render_risk_analysis_tab(
 
     top_left, top_mid, top_right = st.columns([1.2, 1.05, 0.82])
     with top_left:
-        with panel("Underwater Drawdown", "Cumulative drawdown through time", height=408):
-            render_drawdown_chart(metrics, height=330)
+        with panel("Underwater Drawdown", "Cumulative drawdown through time", height=365):
+            render_drawdown_chart(metrics, height=285)
     with top_mid:
-        with panel("Rolling Volatility", "Annualized rolling volatility", height=408):
-            render_rolling_volatility_chart(metrics, periods_per_year=periods, window=min(periods, 252), height=330)
+        with panel("Rolling Volatility", "Annualized rolling volatility", height=365):
+            render_rolling_volatility_chart(metrics, periods_per_year=periods, window=min(periods, 252), height=285)
     with top_right:
-        with panel("Risk Commentary", None, height=408, scroll=True):
+        with panel("Risk Commentary", None, height=365, scroll=True):
             items = [item for item in (insights or {}).get("insights", []) if item.get("category") in {"drawdown", "volatility", "data_quality"}]
             if not items:
                 empty_state("No Risk Insights", "No risk-specific insight was generated.")
@@ -595,14 +600,15 @@ def render_risk_analysis_tab(
                     interpretation=str(item.get("interpretation", "")),
                     caution=str(item.get("caution", "")),
                     severity=str(item.get("severity", "INFO")),
+                    compact=True,
                 )
 
     lower_left, lower_mid, lower_right = st.columns([1.0, 1.0, 1.0])
     with lower_left:
-        with panel("VaR / CVaR Distribution", "Historical returns with tail-risk reference lines", height=364):
-            render_var_cvar_distribution(metrics, height=285)
+        with panel("VaR / CVaR Distribution", "Historical returns with tail-risk reference lines", height=324):
+            render_var_cvar_distribution(metrics, height=245)
     with lower_mid:
-        with panel("Stress Scenario Impact", None, height=364, scroll=True):
+        with panel("Stress Scenario Impact", None, height=324, scroll=True):
             stress = pd.DataFrame(
                 [
                     {"scenario": "Observed worst period", "impact": format_percent(summary.get("max_drawdown")), "severity": summary.get("drawdown_risk_level", "UNKNOWN")},
@@ -612,7 +618,7 @@ def render_risk_analysis_tab(
             )
             compact_data_table(stress.astype(str).to_dict("records"), columns=["scenario", "impact", "severity"], max_rows=5)
     with lower_right:
-        with panel("Data Profile & Assumptions", None, height=364, scroll=True):
+        with panel("Data Profile & Assumptions", None, height=324, scroll=True):
             assumptions = [
                 {"item": "Return Frequency", "value": str(profile.get("frequency", "unknown")).title() if profile else "N/A"},
                 {"item": "Periods / Year", "value": periods},
@@ -975,16 +981,17 @@ def render_reports_tab(
                 st.caption(f"Preview bytes: {len(html_report.encode('utf-8')):,}")
 
     with action_col:
-        with panel("Export & Share", "Available", height=700, scroll=True):
+        with panel("Export & Share", "Available now vs planned next", height=700, scroll=True):
+            st.markdown("#### Available Exports")
             available_exports = [
                 {"format": "HTML Report", "status": "Available"},
-                {"format": "Applied Rules CSV", "status": "Available"},
-                {"format": "Applied Rules JSON", "status": "Available"},
+                {"format": "Rules CSV", "status": "Available"},
+                {"format": "Rules JSON", "status": "Available"},
             ]
             compact_data_table(available_exports, columns=["format", "status"], max_rows=3)
             if html_report:
                 st.download_button(
-                    "Download HTML",
+                    "Download HTML Report",
                     data=html_report.encode("utf-8"),
                     file_name="finskillos_analysis_report.html",
                     mime="text/html",
@@ -1005,12 +1012,12 @@ def render_reports_tab(
                 mime="application/json",
                 use_container_width=True,
             )
-            st.caption("Planned Extension")
+            st.markdown("#### Planned Extensions")
             planned_exports = [
                 {"format": "PDF Export", "status": "Planned"},
                 {"format": "PPTX Export", "status": "Planned"},
-                {"format": "Share Link", "status": "Planned"},
-                {"format": "Scheduled Report", "status": "Planned"},
+                {"format": "Secure Share Link", "status": "Planned"},
+                {"format": "Scheduled Delivery", "status": "Planned"},
             ]
             compact_data_table(planned_exports, columns=["format", "status"], max_rows=4)
 

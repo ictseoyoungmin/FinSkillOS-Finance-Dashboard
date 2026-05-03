@@ -83,7 +83,7 @@ def _rewrite_if_needed(text: str) -> tuple[str, list[str]]:
     if not blocked:
         return text, []
     return (
-        "관측된 데이터는 추가적인 리스크 검토가 필요한 분석 신호를 보여주지만, 특정 투자 행동을 권유하지 않습니다.",
+        "The observed data shows an analysis signal that needs additional risk review, without recommending a specific investment action.",
         blocked,
     )
 
@@ -97,7 +97,7 @@ def _safe_insight(insight: dict[str, Any]) -> tuple[dict[str, Any] | None, list[
         insight[key] = rewritten
         blocked_terms.extend(blocked)
     if not insight.get("caution"):
-        insight["caution"] = "데이터 한계와 시장 환경 변화 가능성을 함께 고려해야 합니다."
+        insight["caution"] = "Review data limitations and possible market regime changes before using this result."
     return insight, blocked_terms
 
 
@@ -128,9 +128,9 @@ def _quality_insight(quality: dict[str, Any]) -> dict[str, Any] | None:
     return _insight(
         category="data_quality",
         severity="WARNING",
-        fact=f"데이터 품질 경고가 {len(warnings)}개 감지되었습니다.",
-        interpretation="일부 분석 결과는 결측치, 날짜 구조, 짧은 관측 기간 또는 이상치 후보의 영향을 받을 수 있습니다.",
-        caution="의사결정 전 원본 데이터와 경고 항목을 검증해야 합니다.",
+        fact=f"{len(warnings)} data quality warning(s) were detected.",
+        interpretation="Some analytics may be affected by missing values, date structure, short observation windows, or outlier candidates.",
+        caution="Validate the source data and warning details before using the analysis.",
         evidence={"warning_count": len(warnings), "rule_id": "INSIGHT-CAT-007"},
         rule_ids=["INSIGHT-CAT-007", "INSIGHT-004"],
     )
@@ -144,9 +144,9 @@ def _drawdown_insight(summary: dict[str, Any]) -> dict[str, Any] | None:
     return _insight(
         category="drawdown",
         severity=_severity_from_level(level),
-        fact=f"최대낙폭(Maximum Drawdown)은 {format_percent(max_drawdown)}입니다.",
-        interpretation=f"RISK-001 기준으로 손실 구간 리스크는 {level}입니다.",
-        caution="최대낙폭은 과거 관측치이며 미래 최대 손실 한도가 아닙니다.",
+        fact=f"Maximum drawdown is {format_percent(max_drawdown)}.",
+        interpretation=f"Under RISK-001, drawdown risk is classified as {level}.",
+        caution="Maximum drawdown is a historical observation, not a future loss limit.",
         evidence={"metric": "max_drawdown", "value": max_drawdown, "rule_id": "RISK-001", "chart": "drawdown"},
         rule_ids=["INSIGHT-CAT-003", "RISK-001"],
     )
@@ -160,9 +160,9 @@ def _volatility_insight(summary: dict[str, Any]) -> dict[str, Any] | None:
     return _insight(
         category="volatility",
         severity=_severity_from_level(level),
-        fact=f"연율화 변동성(Annualized Volatility)은 {format_percent(volatility)}입니다.",
-        interpretation=f"RISK-002 기준으로 변동성 리스크는 {level}입니다.",
-        caution="변동성은 가격 변화의 크기를 나타내며 손실 방향만을 의미하지는 않습니다.",
+        fact=f"Annualized volatility is {format_percent(volatility)}.",
+        interpretation=f"Under RISK-002, volatility risk is classified as {level}.",
+        caution="Volatility measures the size of price moves and does not only represent downside loss.",
         evidence={"metric": "annualized_volatility", "value": volatility, "rule_id": "RISK-002"},
         rule_ids=["INSIGHT-CAT-002", "RISK-002"],
     )
@@ -178,9 +178,9 @@ def _concentration_insight(metrics: dict[str, Any]) -> dict[str, Any] | None:
     return _insight(
         category="concentration",
         severity="HIGH" if level == "HIGH" else "MEDIUM" if level == "MODERATE" else "INFO",
-        fact=f"가장 큰 자산 비중은 {format_percent(max_weight)}이고 HHI는 {format_ratio(hhi)}입니다.",
-        interpretation=f"METRIC-015 기준으로 집중도는 {level}로 분류됩니다.",
-        caution="집중도는 성과 기여도를 높일 수 있지만 손실 집중 리스크도 확대할 수 있습니다.",
+        fact=f"The largest asset weight is {format_percent(max_weight)} and HHI is {format_ratio(hhi)}.",
+        interpretation=f"Under METRIC-015, concentration is classified as {level}.",
+        caution="Concentration can increase return contribution, but it can also amplify loss concentration risk.",
         evidence={"metric": "max_weight/hhi", "value": {"max_weight": max_weight, "hhi": hhi}, "rule_id": "METRIC-015"},
         rule_ids=["INSIGHT-CAT-006", "METRIC-015"],
     )
@@ -190,13 +190,13 @@ def _return_insight(summary: dict[str, Any]) -> dict[str, Any] | None:
     total_return = summary.get("total_return")
     if total_return is None:
         return None
-    direction = "양(+)의 방향" if total_return >= 0 else "음(-)의 방향"
+    direction = "positive" if total_return >= 0 else "negative"
     return _insight(
         category="return",
         severity="INFO",
-        fact=f"관측 기간의 누적수익률은 {format_percent(total_return)}입니다.",
-        interpretation=f"동일 기간 기준 성과 방향은 {direction}입니다.",
-        caution="수익률은 관측 기간에 민감하며, 기간을 바꾸면 결과가 달라질 수 있습니다.",
+        fact=f"Cumulative return over the observation window is {format_percent(total_return)}.",
+        interpretation=f"Performance direction over the same window is {direction}.",
+        caution="Return is sensitive to the selected observation window and may change with a different period.",
         evidence={"metric": "total_return", "value": total_return, "rule_id": "METRIC-003"},
         rule_ids=["INSIGHT-CAT-001", "METRIC-003"],
     )
@@ -210,9 +210,9 @@ def _sharpe_insight(summary: dict[str, Any]) -> dict[str, Any] | None:
     return _insight(
         category="sharpe",
         severity="INFO" if sharpe >= 0 else "WARNING",
-        fact=f"샤프비율(Sharpe Ratio)은 {format_ratio(sharpe)}입니다.",
-        interpretation=f"RISK-003 기준으로 위험 조정 성과는 {quality}로 분류됩니다.",
-        caution="Sharpe Ratio는 수익률 분포가 안정적이라는 가정에 영향을 받습니다.",
+        fact=f"Sharpe Ratio is {format_ratio(sharpe)}.",
+        interpretation=f"Under RISK-003, risk-adjusted performance is classified as {quality}.",
+        caution="Sharpe Ratio depends on assumptions about the stability of the return distribution.",
         evidence={"metric": "sharpe_ratio", "value": sharpe, "rule_id": "RISK-003"},
         rule_ids=["INSIGHT-CAT-004", "RISK-003"],
     )
@@ -228,9 +228,9 @@ def _correlation_insight(metrics: dict[str, Any]) -> dict[str, Any] | None:
     return _insight(
         category="correlation",
         severity="MEDIUM" if avg_corr > 0.7 else "INFO",
-        fact=f"자산 간 평균 상관계수는 {avg_corr:.2f}입니다.",
-        interpretation="상관계수가 높을수록 분산효과가 제한될 수 있습니다.",
-        caution="상관관계는 시장 국면에 따라 변할 수 있습니다.",
+        fact=f"Average cross-asset correlation is {avg_corr:.2f}.",
+        interpretation="Higher correlation can limit diversification benefits.",
+        caution="Correlation can change across market regimes.",
         evidence={"metric": "average_correlation", "value": avg_corr, "rule_id": "METRIC-013", "chart": "correlation_heatmap"},
         rule_ids=["INSIGHT-CAT-005", "METRIC-013"],
     )

@@ -159,30 +159,21 @@ def panel(
 ) -> Iterator[None]:
     action_html = f"<div>{action}</div>" if action else ""
     subtitle_html = f'<div class="fs-panel-subtitle">{_html(subtitle)}</div>' if subtitle else ""
-    class_names = ["fs-panel", "fs-panel-shell"]
+    class_names = ["fs-panel-shell"]
     if scroll:
         class_names.append("fs-panel-scroll")
     if body_class:
         class_names.append(body_class)
-    style_attr = f' style="--fs-panel-height: {height}px;"' if height else ""
-    st.markdown(
-        f"""
-        <div class="{' '.join(class_names)}"{style_attr}>
-          <div class="fs-panel-header">
-            <div>
-              <div class="fs-panel-title">{_html(title)}</div>
-              {subtitle_html}
-            </div>
-            {action_html}
-          </div>
-          <div class="fs-panel-body">
-        """,
-        unsafe_allow_html=True,
-    )
-    try:
+    with st.container(border=True, height=height):
+        header_html = (
+            f'<div class="{" ".join(class_names)}">'
+            '<div class="fs-panel-header">'
+            f'<div><div class="fs-panel-title">{_html(title)}</div>{subtitle_html}</div>'
+            f"{action_html}"
+            "</div></div>"
+        )
+        st.markdown(header_html, unsafe_allow_html=True)
         yield
-    finally:
-        st.markdown("</div></div>", unsafe_allow_html=True)
 
 
 def section_header(number: int, title: str, rule_id: str | None = None) -> None:
@@ -219,6 +210,22 @@ def rule_card(rule_id: str, title: str, description: str, status: str = "Passed"
     )
 
 
+def rule_chip(rule_id: str, title: str = "", status: str = "Passed", severity: str = "INFO") -> None:
+    tone = TONE_BY_SEVERITY.get(str(severity).upper(), "default")
+    st.markdown(
+        f"""
+        <div class="fs-rule-chip">
+          <div class="fs-rule-chip-main">
+            <span class="fs-rule-chip-id">{_html(rule_id)}</span>
+            <span class="fs-rule-chip-title">{_html(title)}</span>
+          </div>
+          {status_badge(status, tone)}
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 def insight_card(
     category: str,
     fact: str,
@@ -226,14 +233,32 @@ def insight_card(
     caution: str,
     severity: str = "INFO",
     selected: bool = False,
+    compact: bool = False,
 ) -> None:
     selected_class = " fs-insight-selected" if selected else ""
+    tone = TONE_BY_SEVERITY.get(str(severity).upper(), "default")
+
+    if compact:
+        st.markdown(
+            f"""
+            <div class="fs-insight-card fs-insight-compact{selected_class}" data-category="{_html(category)}" data-severity="{_html(severity)}">
+              <div class="fs-insight-title">
+                <span>{_html(category).title()}</span>
+                {status_badge(severity, tone)}
+              </div>
+              <div class="fs-insight-body">{_html(fact)}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        return
+
     st.markdown(
         f"""
         <div class="fs-insight-card{selected_class}" data-category="{_html(category)}" data-severity="{_html(severity)}">
           <div class="fs-insight-title">
             <span>{_html(category).title()}</span>
-            {status_badge(severity, TONE_BY_SEVERITY.get(str(severity).upper(), "default"))}
+            {status_badge(severity, tone)}
           </div>
           <div class="fs-insight-row fs-insight-row-fact">
             <span class="fs-insight-badge">Fact</span>

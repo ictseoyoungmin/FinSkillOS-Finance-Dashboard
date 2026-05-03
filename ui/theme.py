@@ -549,8 +549,8 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             border: 1px solid var(--fs-line);
             border-radius: 14px;
             background: linear-gradient(180deg, rgba(16, 34, 55, 0.88), rgba(12, 25, 42, 0.9));
-            padding: 22px 24px 18px 24px;
-            margin: 0 0 var(--fs-gap-lg) 0;
+            padding: 18px 20px 14px 20px;
+            margin: 0 0 var(--fs-gap-sm) 0;
         }
         .fs-topbar {
             display: flex;
@@ -607,10 +607,10 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             box-shadow: var(--fs-shadow);
         }
         .fs-control-shell {
-            margin-bottom: var(--fs-gap-lg);
+            margin-bottom: var(--fs-gap-sm);
         }
         .fs-control-shell .fs-panel-header {
-            margin-bottom: 0.9rem;
+            margin-bottom: 0.48rem;
         }
         .fs-control-shell [data-testid="stHorizontalBlock"] {
             align-items: end;
@@ -646,14 +646,14 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             transition: transform var(--fs-fast) var(--fs-ease), border-color var(--fs-fast) var(--fs-ease), background var(--fs-fast) var(--fs-ease), box-shadow var(--fs-fast) var(--fs-ease);
         }
         div[data-testid="stVerticalBlockBorderWrapper"] {
-            border-color: transparent !important;
-            border-radius: 0 !important;
-            background: transparent !important;
-            box-shadow: none !important;
+            border: 1px solid var(--fs-line) !important;
+            border-radius: var(--fs-radius) !important;
+            background: linear-gradient(180deg, rgba(14, 32, 52, 0.92), rgba(7, 17, 31, 0.94)) !important;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
             margin: 0;
         }
         div[data-testid="stVerticalBlockBorderWrapper"] > div {
-            padding: 0 !important;
+            padding: var(--fs-gap-md) var(--fs-gap-lg) !important;
         }
         div[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stVerticalBlock"] {
             gap: var(--fs-gap-sm);
@@ -955,6 +955,36 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             font-weight: 780;
             white-space: nowrap;
         }
+        .fs-rule-chip {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            border: 1px solid var(--fs-line);
+            border-radius: 10px;
+            background: linear-gradient(180deg, rgba(14, 32, 52, 0.72), rgba(7, 17, 31, 0.76));
+            padding: 0.42rem 0.52rem;
+            min-height: 48px;
+        }
+        .fs-rule-chip-main {
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.08rem;
+        }
+        .fs-rule-chip-id {
+            color: var(--fs-ink);
+            font-size: 0.72rem;
+            font-weight: 820;
+            white-space: nowrap;
+        }
+        .fs-rule-chip-title {
+            color: var(--fs-muted);
+            font-size: 0.62rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
         .fs-rule-description,
         .fs-insight-body {
             color: var(--fs-soft);
@@ -1058,6 +1088,19 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             min-width: 0;
             line-height: 1.45;
         }
+        .fs-insight-compact {
+            padding: 0.48rem 0.56rem !important;
+            min-height: unset !important;
+            border-left-width: 3px;
+        }
+        .fs-insight-compact .fs-insight-title {
+            margin-bottom: 0.18rem !important;
+        }
+        .fs-insight-compact .fs-insight-body {
+            font-size: 0.66rem !important;
+            line-height: 1.35 !important;
+            color: var(--fs-soft);
+        }
         .fs-empty-state {
             padding: 1rem;
             text-align: left;
@@ -1088,6 +1131,141 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             margin-top: 0.3rem;
             font-size: 0.74rem;
             position: relative;
+        }
+
+        /* =========================
+           FinSkillOS Density Pass
+           ========================= */
+
+        [data-testid="stMainBlockContainer"],
+        .main .block-container,
+        section.main > div.block-container {
+            padding: 0.45rem 0.85rem 1.15rem 0.85rem !important;
+            max-width: 1760px !important;
+        }
+
+        div[data-testid="stVerticalBlock"] {
+            gap: 0.48rem !important;
+        }
+
+        div[data-testid="stHorizontalBlock"] {
+            gap: 0.55rem !important;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"] {
+            padding: 0 !important;
+            border-radius: 10px !important;
+            margin-bottom: 0.45rem !important;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"] > div {
+            padding: 0.55rem 0.62rem !important;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"] h4,
+        div[data-testid="stVerticalBlockBorderWrapper"] h3 {
+            margin-top: 0 !important;
+            margin-bottom: 0.18rem !important;
+            line-height: 1.15 !important;
+        }
+
+        div[data-testid="stCaptionContainer"] {
+            margin-bottom: 0.28rem !important;
+        }
+
+        .fs-topbar {
+            margin-bottom: 0.48rem !important;
+        }
+
+        .fs-badge-row {
+            margin-top: 0.26rem !important;
+            gap: 0.28rem !important;
+        }
+
+        .fs-control-caption-compact {
+            margin: 0.04rem 0 0.18rem 0 !important;
+        }
+
+        .fs-metric-card {
+            min-height: 72px !important;
+            padding: 0.54rem 0.62rem !important;
+            gap: 0.5rem !important;
+        }
+
+        .fs-metric-icon {
+            width: 26px !important;
+            height: 26px !important;
+            border-radius: 7px !important;
+        }
+
+        .fs-metric-label {
+            font-size: 0.64rem !important;
+            margin-bottom: 0.18rem !important;
+        }
+
+        .fs-metric-value {
+            font-size: 1.08rem !important;
+        }
+
+        .fs-metric-caption {
+            font-size: 0.61rem !important;
+            margin-top: 0.22rem !important;
+        }
+
+        .fs-rule-card {
+            min-height: 82px !important;
+            padding: 0.55rem !important;
+        }
+
+        .fs-rule-top {
+            margin-bottom: 0.28rem !important;
+        }
+
+        .fs-rule-id {
+            font-size: 0.72rem !important;
+        }
+
+        .fs-rule-description {
+            font-size: 0.64rem !important;
+            line-height: 1.35 !important;
+        }
+
+        .fs-insight-card {
+            padding: 0.52rem !important;
+            gap: 0.28rem !important;
+            margin-bottom: 0.36rem !important;
+        }
+
+        .fs-insight-row {
+            padding: 0.34rem 0.42rem !important;
+            gap: 0.38rem !important;
+        }
+
+        .fs-insight-body {
+            font-size: 0.64rem !important;
+            line-height: 1.32 !important;
+        }
+
+        .fs-validation-row {
+            padding: 0.48rem !important;
+            gap: 0.45rem !important;
+        }
+
+        .fs-validation-icon {
+            width: 1.55rem !important;
+            height: 1.55rem !important;
+        }
+
+        .fs-data-table th,
+        .fs-data-table td,
+        .fs-kv-table th,
+        .fs-kv-table td {
+            padding: 0.34rem 0.42rem !important;
+            font-size: 0.64rem !important;
+        }
+
+        div[data-testid="stPlotlyChart"] {
+            min-height: unset !important;
         }
 
         @media (min-width: 1500px) {
@@ -1236,6 +1414,7 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             .fs-summary-stat,
             .fs-panel,
             .fs-rule-card,
+            .fs-rule-chip,
             .fs-insight-card,
             .fs-empty-state,
             .fs-portfolio-card,
@@ -1368,7 +1547,7 @@ def style_plotly_figure(fig: go.Figure) -> go.Figure:
         plot_bgcolor=plot_bg,
         font=dict(color=font_color, family="DM Sans, Aptos, Segoe UI, sans-serif", size=11),
         colorway=PLOTLY_COLORS,
-        margin=dict(l=12, r=12, t=22, b=18),
+        margin=dict(l=8, r=8, t=18, b=8),
         legend_title_text="",
         legend=dict(
             orientation="h",
