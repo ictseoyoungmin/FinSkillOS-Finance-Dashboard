@@ -17,8 +17,20 @@ PLOTLY_COLORS = [
 ]
 
 
+LIGHT_APPLIED_RULES_CSS = '\n        /* FINSKILLOS_APPLIED_RULES_THEME_V11_3_LIGHT\n           Explicit Applied Rules light theme override.\n           This is injected from apply_dashboard_style(theme) when theme == Light.\n           It intentionally uses stronger specificity than the v11 custom CSS.\n        */\n\n        html body [data-testid="stAppViewContainer"] .fs-governance-grade,\n        html body [data-testid="stAppViewContainer"] .fs-rule-health-strip > div {\n            border: 1px solid rgba(15, 23, 42, 0.10) !important;\n            background:\n                radial-gradient(circle at 0% 0%, rgba(20, 184, 166, 0.08), transparent 10rem),\n                linear-gradient(180deg, #ffffff, #f8fafc) !important;\n            color: #0f172a !important;\n            box-shadow:\n                inset 0 1px 0 rgba(255, 255, 255, 0.92),\n                0 8px 20px rgba(15, 23, 42, 0.06) !important;\n        }\n\n        html body [data-testid="stAppViewContainer"] .fs-governance-grade-label,\n        html body [data-testid="stAppViewContainer"] .fs-rule-health-strip small {\n            color: #64748b !important;\n        }\n\n        html body [data-testid="stAppViewContainer"] .fs-governance-grade-value,\n        html body [data-testid="stAppViewContainer"] .fs-rule-health-strip span {\n            color: #0fbea9 !important;\n            text-shadow: none !important;\n        }\n'
+
+DARK_APPLIED_RULES_CSS = '\n        /* FINSKILLOS_APPLIED_RULES_THEME_V11_3_DARK\n           Explicit Applied Rules dark theme override.\n        */\n\n        html body [data-testid="stAppViewContainer"] .fs-governance-grade,\n        html body [data-testid="stAppViewContainer"] .fs-rule-health-strip > div {\n            border: 1px solid var(--fs-line) !important;\n            background:\n                radial-gradient(circle at 0% 0%, rgba(0, 212, 160, 0.10), transparent 10rem),\n                linear-gradient(180deg, rgba(13, 28, 45, 0.96), rgba(7, 17, 31, 0.98)) !important;\n            color: var(--fs-ink) !important;\n            box-shadow:\n                inset 0 1px 0 rgba(255, 255, 255, 0.04),\n                0 8px 20px rgba(0, 0, 0, 0.12) !important;\n        }\n\n        html body [data-testid="stAppViewContainer"] .fs-governance-grade-label,\n        html body [data-testid="stAppViewContainer"] .fs-rule-health-strip small {\n            color: var(--fs-muted) !important;\n        }\n\n        html body [data-testid="stAppViewContainer"] .fs-governance-grade-value,\n        html body [data-testid="stAppViewContainer"] .fs-rule-health-strip span {\n            color: var(--fs-teal) !important;\n            text-shadow: none !important;\n        }\n'
+
 def apply_dashboard_style(theme: str = "Dark") -> None:
     """Apply the FinSkillOS product shell theme."""
+
+
+    # Applied Rules custom widgets need explicit theme-aware CSS because
+    # their original v11 styles used hard-coded dark surfaces, while existing
+    # CSS variables may also remain dark under Streamlit's Light theme.
+    fs_theme_name = str(theme or "Dark").strip().lower()
+    fs_applied_rules_theme_css = LIGHT_APPLIED_RULES_CSS if fs_theme_name.startswith("light") else DARK_APPLIED_RULES_CSS
+    st.markdown(f"<style>{fs_applied_rules_theme_css}</style>", unsafe_allow_html=True)
 
     st.markdown(
         """
