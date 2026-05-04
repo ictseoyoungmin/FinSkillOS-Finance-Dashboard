@@ -346,10 +346,10 @@ def render_overview_dashboard(
             render_risk_return_scatter(metrics, height=245)
     with lower_right:
         with panel("Rule-Based Insights", "Fact, interpretation, and caution generated from Skills.md rules", height=340, scroll=True):
+            vspace(14)
             items = (insights or {}).get("insights", [])
             if not items:
                 empty_state("No Insights Generated", "The insight engine did not produce evidence-linked cards for this dataset.")
-                vspace(14)
             for item in items[:3]:
                 insight_card(
                     category=str(item.get("category", "Insight")),
@@ -523,6 +523,7 @@ def render_return_analysis_tab(
             render_cumulative_return_chart(metrics, height=300)
     with top_right:
         with panel("Return Insights", None, height=380, scroll=True):
+            vspace(14)
             items = [item for item in (insights or {}).get("insights", []) if item.get("category") in {"return", "sharpe", "data_quality"}]
             if not items:
                 empty_state("No Return Insights", "No return-specific insight was generated.")
@@ -604,6 +605,7 @@ def render_risk_analysis_tab(
             render_rolling_volatility_chart(metrics, periods_per_year=periods, window=min(periods, 252), height=285)
     with top_right:
         with panel("Risk Commentary", None, height=365, scroll=True, body_class="fs-panel-lean"):
+            vspace(20)
             items = [item for item in (insights or {}).get("insights", []) if item.get("category") in {"drawdown", "volatility", "data_quality"}]
             if not items:
                 empty_state("No Risk Insights", "No risk-specific insight was generated.")
@@ -624,6 +626,7 @@ def render_risk_analysis_tab(
             render_var_cvar_distribution(metrics, height=245)
     with lower_mid:
         with panel("Stress Scenario Impact", None, height=324, scroll=True, body_class="fs-panel-lean"):
+            vspace(14)
             stress = pd.DataFrame(
                 [
                     {"scenario": "Observed worst period", "impact": format_percent(summary.get("max_drawdown")), "severity": summary.get("drawdown_risk_level", "UNKNOWN")},
@@ -633,7 +636,8 @@ def render_risk_analysis_tab(
             )
             compact_data_table(stress.astype(str).to_dict("records"), columns=["scenario", "impact", "severity"], max_rows=5)
     with lower_right:
-        with panel("Data Profile & Assumptions", None, height=324, scroll=True):
+        with panel("Data Profile & Assumptions", None, height=324, scroll=True, body_class="fs-panel-lean"):
+            vspace(14)
             assumptions = [
                 {"item": "Return Frequency", "value": str(profile.get("frequency", "unknown")).title() if profile else "N/A"},
                 {"item": "Periods / Year", "value": periods},
@@ -687,6 +691,7 @@ def render_diversification_tab(
             render_allocation_chart(schema, height=350)
     with top_right:
         with panel("Diversification Insights", None, height=428, scroll=True):
+            vspace(14)
             items = [item for item in (insights or {}).get("insights", []) if item.get("category") in {"correlation", "concentration", "data_quality"}]
             if not items:
                 empty_state("No Diversification Insights", "Correlation or allocation-specific insight was not generated.")
@@ -908,6 +913,7 @@ def render_applied_rules_tab(df: pd.DataFrame | None, audit: RuleAuditLog) -> No
             else:
                 compact_data_table(timeline.astype(str).to_dict("records"), columns=["time", "rule", "status"], max_rows=10)
             st.markdown(status_badge("Live trace", "default"), unsafe_allow_html=True)
+            vspace(8)
 
     with graph_col:
         with panel("Rule Dependency Graph", "Hard and soft dependencies are represented by rule domains in this MVP.", height=520, scroll=True):
@@ -983,10 +989,12 @@ def render_reports_tab(
     library_col, preview_col, action_col, summary_col = st.columns([1.0, 1.25, 0.82, 0.9])
     with library_col:
         with panel("Report Library", None, height=700, scroll=True):
+            vspace(8)
             compact_data_table(_report_library(source_name).astype(str).to_dict("records"), max_rows=8)
 
     with preview_col:
         with panel("Report Preview", None, height=700, scroll=True):
+            vspace(8)
             if not html_report:
                 empty_state("Preview Unavailable", "Report preview requires an analysis result.")
             else:
@@ -1012,6 +1020,7 @@ def render_reports_tab(
                 {"format": "Rules JSON", "status": "Available"},
             ]
             compact_data_table(available_exports, columns=["format", "status"], max_rows=3)
+            vspace(20)
             if html_report:
                 st.download_button(
                     "Download HTML Report",
@@ -1046,6 +1055,7 @@ def render_reports_tab(
 
     with summary_col:
         with panel("Report Summary", None, height=700, scroll=True):
+            vspace(8)
             includes = pd.DataFrame(
                 [
                     {"item": "Executive summary with key metrics", "status": "Included"},

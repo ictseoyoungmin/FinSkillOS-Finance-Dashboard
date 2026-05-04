@@ -1126,6 +1126,41 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             min-width: 100% !important;
         }
 
+
+        /* FINSKILLOS_TABLE_BOTTOM_CLIP_FIX
+           Add a small bottom breathing room for custom HTML tables.
+           This prevents the last row/bottom border from being clipped by
+           Streamlit border containers and local scroll panels.
+        */
+
+        .fs-table-scroll {
+            margin-bottom: 10px !important;
+            padding-bottom: 1px !important;
+        }
+
+        .fs-data-table,
+        .fs-kv-table {
+            margin-bottom: 0 !important;
+        }
+
+        .fs-data-table tbody tr:last-child td,
+        .fs-kv-table tbody tr:last-child td {
+            border-bottom: 1px solid var(--fs-line) !important;
+            padding-bottom: 0.62rem !important;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-scroll) > div {
+            padding-bottom: 12px !important;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-scroll) > div > [data-testid="stVerticalBlock"] {
+            padding-bottom: 4px !important;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell):not(:has(.fs-panel-scroll)) {
+            padding-bottom: 2px !important;
+        }
+
         @keyframes fs-card-in {
             from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
