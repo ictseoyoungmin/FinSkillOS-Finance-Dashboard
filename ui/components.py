@@ -24,6 +24,8 @@ TONE_BY_SEVERITY = {
 def _html(value: object) -> str:
     return escape("" if value is None else str(value))
 
+def vspace(px: int = 14) -> None:
+    st.markdown(f'<div style="height:{px}px;"></div>', unsafe_allow_html=True)
 
 def status_badge(text: str, tone: str = "default") -> str:
     css_class = "fs-status"

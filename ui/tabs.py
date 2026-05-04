@@ -40,6 +40,7 @@ from ui.components import (
     rule_validation_list,
     status_badge,
     summary_stat_card,
+    vspace,
 )
 
 
@@ -346,6 +347,7 @@ def render_overview_dashboard(
             items = (insights or {}).get("insights", [])
             if not items:
                 empty_state("No Insights Generated", "The insight engine did not produce evidence-linked cards for this dataset.")
+                vspace(14)
             for item in items[:3]:
                 insight_card(
                     category=str(item.get("category", "Insight")),
@@ -355,6 +357,7 @@ def render_overview_dashboard(
                     severity=str(item.get("severity", "INFO")),
                     compact=True,
                 )
+                vspace(14)
 
     records = audit.deduplicated_records()
     st.markdown("### Applied Skill Rules")
@@ -526,6 +529,7 @@ def render_return_analysis_tab(
                     severity=str(item.get("severity", "INFO")),
                     compact=True,
                 )
+                vspace(14)
 
     bottom_left, bottom_mid, bottom_right = st.columns([1.0, 1.0, 1.0])
     with bottom_left:
@@ -604,6 +608,7 @@ def render_risk_analysis_tab(
                     severity=str(item.get("severity", "INFO")),
                     compact=True,
                 )
+                vspace(14)
 
     lower_left, lower_mid, lower_right = st.columns([1.0, 1.0, 1.0])
     with lower_left:
@@ -683,6 +688,7 @@ def render_diversification_tab(
                     caution=str(item.get("caution", "")),
                     severity=str(item.get("severity", "INFO")),
                 )
+                vspace(14)
 
     bottom_left, bottom_mid, bottom_right = st.columns([1.0, 1.0, 1.0])
     with bottom_left:
@@ -745,8 +751,10 @@ def render_insights_tab(
                 f"Across `{source_name}`, FinSkillOS generated **{len(items)}** evidence-linked insight(s). "
                 f"The lead signal is **{lead.get('category', 'insight')}** with severity **{lead.get('severity', 'INFO')}**."
             )
+            
         else:
             empty_state("No Insights Generated", "The insight engine did not produce evidence-linked insight cards for this dataset.")
+        vspace(14)
 
     feed_col, detail_col, trace_col = st.columns([0.92, 1.35, 0.86])
     with feed_col:
@@ -754,18 +762,15 @@ def render_insights_tab(
             if not items:
                 empty_state("Empty Feed", "No insight cards are available.")
             for idx, item in enumerate(items):
-                label = f"{idx + 1}. {str(item.get('category', 'Insight')).title()} · {item.get('severity', 'INFO')}"
-                if st.button(label, key=f"insight_select_{idx}", use_container_width=True):
-                    st.session_state["selected_insight_index"] = idx
-                    selected_index, selected = idx, item
                 insight_card(
                     category=str(item.get("category", "Insight")),
                     fact=str(item.get("fact", "")),
                     interpretation=str(item.get("interpretation", "")),
                     caution=str(item.get("caution", "")),
                     severity=str(item.get("severity", "INFO")),
-                    selected=idx == selected_index,
+                    selected=idx == idx,
                 )
+                vspace(12)
 
     with detail_col:
         with panel("Selected Insight", None, height=760, scroll=True):

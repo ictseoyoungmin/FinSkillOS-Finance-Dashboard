@@ -54,6 +54,15 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             --fs-amber: #f5a623;
             --fs-purple: #a874ff;
             --fs-green: #35d990;
+            --fs-accent-strong: #19c6b4;
+            --fs-accent-deep: #127c8c;
+            --fs-accent-soft: rgba(25, 198, 180, 0.12);
+            --fs-accent-line: rgba(25, 198, 180, 0.32);
+            --fs-button-bg: linear-gradient(135deg, #169c9f 0%, #1a86ae 52%, #246db9 100%);
+            --fs-button-hover-bg: linear-gradient(135deg, #1bb0aa 0%, #1f95bd 52%, #2b77c6 100%);
+            --fs-button-shadow: 0 10px 24px rgba(17, 123, 140, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+            --fs-button-shadow-hover: 0 14px 28px rgba(17, 123, 140, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+            --fs-surface-tint: linear-gradient(180deg, rgba(18, 42, 60, 0.9), rgba(8, 20, 34, 0.94));
             --fs-radius: 8px;
             --fs-shadow: 0 10px 34px rgba(0, 0, 0, 0.28);
             --fs-glow: 0 0 0 1px rgba(0, 212, 160, 0.3), 0 0 22px rgba(0, 212, 160, 0.09);
@@ -234,14 +243,16 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
         .stDownloadButton > button,
         [data-testid="stPopover"] > button,
         [data-testid="stPopover"] button {
-            border-radius: var(--fs-radius);
-            border: 1px solid rgba(37, 242, 199, 0.42);
-            background: linear-gradient(135deg, rgba(0, 128, 126, 0.86), rgba(20, 182, 169, 0.82));
+            border-radius: 12px;
+            border: 1px solid var(--fs-accent-line);
+            background: var(--fs-button-bg);
             color: #f3fffd;
             font-weight: 700;
             min-height: 2.25rem;
             font-size: 0.78rem;
-            transition: transform var(--fs-fast) var(--fs-ease), border-color var(--fs-fast) var(--fs-ease), box-shadow var(--fs-fast) var(--fs-ease), filter var(--fs-fast) var(--fs-ease);
+            letter-spacing: -0.01em;
+            box-shadow: var(--fs-button-shadow);
+            transition: transform var(--fs-fast) var(--fs-ease), border-color var(--fs-fast) var(--fs-ease), box-shadow var(--fs-fast) var(--fs-ease), filter var(--fs-fast) var(--fs-ease), background var(--fs-fast) var(--fs-ease);
         }
 
         .fs-control-shell [data-testid="stPopover"] > button,
@@ -252,11 +263,11 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             height: 2.25rem !important;
             min-height: 2.25rem !important;
             padding: 0 !important;
-            border: 1px solid var(--fs-line) !important;
+            border: 1px solid rgba(129, 166, 202, 0.18) !important;
             border-radius: 999px !important;
-            background: var(--fs-control-bg) !important;
+            background: linear-gradient(180deg, rgba(21, 37, 56, 0.92), rgba(12, 23, 39, 0.94)) !important;
             color: var(--fs-ink) !important;
-            box-shadow: none !important;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 4px 12px rgba(0, 0, 0, 0.18) !important;
         }
 
         .fs-control-shell [data-testid="stPopover"] svg,
@@ -276,10 +287,11 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
         .stButton > button:hover,
         .stDownloadButton > button:hover,
         [data-testid="stPopover"] > button:hover {
-            border-color: var(--fs-teal);
-            box-shadow: var(--fs-glow);
+            border-color: rgba(118, 235, 219, 0.52);
+            background: var(--fs-button-hover-bg);
+            box-shadow: var(--fs-button-shadow-hover);
             transform: translateY(-1px);
-            filter: saturate(1.08);
+            filter: saturate(1.04);
         }
 
         .fs-control-shell [data-testid="stPopover"] > button:hover,
@@ -290,10 +302,10 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
         .fs-control-shell [data-testid="stPopover"] button:active,
         .fs-control-shell [data-testid="stPopover"] > button[aria-expanded="true"],
         .fs-control-shell [data-testid="stPopover"] button[aria-expanded="true"] {
-            border-color: var(--fs-teal) !important;
-            background: var(--fs-control-bg) !important;
+            border-color: var(--fs-accent-line) !important;
+            background: linear-gradient(180deg, rgba(24, 43, 64, 0.96), rgba(14, 28, 47, 0.98)) !important;
             color: var(--fs-ink) !important;
-            box-shadow: var(--fs-glow) !important;
+            box-shadow: 0 0 0 1px rgba(25, 198, 180, 0.16), 0 8px 18px rgba(14, 87, 102, 0.18) !important;
         }
 
         [data-baseweb="popover"] {
@@ -821,9 +833,9 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             display: inline-flex;
             align-items: center;
             gap: 0.32rem;
-            border: 1px solid rgba(37, 242, 199, 0.36);
-            background: rgba(37, 242, 199, 0.08);
-            color: var(--fs-teal);
+            border: 1px solid var(--fs-accent-line);
+            background: var(--fs-accent-soft);
+            color: #8ae7dd;
             border-radius: 999px;
             padding: 0.14rem 0.4rem;
             font-size: 0.6rem;
@@ -953,7 +965,7 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
         .fs-panel:hover,
         .fs-rule-card:hover,
         .fs-insight-card:hover {
-            border-color: rgba(37, 242, 199, 0.38);
+            border-color: var(--fs-accent-line);
             background: var(--fs-panel-hover);
             transform: translateY(-1px);
         }
@@ -973,8 +985,8 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             border-radius: 8px;
             display: grid;
             place-items: center;
-            background: rgba(37, 242, 199, 0.1);
-            color: var(--fs-teal);
+            background: linear-gradient(180deg, rgba(25, 198, 180, 0.18), rgba(36, 109, 185, 0.12));
+            color: #6ee5d2;
             flex: 0 0 2rem;
             font-size: 0.62rem;
             font-weight: 900;
@@ -1124,7 +1136,7 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             padding: 0.64rem;
             border: 1px solid rgba(129, 166, 202, 0.18);
             border-radius: var(--fs-radius);
-            background: linear-gradient(180deg, rgba(21, 30, 45, 0.88), rgba(12, 20, 34, 0.92));
+            background: var(--fs-surface-tint);
         }
         .fs-validation-icon {
             width: 1.85rem;
@@ -1132,8 +1144,8 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             border-radius: 8px;
             display: grid;
             place-items: center;
-            color: var(--fs-teal);
-            background: rgba(37, 242, 199, 0.1);
+            color: #79dfd3;
+            background: linear-gradient(180deg, rgba(25, 198, 180, 0.16), rgba(36, 109, 185, 0.1));
             font-weight: 850;
             flex: 0 0 auto;
         }
@@ -1280,12 +1292,13 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
         .fs-status {
             display: inline-flex;
             border-radius: 999px;
-            padding: 0.13rem 0.42rem;
+            padding: 0.14rem 0.46rem;
             font-size: 0.62rem;
-            font-weight: 760;
-            border: 1px solid rgba(37, 242, 199, 0.38);
-            color: var(--fs-teal);
-            background: rgba(37, 242, 199, 0.1);
+            font-weight: 780;
+            letter-spacing: 0.01em;
+            border: 1px solid rgba(118, 235, 219, 0.34);
+            color: #7de4d8;
+            background: rgba(25, 198, 180, 0.1);
             white-space: nowrap;
         }
         .fs-status-warning {
@@ -1306,11 +1319,14 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             display: flex;
             flex-direction: column;
             gap: var(--fs-gap-sm);
+            background:
+                linear-gradient(180deg, rgba(18, 34, 52, 0.92), rgba(10, 22, 36, 0.96)),
+                var(--fs-card-bg);
         }
         .fs-insight-selected {
-            border-color: rgba(37, 242, 199, 0.5);
-            box-shadow: var(--fs-glow);
-            background: linear-gradient(180deg, rgba(20, 52, 74, 0.95), rgba(8, 22, 38, 0.95));
+            border-color: rgba(118, 235, 219, 0.44);
+            box-shadow: 0 0 0 1px rgba(25, 198, 180, 0.18), 0 14px 30px rgba(10, 54, 67, 0.22);
+            background: linear-gradient(180deg, rgba(24, 50, 72, 0.96), rgba(11, 25, 40, 0.98));
         }
         .fs-insight-card[data-category="caution"],
         .fs-insight-card[data-category="data_quality"] {
@@ -1329,47 +1345,48 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             justify-content: space-between;
             gap: 0.5rem;
             margin-bottom: 0;
+            letter-spacing: -0.01em;
         }
         .fs-insight-row {
             display: flex;
             align-items: flex-start;
             gap: 0.52rem;
-            border: 1px solid rgba(255, 255, 255, 0.055);
-            border-radius: var(--fs-radius);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            border-radius: 10px;
             padding: 0.48rem 0.54rem;
-            background: rgba(11, 18, 31, 0.44);
+            background: linear-gradient(180deg, rgba(14, 25, 39, 0.72), rgba(10, 19, 31, 0.76));
         }
         .fs-insight-row-fact {
-            background: rgba(0, 212, 160, 0.08);
-            border-color: rgba(0, 212, 160, 0.16);
+            background: rgba(25, 198, 180, 0.08);
+            border-color: rgba(25, 198, 180, 0.18);
         }
         .fs-insight-row-interpretation {
-            background: rgba(79, 145, 232, 0.08);
-            border-color: rgba(79, 145, 232, 0.16);
+            background: rgba(69, 133, 214, 0.08);
+            border-color: rgba(69, 133, 214, 0.18);
         }
         .fs-insight-row-caution {
-            background: rgba(245, 166, 35, 0.08);
-            border-color: rgba(245, 166, 35, 0.18);
+            background: rgba(214, 150, 53, 0.08);
+            border-color: rgba(214, 150, 53, 0.2);
         }
         .fs-insight-badge {
             flex: 0 0 auto;
-            border-radius: 5px;
-            padding: 0.12rem 0.42rem;
+            border-radius: 999px;
+            padding: 0.16rem 0.48rem;
             font-size: 0.62rem;
-            font-weight: 760;
+            font-weight: 780;
             white-space: nowrap;
         }
         .fs-insight-row-fact .fs-insight-badge {
-            color: var(--fs-teal);
-            background: rgba(0, 212, 160, 0.14);
+            color: #71e0d0;
+            background: rgba(25, 198, 180, 0.14);
         }
         .fs-insight-row-interpretation .fs-insight-badge {
             color: var(--fs-blue);
-            background: rgba(79, 145, 232, 0.14);
+            background: rgba(69, 133, 214, 0.14);
         }
         .fs-insight-row-caution .fs-insight-badge {
             color: var(--fs-amber);
-            background: rgba(245, 166, 35, 0.14);
+            background: rgba(214, 150, 53, 0.14);
         }
         .fs-insight-row .fs-insight-body {
             min-width: 0;
@@ -1724,6 +1741,15 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
                 --fs-amber: #b7791f;
                 --fs-purple: #7c3aed;
                 --fs-green: #168a52;
+                --fs-accent-strong: #0f9f95;
+                --fs-accent-deep: #1d6fb1;
+                --fs-accent-soft: rgba(15, 159, 149, 0.08);
+                --fs-accent-line: rgba(15, 159, 149, 0.22);
+                --fs-button-bg: linear-gradient(135deg, #16a29a 0%, #1e8ab3 52%, #2c75bf 100%);
+                --fs-button-hover-bg: linear-gradient(135deg, #1ab0a4 0%, #2896bf 52%, #357ec7 100%);
+                --fs-button-shadow: 0 8px 18px rgba(29, 111, 177, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+                --fs-button-shadow-hover: 0 12px 22px rgba(29, 111, 177, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+                --fs-surface-tint: linear-gradient(180deg, rgba(250, 252, 255, 0.98), rgba(242, 247, 251, 0.94));
                 --fs-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
                 --fs-glow: 0 0 0 1px rgba(0, 151, 124, 0.18), 0 8px 18px rgba(0, 151, 124, 0.06);
             }
@@ -1814,7 +1840,7 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             }
             .fs-validation-icon,
             .fs-metric-icon {
-                background: rgba(0, 151, 124, 0.1);
+                background: linear-gradient(180deg, rgba(15, 159, 149, 0.12), rgba(37, 99, 235, 0.08));
             }
             .fs-topbar,
             .fs-page-title,
@@ -1889,8 +1915,36 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             }
             .stButton > button,
             .stDownloadButton > button {
-                background: linear-gradient(135deg, rgba(0, 151, 124, 0.92), rgba(8, 145, 178, 0.88));
+                background: var(--fs-button-bg);
                 color: #ffffff;
+                border-color: var(--fs-accent-line);
+                box-shadow: var(--fs-button-shadow);
+            }
+            .stButton > button:hover,
+            .stDownloadButton > button:hover,
+            [data-testid="stPopover"] > button:hover {
+                background: var(--fs-button-hover-bg) !important;
+                box-shadow: var(--fs-button-shadow-hover) !important;
+            }
+            .fs-control-shell [data-testid="stPopover"] > button,
+            .fs-control-shell [data-testid="stPopover"] button {
+                background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(241, 246, 251, 0.96)) !important;
+                border-color: rgba(36, 48, 68, 0.12) !important;
+                color: var(--fs-soft) !important;
+                box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85), 0 6px 14px rgba(15, 23, 42, 0.06) !important;
+            }
+            .fs-control-shell [data-testid="stPopover"] > button:hover,
+            .fs-control-shell [data-testid="stPopover"] button:hover,
+            .fs-control-shell [data-testid="stPopover"] > button:focus,
+            .fs-control-shell [data-testid="stPopover"] button:focus,
+            .fs-control-shell [data-testid="stPopover"] > button:active,
+            .fs-control-shell [data-testid="stPopover"] button:active,
+            .fs-control-shell [data-testid="stPopover"] > button[aria-expanded="true"],
+            .fs-control-shell [data-testid="stPopover"] button[aria-expanded="true"] {
+                background: linear-gradient(180deg, rgba(255, 255, 255, 1), rgba(237, 244, 250, 0.98)) !important;
+                border-color: var(--fs-accent-line) !important;
+                color: var(--fs-ink) !important;
+                box-shadow: 0 0 0 1px rgba(15, 159, 149, 0.1), 0 8px 18px rgba(29, 111, 177, 0.08) !important;
             }
             .fs-badge-muted {
                 background: rgba(226, 232, 240, 0.74);
