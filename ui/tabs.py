@@ -1399,3 +1399,365 @@ def render_reports_tab(
                 rule_validation_list(records, limit=6)
 
     st.markdown('<div class="fs-row-spacer fs-row-spacer-sm"></div>', unsafe_allow_html=True)
+
+# ---------------------------------------------------------------------------
+# Layout override: Applied Rules tab v11
+# Appended by apply_applied_rules_layout_v11.py.
+# This later definition intentionally overrides the earlier render_applied_rules_tab.
+# ---------------------------------------------------------------------------
+def render_applied_rules_tab(
+    df: pd.DataFrame | None,
+    audit: RuleAuditLog,
+) -> None:
+    """Render the Applied Rules tab as a full audit browser.
+
+    v11 fixes the main usability issue: Rules Executed can be 45+ while the
+    visible table was capped by max_rows. The rules table now renders all
+    filtered rows inside a local scroll panel.
+    """
+
+    if not _analysis_available(df):
+        return
+
+    records = _rule_records(audit)
+    summary = _rule_summary(records)
+
+    if not records:
+        empty_state("No Applied Rules", "Rule audit records will appear after analysis.")
+        return
+
+    rules_df = pd.DataFrame(records).copy()
+    preferred_cols = ["rule_id", "prefix", "step", "severity", "result"]
+    available_cols = [col for col in preferred_cols if col in rules_df.columns]
+    rules_df = rules_df[available_cols].copy()
+
+    rules_df.insert(0, "order", range(1, len(rules_df) + 1))
+    rules_df["status"] = rules_df["severity"].map(
+        lambda value: "review" if str(value).upper() == "WARNING" else "blocked" if str(value).upper() == "ERROR" else "passed"
+    )
+
+    search = st.text_input(
+        "Search rules",
+        placeholder="Search by rule ID, prefix, step, severity, or result...",
+        label_visibility="collapsed",
+        key="applied_rules_search_v11",
+    ).strip()
+
+    filtered_df = rules_df
+    if search:
+        mask = rules_df.astype(str).apply(
+            lambda col: col.str.contains(search, case=False, na=False)
+        ).any(axis=1)
+        filtered_df = rules_df[mask].copy()
+
+    warnings = int((rules_df["severity"].astype(str).str.upper() == "WARNING").sum()) if "severity" in rules_df.columns else 0
+    blocked = int((rules_df["severity"].astype(str).str.upper() == "ERROR").sum()) if "severity" in rules_df.columns else 0
+    passed = max(len(rules_df) - warnings - blocked, 0)
+
+    top_cols = st.columns(5)
+    with top_cols[0]:
+        metric_card("Rules Executed", f"{len(records):,}", "Deduplicated audit records", "teal", "#")
+    with top_cols[1]:
+        metric_card("Visible Rows", f"{len(filtered_df):,}", "After search filter", "blue", "F")
+    with top_cols[2]:
+        metric_card("Coverage", f"{summary['coverage']}/{summary['required']}", "Required Skill categories", "purple", "C")
+    with top_cols[3]:
+        metric_card("Warnings", f"{warnings:,}", "Review-level records", "amber" if warnings else "teal", "!")
+    with top_cols[4]:
+        metric_card("Blocked", f"{blocked:,}", "Error-level records", "red" if blocked else "teal", "X")
+
+    vspace(16)
+
+    left, right = st.columns([1.72, 1.0])
+    with left:
+        with panel(
+            "Rules Table",
+            f"Showing {len(filtered_df):,} of {len(rules_df):,} executed rule records",
+            height=560,
+            scroll=True,
+        ):
+            if filtered_df.empty:
+                empty_state("No Matching Rules", "No rule audit records matched the current search.")
+            else:
+                display_cols = ["order", "rule_id", "prefix", "step", "severity", "status", "result"]
+                display_cols = [col for col in display_cols if col in filtered_df.columns]
+                compact_data_table(
+                    filtered_df.astype(str).to_dict("records"),
+                    columns=display_cols,
+                    max_rows=len(filtered_df),
+                )
+
+    with right:
+        with panel("Governance Overview", "Coverage, severity, and source status", height=260, scroll=True):
+            integrity_grade = "A+" if blocked == 0 and summary["coverage"] == summary["required"] else "A" if blocked == 0 else "Review"
+            st.markdown(
+                f"""
+                <div class="fs-governance-grade">
+                  <div class="fs-governance-grade-label">System Integrity</div>
+                  <div class="fs-governance-grade-value">{integrity_grade}</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            rows = [
+                {"item": "Rule Coverage", "value": f"{summary['coverage']}/{summary['required']}"},
+                {"item": "Rules Executed", "value": f"{summary['executed']:,}"},
+                {"item": "Passed", "value": f"{passed:,}"},
+                {"item": "Warnings", "value": f"{warnings:,}"},
+                {"item": "Blocked", "value": f"{blocked:,}"},
+                {"item": "Loaded From", "value": "Skills.md"},
+            ]
+            key_value_table(rows)
+
+        vspace(12)
+
+        with panel("Rule Domains", "Executed records grouped by rule prefix", height=288, scroll=True):
+            if "prefix" not in rules_df.columns:
+                empty_state("No Prefix Data", "Rule prefix metadata is unavailable.")
+            else:
+                domain_rows = (
+                    rules_df.groupby("prefix", dropna=False)
+                    .size()
+                    .reset_index(name="rules")
+                    .sort_values("rules", ascending=False)
+                )
+                compact_data_table(
+                    domain_rows.astype(str).to_dict("records"),
+                    columns=["prefix", "rules"],
+                    max_rows=len(domain_rows),
+                )
+
+    vspace(10)
+
+    lower_left, lower_mid, lower_right = st.columns([1.05, 1.0, 1.25])
+    with lower_left:
+        with panel("Execution Timeline", "First-to-last audit execution order", height=360, scroll=True):
+            timeline_df = filtered_df[["order", "rule_id", "status"]].copy() if not filtered_df.empty else pd.DataFrame()
+            if timeline_df.empty:
+                empty_state("No Timeline Rows", "No filtered rules are available.")
+            else:
+                timeline_df["time"] = timeline_df["order"].map(lambda value: f"T+{int(value):02d}")
+                timeline_df = timeline_df[["time", "rule_id", "status"]]
+                compact_data_table(
+                    timeline_df.astype(str).to_dict("records"),
+                    columns=["time", "rule_id", "status"],
+                    max_rows=len(timeline_df),
+                )
+
+    with lower_mid:
+        with panel("Severity Breakdown", "Passed, review, and blocked audit states", height=360, scroll=True):
+            severity_rows = [
+                {"status": "passed", "count": passed},
+                {"status": "review", "count": warnings},
+                {"status": "blocked", "count": blocked},
+            ]
+            compact_data_table(
+                severity_rows,
+                columns=["status", "count"],
+                max_rows=len(severity_rows),
+            )
+            vspace(10)
+            st.markdown(
+                f"""
+                <div class="fs-rule-health-strip">
+                  <div><span>{passed:,}</span><small>passed</small></div>
+                  <div><span>{warnings:,}</span><small>review</small></div>
+                  <div><span>{blocked:,}</span><small>blocked</small></div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+    with lower_right:
+        with panel("Representative Rule Validation", "Readable execution rows for core rule domains", height=360, scroll=True):
+            representative = [
+                record
+                for record in records
+                if str(record.get("prefix")) in {"DATA", "SCHEMA", "METRIC", "VIS", "INSIGHT", "SAFE"}
+            ]
+            rule_validation_list(representative or records, limit=8)
+
+    st.markdown('<div class="fs-row-spacer fs-row-spacer-sm"></div>', unsafe_allow_html=True)
+
+# ---------------------------------------------------------------------------
+# Layout override: Applied Rules tab v11.1
+# Appended by apply_applied_rules_layout_v11_1.py.
+# This later definition intentionally overrides v11 render_applied_rules_tab.
+# ---------------------------------------------------------------------------
+def render_applied_rules_tab(
+    df: pd.DataFrame | None,
+    audit: RuleAuditLog,
+) -> None:
+    """Render the Applied Rules tab as a full audit browser.
+
+    v11.1 moves the search input into the Rules Table card. In v11 the search
+    input was rendered above the KPI row, which made it feel detached from the
+    table it controls.
+    """
+
+    if not _analysis_available(df):
+        return
+
+    records = _rule_records(audit)
+    summary = _rule_summary(records)
+
+    if not records:
+        empty_state("No Applied Rules", "Rule audit records will appear after analysis.")
+        return
+
+    rules_df = pd.DataFrame(records).copy()
+    preferred_cols = ["rule_id", "prefix", "step", "severity", "result"]
+    available_cols = [col for col in preferred_cols if col in rules_df.columns]
+    rules_df = rules_df[available_cols].copy()
+
+    rules_df.insert(0, "order", range(1, len(rules_df) + 1))
+    rules_df["status"] = rules_df["severity"].map(
+        lambda value: "review" if str(value).upper() == "WARNING" else "blocked" if str(value).upper() == "ERROR" else "passed"
+    )
+
+    search_key = "applied_rules_search_v11_1"
+    search = str(st.session_state.get(search_key, "")).strip()
+
+    filtered_df = rules_df
+    if search:
+        mask = rules_df.astype(str).apply(
+            lambda col: col.str.contains(search, case=False, na=False)
+        ).any(axis=1)
+        filtered_df = rules_df[mask].copy()
+
+    warnings = int((rules_df["severity"].astype(str).str.upper() == "WARNING").sum()) if "severity" in rules_df.columns else 0
+    blocked = int((rules_df["severity"].astype(str).str.upper() == "ERROR").sum()) if "severity" in rules_df.columns else 0
+    passed = max(len(rules_df) - warnings - blocked, 0)
+
+    top_cols = st.columns(5)
+    with top_cols[0]:
+        metric_card("Rules Executed", f"{len(records):,}", "Deduplicated audit records", "teal", "#")
+    with top_cols[1]:
+        metric_card("Visible Rows", f"{len(filtered_df):,}", "After search filter", "blue", "F")
+    with top_cols[2]:
+        metric_card("Coverage", f"{summary['coverage']}/{summary['required']}", "Required Skill categories", "purple", "C")
+    with top_cols[3]:
+        metric_card("Warnings", f"{warnings:,}", "Review-level records", "amber" if warnings else "teal", "!")
+    with top_cols[4]:
+        metric_card("Blocked", f"{blocked:,}", "Error-level records", "red" if blocked else "teal", "X")
+
+    vspace(16)
+
+    left, right = st.columns([1.72, 1.0])
+    with left:
+        with panel(
+            "Rules Table",
+            f"Showing {len(filtered_df):,} of {len(rules_df):,} executed rule records",
+            height=560,
+            scroll=True,
+        ):
+            st.text_input(
+                "Search rules",
+                placeholder="Search by rule ID, prefix, step, severity, or result...",
+                label_visibility="collapsed",
+                key=search_key,
+            )
+            st.markdown('<div class="fs-rules-table-search-gap"></div>', unsafe_allow_html=True)
+
+            if filtered_df.empty:
+                empty_state("No Matching Rules", "No rule audit records matched the current search.")
+            else:
+                display_cols = ["order", "rule_id", "prefix", "step", "severity", "status", "result"]
+                display_cols = [col for col in display_cols if col in filtered_df.columns]
+                compact_data_table(
+                    filtered_df.astype(str).to_dict("records"),
+                    columns=display_cols,
+                    max_rows=len(filtered_df),
+                )
+
+    with right:
+        with panel("Governance Overview", "Coverage, severity, and source status", height=260, scroll=True):
+            integrity_grade = "A+" if blocked == 0 and summary["coverage"] == summary["required"] else "A" if blocked == 0 else "Review"
+            st.markdown(
+                f"""
+                <div class="fs-governance-grade">
+                  <div class="fs-governance-grade-label">System Integrity</div>
+                  <div class="fs-governance-grade-value">{integrity_grade}</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            rows = [
+                {"item": "Rule Coverage", "value": f"{summary['coverage']}/{summary['required']}"},
+                {"item": "Rules Executed", "value": f"{summary['executed']:,}"},
+                {"item": "Passed", "value": f"{passed:,}"},
+                {"item": "Warnings", "value": f"{warnings:,}"},
+                {"item": "Blocked", "value": f"{blocked:,}"},
+                {"item": "Loaded From", "value": "Skills.md"},
+            ]
+            key_value_table(rows)
+
+        vspace(12)
+
+        with panel("Rule Domains", "Executed records grouped by rule prefix", height=288, scroll=True):
+            if "prefix" not in rules_df.columns:
+                empty_state("No Prefix Data", "Rule prefix metadata is unavailable.")
+            else:
+                domain_rows = (
+                    rules_df.groupby("prefix", dropna=False)
+                    .size()
+                    .reset_index(name="rules")
+                    .sort_values("rules", ascending=False)
+                )
+                compact_data_table(
+                    domain_rows.astype(str).to_dict("records"),
+                    columns=["prefix", "rules"],
+                    max_rows=len(domain_rows),
+                )
+
+    vspace(10)
+
+    lower_left, lower_mid, lower_right = st.columns([1.05, 1.0, 1.25])
+    with lower_left:
+        with panel("Execution Timeline", "First-to-last audit execution order", height=360, scroll=True):
+            timeline_df = filtered_df[["order", "rule_id", "status"]].copy() if not filtered_df.empty else pd.DataFrame()
+            if timeline_df.empty:
+                empty_state("No Timeline Rows", "No filtered rules are available.")
+            else:
+                timeline_df["time"] = timeline_df["order"].map(lambda value: f"T+{int(value):02d}")
+                timeline_df = timeline_df[["time", "rule_id", "status"]]
+                compact_data_table(
+                    timeline_df.astype(str).to_dict("records"),
+                    columns=["time", "rule_id", "status"],
+                    max_rows=len(timeline_df),
+                )
+
+    with lower_mid:
+        with panel("Severity Breakdown", "Passed, review, and blocked audit states", height=360, scroll=True):
+            severity_rows = [
+                {"status": "passed", "count": passed},
+                {"status": "review", "count": warnings},
+                {"status": "blocked", "count": blocked},
+            ]
+            compact_data_table(
+                severity_rows,
+                columns=["status", "count"],
+                max_rows=len(severity_rows),
+            )
+            vspace(10)
+            st.markdown(
+                f"""
+                <div class="fs-rule-health-strip">
+                  <div><span>{passed:,}</span><small>passed</small></div>
+                  <div><span>{warnings:,}</span><small>review</small></div>
+                  <div><span>{blocked:,}</span><small>blocked</small></div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+    with lower_right:
+        with panel("Representative Rule Validation", "Readable execution rows for core rule domains", height=360, scroll=True):
+            representative = [
+                record
+                for record in records
+                if str(record.get("prefix")) in {"DATA", "SCHEMA", "METRIC", "VIS", "INSIGHT", "SAFE"}
+            ]
+            rule_validation_list(representative or records, limit=8)
+
+    st.markdown('<div class="fs-row-spacer fs-row-spacer-sm"></div>', unsafe_allow_html=True)

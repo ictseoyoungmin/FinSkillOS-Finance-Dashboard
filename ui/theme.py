@@ -1415,6 +1415,93 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             display: block !important;
         }
 
+
+        /* FINSKILLOS_APPLIED_RULES_LAYOUT_V11 */
+
+        .fs-governance-grade {
+            padding: 0.72rem 0.84rem;
+            border: 1px solid rgba(129, 166, 202, 0.16);
+            border-radius: 12px;
+            background:
+                radial-gradient(circle at 0% 0%, rgba(0, 212, 160, 0.10), transparent 10rem),
+                linear-gradient(180deg, rgba(13, 28, 45, 0.96), rgba(7, 17, 31, 0.98));
+            margin-bottom: 0.72rem;
+        }
+
+        .fs-governance-grade-label {
+            color: var(--fs-soft);
+            font-size: 0.76rem;
+            font-weight: 760;
+            margin-bottom: 0.36rem;
+        }
+
+        .fs-governance-grade-value {
+            color: var(--fs-teal);
+            font-size: 2rem;
+            font-weight: 900;
+            line-height: 1;
+            letter-spacing: -0.04em;
+        }
+
+        .fs-rule-health-strip {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .fs-rule-health-strip > div {
+            min-height: 72px;
+            padding: 0.66rem 0.72rem;
+            border: 1px solid rgba(129, 166, 202, 0.14);
+            border-radius: 12px;
+            background: rgba(7, 17, 31, 0.72);
+        }
+
+        .fs-rule-health-strip span {
+            display: block;
+            color: var(--fs-teal);
+            font-size: 1.35rem;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .fs-rule-health-strip small {
+            display: block;
+            color: var(--fs-muted);
+            font-size: 0.66rem;
+            font-weight: 760;
+            margin-top: 0.36rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-scroll) .fs-data-table td,
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-scroll) .fs-data-table th {
+            vertical-align: top;
+        }
+
+
+        /* FINSKILLOS_APPLIED_RULES_LAYOUT_V11_1 */
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-governance-grade) {
+            min-width: 0 !important;
+        }
+
+        .fs-rules-table-search-gap {
+            height: 8px;
+            min-height: 8px;
+            width: 100%;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-rules-table-search-gap) [data-testid="stTextInput"] {
+            margin-bottom: 0 !important;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-rules-table-search-gap) [data-testid="stTextInput"] input {
+            min-height: 2.35rem !important;
+            font-size: 0.82rem !important;
+        }
+
         @keyframes fs-card-in {
             from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
