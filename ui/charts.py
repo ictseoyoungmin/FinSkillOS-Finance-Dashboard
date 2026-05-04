@@ -143,26 +143,156 @@ def render_missing_values_chart(profile: dict[str, Any] | None, height: int = 25
 
 
 def render_frequency_coverage_chart(schema: dict[str, Any] | None, height: int = 250) -> None:
+    """Render a readable coverage chart.
+
+    The previous implementation rendered one bar per date. For daily market
+    data this can produce hundreds of dense bars that look like vertical stripes.
+    This version automatically aggregates the coverage view:
+
+    - <= 45 unique dates: daily active rows
+    - <= 180 unique dates: weekly active dates
+    - > 180 unique dates: monthly active dates
+
+    The bar shows active dates in each period. The line shows average rows per
+    active date, which is usually the number of assets observed on each date.
+    """
+
     std_df = schema.get("standardized_df") if schema else None
     if not isinstance(std_df, pd.DataFrame) or "date" not in std_df.columns:
         empty_state("Coverage Unavailable", "Coverage requires a standardized date column.")
         return
-    coverage = (
-        std_df.assign(date=pd.to_datetime(std_df["date"], errors="coerce"))
-        .dropna(subset=["date"])
-        .groupby("date", as_index=False)
-        .size()
-        .rename(columns={"size": "observations"})
-    )
-    if coverage.empty:
+
+    working = std_df.copy()
+    working["date"] = pd.to_datetime(working["date"], errors="coerce")
+    working = working.dropna(subset=["date"])
+    if working.empty:
         empty_state("Coverage Unavailable", "No valid dates were available after standardization.")
         return
-    fig = px.bar(coverage, x="date", y="observations")
-    fig.update_layout(height=height)
-    fig.update_xaxes(title="")
-    fig.update_yaxes(title="Rows")
-    _render_plotly(fig)
 
+    daily = (
+        working.groupby("date", as_index=False)
+        .size()
+        .rename(columns={"size": "rows"})
+        .sort_values("date")
+    )
+    if daily.empty:
+        empty_state("Coverage Unavailable", "No valid dates were available after standardization.")
+        return
+
+    unique_dates = int(daily["date"].nunique())
+    date_span_days = max(int((daily["date"].max() - daily["date"].min()).days) + 1, 1)
+
+    if unique_dates <= 45:
+        plot_df = daily.rename(columns={"date": "period", "rows": "avg_rows_per_active_date"})
+        plot_df["active_dates"] = 1
+        period_label = "Daily"
+        bar_title = "Active Date"
+        x_title = ""
+    else:
+        rule = "W-MON" if unique_dates <= 180 else "ME"
+        period_label = "Weekly" if unique_dates <= 180 else "Monthly"
+        x_title = "Week" if unique_dates <= 180 else "Month"
+
+        plot_df = (
+            daily.set_index("date")
+            .resample(rule)
+            .agg(
+                active_dates=("rows", "count"),
+                total_rows=("rows", "sum"),
+                avg_rows_per_active_date=("rows", "mean"),
+            )
+            .reset_index()
+            .rename(columns={"date": "period"})
+        )
+        plot_df = plot_df[plot_df["active_dates"] > 0]
+        bar_title = "Active Dates"
+
+    if plot_df.empty:
+        empty_state("Coverage Unavailable", "Coverage aggregation produced no displayable periods.")
+        return
+
+    max_active_dates = max(float(plot_df["active_dates"].max()), 1.0)
+    avg_rows_max = max(float(plot_df["avg_rows_per_active_date"].max()), 1.0)
+    coverage_ratio = unique_dates / date_span_days
+
+    fig = go.Figure()
+
+    fig.add_trace(
+        go.Bar(
+            x=plot_df["period"],
+            y=plot_df["active_dates"],
+            name=bar_title,
+            marker=dict(
+                color="rgba(37, 242, 199, 0.72)",
+                line=dict(color="rgba(37, 242, 199, 0.92)", width=0.8),
+            ),
+            hovertemplate=(
+                f"{period_label} period: %{{x|%Y-%m-%d}}<br>"
+                "Active dates: %{y}<br>"
+                "<extra></extra>"
+            ),
+        )
+    )
+
+    fig.add_trace(
+        go.Scatter(
+            x=plot_df["period"],
+            y=plot_df["avg_rows_per_active_date"],
+            name="Avg rows / active date",
+            mode="lines+markers",
+            yaxis="y2",
+            line=dict(width=2.2, color="#38a3ff"),
+            marker=dict(size=5, color="#38a3ff"),
+            hovertemplate=(
+                f"{period_label} period: %{{x|%Y-%m-%d}}<br>"
+                "Avg rows / active date: %{y:.2f}<br>"
+                "<extra></extra>"
+            ),
+        )
+    )
+
+    fig.add_annotation(
+        x=0.01,
+        y=1.08,
+        xref="paper",
+        yref="paper",
+        text=f"{period_label} view · {unique_dates:,} active dates · {coverage_ratio:.1%} calendar coverage",
+        showarrow=False,
+        align="left",
+        font=dict(size=11, color="#7a8ba0"),
+    )
+
+    fig.update_layout(
+        height=height,
+        margin=dict(l=10, r=10, t=42, b=14),
+        showlegend=True,
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.0,
+            xanchor="right",
+            x=1.0,
+            font=dict(size=10),
+        ),
+        bargap=0.18 if len(plot_df) <= 24 else 0.08,
+        yaxis=dict(
+            title=bar_title,
+            range=[0, max_active_dates * 1.22],
+            gridcolor="rgba(129, 166, 202, 0.14)",
+            zerolinecolor="rgba(129, 166, 202, 0.20)",
+        ),
+        yaxis2=dict(
+            title="Avg Rows",
+            overlaying="y",
+            side="right",
+            range=[0, avg_rows_max * 1.35],
+            showgrid=False,
+            zeroline=False,
+        ),
+    )
+
+    fig.update_xaxes(title=x_title, tickfont=dict(size=10))
+    _render_plotly(fig)
 
 def render_return_distribution(metrics: dict[str, Any] | None, height: int = 270) -> None:
     if not metrics:
