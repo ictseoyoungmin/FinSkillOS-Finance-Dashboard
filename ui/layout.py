@@ -189,15 +189,16 @@ def render_topbar_controls(sample_files: Sequence[str]) -> dict[str, object]:
             ["Auto Detect", "Single Asset", "Multi Asset", "Allocation"],
             key="analysis_mode_select",
         )
-        risk_free_rate = row[2].number_input(
-            "Risk-Free Rate",
-            min_value=-1.0,
-            max_value=1.0,
+        risk_free_rate_pct = row[2].number_input(
+            "Risk-Free Rate (%)",
+            min_value=-100.0,
+            max_value=100.0,
             value=0.0,
-            step=0.005,
-            format="%.4f",
-            key="risk_free_rate_input",
+            step=0.25,
+            format="%.2f",
+            key="risk_free_rate_pct_input",
         )
+        risk_free_rate = risk_free_rate_pct / 100.0
         with row[3]:
             uploaded_file = st.file_uploader(
                 "CSV Upload",

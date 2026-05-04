@@ -168,7 +168,7 @@ def _series_metrics(
 
     sortino = None
     if annualized_return is not None and downside_deviation not in (None, 0.0):
-        sortino = float((annualized_return - 0.0) / downside_deviation)
+        sortino = float((annualized_return - risk_free_rate) / downside_deviation)
 
     calmar = None
     if annualized_return is not None and max_drawdown not in (None, 0.0):
@@ -341,9 +341,9 @@ def compute_metrics(
     audit.add(
         rule_id="METRIC-BASE-003",
         step="metric_assumption",
-        condition="Risk-free rate is required for Sharpe Ratio.",
+        condition="Risk-free rate is used for risk-adjusted return metrics.",
         action="Use user input or default 0.0.",
-        result=f"risk_free_rate={risk_free_rate}.",
+        result=f"risk_free_rate={risk_free_rate:.2%}.",
     )
 
     if std_df.empty:
@@ -372,6 +372,7 @@ def compute_metrics(
             "risk_level": "UNKNOWN",
             "missing_reasons": [reason],
             "allocation": allocation,
+            "risk_free_rate": risk_free_rate,
         }
         _add_metric_rules(audit, False, summary, False, bool(allocation))
         return {
@@ -416,6 +417,7 @@ def compute_metrics(
     summary["sharpe_quality"] = _sharpe_quality(summary.get("sharpe_ratio"))
     summary["risk_level"] = _overall_risk_level(summary)
     summary["allocation"] = allocation
+    summary["risk_free_rate"] = risk_free_rate
 
     _add_metric_rules(audit, True, summary, multi_asset, bool(allocation))
 

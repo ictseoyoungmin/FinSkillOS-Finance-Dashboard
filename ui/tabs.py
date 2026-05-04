@@ -625,7 +625,7 @@ def render_risk_analysis_tab(
                 {"item": "Return Frequency", "value": str(profile.get("frequency", "unknown")).title() if profile else "N/A"},
                 {"item": "Periods / Year", "value": periods},
                 {"item": "Observation Count", "value": summary.get("observation_count", "N/A")},
-                {"item": "Risk-Free Rate", "value": "Applied from user input"},
+                {"item": "Risk-Free Rate", "value": format_percent(summary.get("risk_free_rate"))},
             ]
             key_value_table(assumptions)
 
