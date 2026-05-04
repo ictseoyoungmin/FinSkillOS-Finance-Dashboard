@@ -404,7 +404,7 @@ def render_data_profile_tab(
     profile: dict[str, Any] | None,
     schema: dict[str, Any] | None,
 ) -> None:
-    """Render the Data Profile detail tab."""
+    """Render the Data Profile detail tab as a flat card grid."""
 
     if df is None or profile is None:
         empty_state("Select a Dataset for Data Profiling", "Data quality, schema mapping, and sample preview appear here after analysis.")
@@ -427,60 +427,73 @@ def render_data_profile_tab(
 
     vspace(18)
 
-    work_area, validation_area = st.columns([2.15, 1.0])
-    with work_area:
-        upper_left, upper_right = st.columns([1.0, 1.1])
-        with upper_left:
-            with panel("Schema Mapping", "Raw columns mapped to FinSkillOS standard fields", height=404, scroll=True):
-                mapping_table = pd.DataFrame(schema.get("mapping_table", [])) if schema else pd.DataFrame()
-                if mapping_table.empty:
-                    empty_state("No Mapping Available", "No standard fields were mapped automatically.")
-                else:
-                    mapping_cols = [col for col in ["field", "source", "confidence", "rule_id", "status"] if col in mapping_table.columns]
-                    compact_data_table(mapping_table.astype(str).to_dict("records"), columns=mapping_cols, max_rows=10)
+    mapping_table = pd.DataFrame(schema.get("mapping_table", [])) if schema else pd.DataFrame()
+    warnings = pd.DataFrame(profile.get("quality_warnings", []))
+    numeric_columns = profile.get("numeric_columns", [])[:6]
 
-        with upper_right:
-            with panel("Data Quality", "Completeness and missing value overview", height=404, scroll=True):
-                render_missing_values_chart(profile, height=250)
-                warnings = pd.DataFrame(profile.get("quality_warnings", []))
-                if not warnings.empty:
-                    warning_cols = [col for col in ["rule_id", "severity", "message"] if col in warnings.columns]
-                    compact_data_table(warnings.astype(str).to_dict("records"), columns=warning_cols, max_rows=4)
-                else:
-                    st.markdown(status_badge("No blocking quality warnings", "default"), unsafe_allow_html=True)
+    top_left, top_mid, top_right = st.columns([1.05, 1.1, 1.0])
+    with top_left:
+        with panel("Schema Mapping", "Raw columns mapped to FinSkillOS standard fields", height=392, scroll=True):
+            if mapping_table.empty:
+                empty_state("No Mapping Available", "No standard fields were mapped automatically.")
+            else:
+                mapping_cols = [col for col in ["field", "source", "confidence", "rule_id", "status"] if col in mapping_table.columns]
+                compact_data_table(mapping_table.astype(str).to_dict("records"), columns=mapping_cols, max_rows=10)
 
-        lower_left, lower_right = st.columns([1.08, 1.0])
-        with lower_left:
-            with panel("Sample Data Preview", "First 10 rows from the loaded dataset", height=356, scroll=True):
-                preview = df.head(10).astype(str)
-                compact_data_table(preview.to_dict("records"), columns=list(preview.columns[:8]), max_rows=10)
-        with lower_right:
-            with panel("Frequency & Coverage", "Rows observed through standardized time", height=356):
-                render_frequency_coverage_chart(schema, height=300)
+    with top_mid:
+        with panel("Data Quality", "Completeness and missing value overview", height=392, scroll=True):
+            render_missing_values_chart(profile, height=230)
+            if not warnings.empty:
+                warning_cols = [col for col in ["rule_id", "severity", "message"] if col in warnings.columns]
+                compact_data_table(warnings.astype(str).to_dict("records"), columns=warning_cols, max_rows=4)
+            else:
+                st.markdown(status_badge("No blocking quality warnings", "default"), unsafe_allow_html=True)
 
-    with validation_area:
-        with panel("Rule Validation", "Applied data rules and validation status", height=776, scroll=True):
+    with top_right:
+        with panel("Rule Validation", "Applied data rules and validation status", height=392, scroll=True):
             _rule_validation_list_for_prefix(audit, {"DATA", "SCHEMA"}, limit=6)
 
-    numeric_columns = profile.get("numeric_columns", [])[:3]
-    st.markdown("### Numeric Distributions")
-    if not numeric_columns:
-        empty_state("No Numeric Columns", "Distribution cards require numeric columns.")
-    else:
-        dist_cols = st.columns(len(numeric_columns))
-        for column, col in zip(numeric_columns, dist_cols, strict=False):
-            numeric = pd.to_numeric(df[column], errors="coerce").dropna()
-            with col:
-                if numeric.empty:
-                    empty_state("Unavailable", f"{column} has no numeric values after parsing.")
-                else:
-                    metric_card(
-                        str(column),
-                        f"{numeric.mean():,.4g}",
-                        f"Min {numeric.min():,.4g} · Max {numeric.max():,.4g} · N {len(numeric):,}",
-                        "teal",
-                        "#",
-                    )
+    lower_left, lower_mid, lower_right = st.columns([1.05, 1.1, 1.0])
+    with lower_left:
+        with panel("Sample Data Preview", "First 10 rows from the loaded dataset", height=392, scroll=True):
+            preview = df.head(10).astype(str)
+            compact_data_table(preview.to_dict("records"), columns=list(preview.columns[:8]), max_rows=10)
+
+    with lower_mid:
+        with panel("Frequency & Coverage", "Rows observed through standardized time", height=392):
+            render_frequency_coverage_chart(schema, height=315)
+
+    with lower_right:
+        with panel("Numeric Distributions", "Compact statistics for numeric columns", height=392, scroll=True):
+            if not numeric_columns:
+                empty_state("No Numeric Columns", "Distribution cards require numeric columns.")
+            else:
+                rows: list[dict[str, object]] = []
+                for column in numeric_columns:
+                    numeric = pd.to_numeric(df[column], errors="coerce").dropna()
+                    if numeric.empty:
+                        rows.append(
+                            {
+                                "column": str(column),
+                                "mean": "N/A",
+                                "min": "N/A",
+                                "max": "N/A",
+                                "n": "0",
+                            }
+                        )
+                    else:
+                        rows.append(
+                            {
+                                "column": str(column),
+                                "mean": f"{numeric.mean():,.4g}",
+                                "min": f"{numeric.min():,.4g}",
+                                "max": f"{numeric.max():,.4g}",
+                                "n": f"{len(numeric):,}",
+                            }
+                        )
+                compact_data_table(rows, columns=["column", "mean", "min", "max", "n"], max_rows=6)
+
+    st.markdown('<div class="fs-row-spacer fs-row-spacer-sm"></div>', unsafe_allow_html=True)
 
 
 def render_return_analysis_tab(
