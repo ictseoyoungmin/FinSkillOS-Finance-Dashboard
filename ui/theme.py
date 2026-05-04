@@ -243,16 +243,36 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
         .stDownloadButton > button,
         [data-testid="stPopover"] > button,
         [data-testid="stPopover"] button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.38rem;
             border-radius: 12px;
             border: 1px solid var(--fs-accent-line);
             background: var(--fs-button-bg);
             color: #f3fffd;
             font-weight: 700;
             min-height: 2.25rem;
+            padding: 0.45rem 0.72rem;
             font-size: 0.78rem;
+            line-height: 1;
+            text-align: center;
             letter-spacing: -0.01em;
             box-shadow: var(--fs-button-shadow);
             transition: transform var(--fs-fast) var(--fs-ease), border-color var(--fs-fast) var(--fs-ease), box-shadow var(--fs-fast) var(--fs-ease), filter var(--fs-fast) var(--fs-ease), background var(--fs-fast) var(--fs-ease);
+        }
+
+        .stButton > button p,
+        .stDownloadButton > button p,
+        [data-testid="stPopover"] button p {
+            width: 100%;
+            margin: 0 !important;
+            color: inherit !important;
+            font: inherit !important;
+            line-height: 1.05 !important;
+            text-align: center;
+            white-space: normal;
+            overflow-wrap: anywhere;
         }
 
         .fs-control-shell [data-testid="stPopover"] > button,
@@ -263,6 +283,9 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             height: 2.25rem !important;
             min-height: 2.25rem !important;
             padding: 0 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
             border: 1px solid rgba(129, 166, 202, 0.18) !important;
             border-radius: 999px !important;
             background: linear-gradient(180deg, rgba(21, 37, 56, 0.92), rgba(12, 23, 39, 0.94)) !important;
@@ -282,6 +305,10 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             font-weight: 800 !important;
             line-height: 1 !important;
             margin: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            height: 100% !important;
         }
 
         .stButton > button:hover,
@@ -923,9 +950,29 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             border-radius: var(--fs-radius) !important;
             background: var(--fs-panel-card-bg) !important;
             box-shadow: var(--fs-shadow);
+            min-height: 0;
         }
         div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell) > div {
             padding: var(--fs-gap-md) var(--fs-gap-lg) !important;
+        }
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-scroll) {
+            overflow-x: hidden !important;
+            overflow-y: auto !important;
+        }
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-scroll) > div,
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-scroll) [data-testid="stVerticalBlock"] {
+            min-height: 0;
+        }
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-scroll)::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-scroll)::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-scroll)::-webkit-scrollbar-thumb {
+            background: rgba(129, 166, 202, 0.28);
+            border-radius: 999px;
         }
         div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-lean) {
             border: 1px solid var(--fs-line) !important;
@@ -1086,7 +1133,8 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
         }
         .fs-table-scroll {
             width: 100%;
-            overflow-x: auto;
+            max-height: 100%;
+            overflow: auto;
             border: 1px solid var(--fs-line);
             border-radius: var(--fs-radius);
             background: var(--fs-table-bg);
@@ -1950,10 +1998,684 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
                 background: rgba(226, 232, 240, 0.74);
                 color: var(--fs-soft);
             }
+
+            /* =========================================================
+               FinSkillOS final layout policy
+
+               Folded into the base theme so the final app does not depend
+               on a separate override module.
+            ========================================================= */
+
+            :root {
+                --fs-polish-radius: 14px;
+                --fs-polish-radius-sm: 11px;
+                --fs-polish-gap: 12px;
+            }
+
+            [data-testid="stMainBlockContainer"],
+            .main .block-container,
+            section.main > div.block-container {
+                padding-top: 12px !important;
+                padding-bottom: 36px !important;
+            }
+
+            [data-testid="stMainBlockContainer"] [data-testid="stVerticalBlock"],
+            .main .block-container [data-testid="stVerticalBlock"] {
+                gap: 12px !important;
+            }
+
+            [data-testid="stMainBlockContainer"] [data-testid="stHorizontalBlock"],
+            .main .block-container [data-testid="stHorizontalBlock"] {
+                gap: 12px !important;
+                margin: 0 !important;
+                align-items: stretch !important;
+            }
+
+            [data-testid="column"] > [data-testid="stVerticalBlock"] {
+                gap: 10px !important;
+            }
+
+            .fs-topbar-shell {
+                margin: 0 0 10px 0 !important;
+                padding: 0 !important;
+                border: 0 !important;
+                border-radius: 0 !important;
+                box-shadow: none !important;
+                background: transparent !important;
+                overflow: visible !important;
+            }
+
+            .fs-topbar {
+                padding: 36px 22px 24px 22px !important;
+                border: 0 !important;
+                border-radius: 0 !important;
+                box-shadow: none !important;
+                background: transparent !important;
+            }
+
+            .fs-page-title {
+                margin-top: 0 !important;
+                margin-bottom: 18px !important;
+                line-height: 1.04 !important;
+                letter-spacing: 0 !important;
+            }
+
+            .fs-page-subtitle {
+                margin-bottom: 9px !important;
+            }
+
+            .fs-topbar-meta,
+            .fs-badge-row {
+                gap: 7px !important;
+            }
+
+            .fs-badge {
+                padding: 5px 9px !important;
+                line-height: 1 !important;
+                box-shadow: none !important;
+            }
+
+            div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-control-shell),
+            div[data-testid="stContainer"]:has(.fs-control-shell) {
+                margin: 0 0 2px 0 !important;
+                padding: 0 !important;
+                border: 0 !important;
+                border-top: 1px solid var(--fs-line) !important;
+                border-radius: 0 !important;
+                box-shadow: none !important;
+                background: transparent !important;
+                overflow: visible !important;
+            }
+
+            div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-control-shell) > div,
+            div[data-testid="stContainer"]:has(.fs-control-shell) > div {
+                padding: 12px 0 8px 0 !important;
+                border-bottom: 1px solid var(--fs-line) !important;
+            }
+
+            .fs-control-shell {
+                margin: 0 !important;
+                padding: 0 !important;
+                border: 0 !important;
+                box-shadow: none !important;
+                background: transparent !important;
+            }
+
+            div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-control-shell) .fs-panel-header,
+            div[data-testid="stContainer"]:has(.fs-control-shell) .fs-panel-header {
+                margin-bottom: 10px !important;
+                padding: 0 !important;
+                border: 0 !important;
+                background: transparent !important;
+                box-shadow: none !important;
+            }
+
+            div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-control-shell) [data-testid="column"],
+            div[data-testid="stContainer"]:has(.fs-control-shell) [data-testid="column"] {
+                display: flex !important;
+                align-items: flex-end !important;
+            }
+
+            div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-control-shell) [data-testid="column"] > div,
+            div[data-testid="stContainer"]:has(.fs-control-shell) [data-testid="column"] > div {
+                width: 100% !important;
+            }
+
+            [data-testid="stWidgetLabel"] {
+                min-height: 1rem !important;
+                margin-bottom: 6px !important;
+            }
+
+            [data-testid="stWidgetLabel"] p {
+                font-size: 0.68rem !important;
+                line-height: 1 !important;
+                font-weight: 760 !important;
+            }
+
+            [data-baseweb="select"] > div,
+            [data-testid="stNumberInput"] input,
+            [data-testid="stFileUploader"] section {
+                min-height: 2.58rem !important;
+            }
+
+            [data-testid="stFileUploader"] {
+                min-height: 2.58rem !important;
+            }
+
+            [data-testid="stFileUploader"] section {
+                max-height: 2.58rem !important;
+                padding: 0.38rem 0.64rem !important;
+            }
+
+            [data-testid="stNumberInput"] button {
+                min-height: 2.58rem !important;
+            }
+
+            [data-testid="stPopover"] button svg,
+            [data-testid="stPopover"] [data-testid="stIconMaterial"] {
+                display: none !important;
+            }
+
+            [data-testid="stPopover"] > button,
+            [data-testid="stPopover"] button {
+                width: 2.58rem !important;
+                min-width: 2.58rem !important;
+                max-width: 2.58rem !important;
+                height: 2.58rem !important;
+                min-height: 2.58rem !important;
+                padding: 0 !important;
+                border-radius: 11px !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                box-shadow: none !important;
+            }
+
+            .stButton > button,
+            .stDownloadButton > button,
+            [data-testid="stButton"] button,
+            [data-testid="stDownloadButton"] button,
+            [data-testid="stPopover"] > button,
+            [data-testid="stPopover"] button {
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 0.38rem !important;
+                line-height: 1 !important;
+                text-align: center !important;
+                vertical-align: middle !important;
+            }
+
+            [data-testid="stButton"] button,
+            [data-testid="stDownloadButton"] button {
+                min-height: 2.58rem !important;
+                padding: 0.48rem 0.72rem !important;
+            }
+
+            [data-testid="stButton"] button[kind="primary"],
+            [data-testid="stButton"] button[data-testid="baseButton-primary"] {
+                padding-left: 0.82rem !important;
+                padding-right: 0.82rem !important;
+            }
+
+            .stButton > button p,
+            .stDownloadButton > button p,
+            [data-testid="stButton"] button p,
+            [data-testid="stDownloadButton"] button p,
+            [data-testid="stPopover"] button p {
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                display: block !important;
+                color: inherit !important;
+                font-size: inherit !important;
+                font-weight: inherit !important;
+                line-height: 1.05 !important;
+                text-align: center !important;
+                white-space: normal !important;
+                overflow-wrap: anywhere !important;
+            }
+
+            [data-testid="stPopover"] button p {
+                margin: 0 !important;
+                line-height: 1 !important;
+                font-weight: 850 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                height: 100% !important;
+            }
+
+            [data-testid="stHorizontalBlock"]:has(.fs-metric-card) {
+                gap: 12px !important;
+                margin: 0 0 18px 0 !important;
+                padding: 0 0 14px 0 !important;
+                border: 0 !important;
+                border-bottom: 1px solid var(--fs-line) !important;
+                border-radius: 0 !important;
+                background: transparent !important;
+                box-shadow: none !important;
+                overflow: visible !important;
+            }
+
+            [data-testid="stHorizontalBlock"]:has(.fs-metric-card)
+                + [data-testid="stHorizontalBlock"],
+            [data-testid="stHorizontalBlock"]:has(.fs-metric-card)
+                ~ [data-testid="stHorizontalBlock"]:has(.fs-panel-shell) {
+                margin-top: 6px !important;
+            }
+
+            .fs-metric-card {
+                min-height: 12px !important;
+                padding: 12px 14px !important;
+                border: 1px solid var(--fs-line) !important;
+                border-radius: 12px !important;
+                box-shadow: none !important;
+                background: var(--fs-panel) !important;
+                background-clip: padding-box !important;
+            }
+
+            .fs-metric-card:hover {
+                border-color: var(--fs-line-strong, var(--fs-line)) !important;
+                box-shadow: none !important;
+            }
+
+            .fs-metric-icon {
+                width: 30px !important;
+                height: 30px !important;
+                min-width: 30px !important;
+                border: 0 !important;
+                box-shadow: none !important;
+            }
+
+            .fs-metric-label {
+                line-height: 1.15 !important;
+                margin-bottom: 4px !important;
+            }
+
+            .fs-metric-value {
+                line-height: 1.08 !important;
+                margin-bottom: 4px !important;
+            }
+
+            .fs-metric-caption {
+                line-height: 1.25 !important;
+            }
+
+            div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell):not(:has(.fs-control-shell)),
+            div[data-testid="stContainer"]:has(.fs-panel-shell):not(:has(.fs-control-shell)) {
+                border: 1px solid var(--fs-line) !important;
+                border-radius: var(--fs-polish-radius) !important;
+                box-shadow: none !important;
+                background: var(--fs-panel) !important;
+                overflow: hidden !important;
+            }
+
+            div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-scroll),
+            div[data-testid="stContainer"]:has(.fs-panel-scroll) {
+                min-height: 0 !important;
+                overflow-x: hidden !important;
+                overflow-y: auto !important;
+            }
+
+            div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-scroll) > div,
+            div[data-testid="stContainer"]:has(.fs-panel-scroll) > div,
+            div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-scroll) [data-testid="stVerticalBlock"],
+            div[data-testid="stContainer"]:has(.fs-panel-scroll) [data-testid="stVerticalBlock"] {
+                min-height: 0 !important;
+            }
+
+            div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-scroll)::-webkit-scrollbar,
+            div[data-testid="stContainer"]:has(.fs-panel-scroll)::-webkit-scrollbar {
+                width: 6px;
+                height: 6px;
+            }
+
+            div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-scroll)::-webkit-scrollbar-track,
+            div[data-testid="stContainer"]:has(.fs-panel-scroll)::-webkit-scrollbar-track {
+                background: transparent;
+            }
+
+            div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-scroll)::-webkit-scrollbar-thumb,
+            div[data-testid="stContainer"]:has(.fs-panel-scroll)::-webkit-scrollbar-thumb {
+                background: rgba(129, 166, 202, 0.28);
+                border-radius: 999px;
+            }
+
+            .fs-panel-shell {
+                margin: 0 !important;
+                padding: 0 !important;
+                border: 0 !important;
+                border-radius: 0 !important;
+                box-shadow: none !important;
+                background: transparent !important;
+                overflow: visible !important;
+            }
+
+            .fs-panel-header {
+                margin-bottom: 9px !important;
+                padding: 0 !important;
+                border: 0 !important;
+                border-radius: 0 !important;
+                box-shadow: none !important;
+                background: transparent !important;
+            }
+
+            .fs-panel-title {
+                line-height: 1.16 !important;
+            }
+
+            .fs-panel-subtitle {
+                margin-top: 5px !important;
+                line-height: 1.35 !important;
+            }
+
+            div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell):not(:has(.fs-control-shell))
+                div[data-testid="stVerticalBlockBorderWrapper"],
+            div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell):not(:has(.fs-control-shell))
+                div[data-testid="stContainer"],
+            div[data-testid="stContainer"]:has(.fs-panel-shell):not(:has(.fs-control-shell))
+                div[data-testid="stVerticalBlockBorderWrapper"],
+            div[data-testid="stContainer"]:has(.fs-panel-shell):not(:has(.fs-control-shell))
+                div[data-testid="stContainer"] {
+                box-shadow: none !important;
+            }
+
+            div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell):not(:has(.fs-control-shell))
+                div[data-testid="stVerticalBlockBorderWrapper"]:not(:has(.fs-panel-shell)),
+            div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell):not(:has(.fs-control-shell))
+                div[data-testid="stContainer"]:not(:has(.fs-panel-shell)),
+            div[data-testid="stContainer"]:has(.fs-panel-shell):not(:has(.fs-control-shell))
+                div[data-testid="stVerticalBlockBorderWrapper"]:not(:has(.fs-panel-shell)),
+            div[data-testid="stContainer"]:has(.fs-panel-shell):not(:has(.fs-control-shell))
+                div[data-testid="stContainer"]:not(:has(.fs-panel-shell)) {
+                border: 0 !important;
+                border-radius: 0 !important;
+                background: transparent !important;
+                box-shadow: none !important;
+            }
+
+            div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell):not(:has(.fs-control-shell))
+                div[data-testid="stVerticalBlockBorderWrapper"]:not(:has(.fs-panel-shell)) > div,
+            div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell):not(:has(.fs-control-shell))
+                div[data-testid="stContainer"]:not(:has(.fs-panel-shell)) > div,
+            div[data-testid="stContainer"]:has(.fs-panel-shell):not(:has(.fs-control-shell))
+                div[data-testid="stVerticalBlockBorderWrapper"]:not(:has(.fs-panel-shell)) > div,
+            div[data-testid="stContainer"]:has(.fs-panel-shell):not(:has(.fs-control-shell))
+                div[data-testid="stContainer"]:not(:has(.fs-panel-shell)) > div {
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+            }
+
+            [data-testid="stPlotlyChart"],
+            [data-testid="stPlotlyChart"] > div,
+            [data-testid="stPlotlyChart"] iframe,
+            .js-plotly-plot,
+            .plot-container,
+            .svg-container {
+                border: 0 !important;
+                border-radius: 0 !important;
+                box-shadow: none !important;
+                background: transparent !important;
+            }
+
+            .fs-table-scroll,
+            .fs-kv-table {
+                border: 0 !important;
+                border-radius: var(--fs-polish-radius-sm) !important;
+                box-shadow: none !important;
+                background: transparent !important;
+                overflow-x: auto !important;
+                overflow-y: auto !important;
+            }
+
+            .fs-kv-table,
+            .fs-data-table {
+                border: 0 !important;
+                border-radius: var(--fs-polish-radius-sm) !important;
+                box-shadow: none !important;
+                background: transparent !important;
+                overflow: visible !important;
+            }
+
+            .fs-kv-table thead,
+            .fs-data-table thead,
+            .fs-kv-table tbody,
+            .fs-data-table tbody,
+            .fs-kv-table tr,
+            .fs-data-table tr,
+            .fs-kv-table th,
+            .fs-kv-table td,
+            .fs-data-table th,
+            .fs-data-table td {
+                border: 0 !important;
+                box-shadow: none !important;
+            }
+
+            .fs-kv-table th,
+            .fs-kv-table td,
+            .fs-data-table th,
+            .fs-data-table td {
+                padding-top: 9px !important;
+                padding-bottom: 9px !important;
+            }
+
+            .fs-summary-stat,
+            .fs-rule-card,
+            .fs-rule-chip,
+            .fs-insight-card,
+            .fs-empty-state,
+            .fs-validation-row,
+            .fs-portfolio-card,
+            .fs-sidebar-card,
+            .fs-sample-help {
+                border: 0 !important;
+                box-shadow: none !important;
+            }
+
+            .fs-empty-state {
+                padding: 18px !important;
+                border-radius: var(--fs-polish-radius-sm) !important;
+            }
+
+            div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell) .fs-summary-stat,
+            div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell) .fs-rule-card,
+            div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell) .fs-rule-chip,
+            div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell) .fs-insight-card,
+            div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell) .fs-empty-state,
+            div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell) .fs-table-scroll,
+            div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell) .fs-kv-table,
+            div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell) .fs-data-table {
+                border: 0 !important;
+                box-shadow: none !important;
+            }
+
+            .fs-sidebar-card {
+                box-shadow: none !important;
+            }
+
+            div[data-testid="stMarkdownContainer"] h3 {
+                margin-top: 8px !important;
+                margin-bottom: 8px !important;
+            }
+
+            div[data-testid="stMarkdownContainer"] h5 {
+                margin-top: 12px !important;
+                margin-bottom: 7px !important;
+            }
+
+            div[data-testid="stMarkdownContainer"] p {
+                margin-bottom: 0.45rem !important;
+            }
+
+            .fs-row-spacer {
+                height: 12px !important;
+            }
+
+            .fs-row-spacer-sm {
+                height: 8px !important;
+            }
+
+            [data-testid="stExpander"] {
+                border-color: var(--fs-line) !important;
+                box-shadow: none !important;
+            }
+
+            [data-testid="stDownloadButton"] button,
+            [data-testid="stButton"] button {
+                box-shadow: none !important;
+            }
             </style>
             """,
             unsafe_allow_html=True,
         )
+
+    st.markdown(
+        """
+        <style>
+        /* =========================================================
+           Shared container flattening
+
+           Keep one visible panel container. Content inside panels uses
+           tinted surfaces without drawing another bordered container.
+        ========================================================= */
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell):not(:has(.fs-control-shell)),
+        div[data-testid="stContainer"]:has(.fs-panel-shell):not(:has(.fs-control-shell)) {
+            border: 1px solid var(--fs-line) !important;
+            border-radius: 14px !important;
+            background: var(--fs-panel) !important;
+            box-shadow: none !important;
+            overflow: hidden !important;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell):not(:has(.fs-control-shell)) > div,
+        div[data-testid="stContainer"]:has(.fs-panel-shell):not(:has(.fs-control-shell)) > div {
+            padding: 12px 14px !important;
+        }
+
+        .fs-panel-shell,
+        .fs-panel-header {
+            border: 0 !important;
+            border-radius: 0 !important;
+            background: transparent !important;
+            box-shadow: none !important;
+        }
+
+        .fs-panel-shell {
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: visible !important;
+        }
+
+        .fs-panel-header {
+            margin-bottom: 9px !important;
+            padding: 0 !important;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell):not(:has(.fs-control-shell))
+            div[data-testid="stVerticalBlockBorderWrapper"],
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell):not(:has(.fs-control-shell))
+            div[data-testid="stContainer"],
+        div[data-testid="stContainer"]:has(.fs-panel-shell):not(:has(.fs-control-shell))
+            div[data-testid="stVerticalBlockBorderWrapper"],
+        div[data-testid="stContainer"]:has(.fs-panel-shell):not(:has(.fs-control-shell))
+            div[data-testid="stContainer"] {
+            border: 0 !important;
+            border-radius: 0 !important;
+            background: transparent !important;
+            box-shadow: none !important;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell):not(:has(.fs-control-shell))
+            div[data-testid="stVerticalBlockBorderWrapper"] > div,
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell):not(:has(.fs-control-shell))
+            div[data-testid="stContainer"] > div,
+        div[data-testid="stContainer"]:has(.fs-panel-shell):not(:has(.fs-control-shell))
+            div[data-testid="stVerticalBlockBorderWrapper"] > div,
+        div[data-testid="stContainer"]:has(.fs-panel-shell):not(:has(.fs-control-shell))
+            div[data-testid="stContainer"] > div {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-scroll),
+        div[data-testid="stContainer"]:has(.fs-panel-scroll) {
+            min-height: 0 !important;
+            overflow-x: hidden !important;
+            overflow-y: auto !important;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-scroll) > div,
+        div[data-testid="stContainer"]:has(.fs-panel-scroll) > div,
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-scroll) [data-testid="stVerticalBlock"],
+        div[data-testid="stContainer"]:has(.fs-panel-scroll) [data-testid="stVerticalBlock"] {
+            min-height: 0 !important;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-scroll)::-webkit-scrollbar,
+        div[data-testid="stContainer"]:has(.fs-panel-scroll)::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-scroll)::-webkit-scrollbar-track,
+        div[data-testid="stContainer"]:has(.fs-panel-scroll)::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-scroll)::-webkit-scrollbar-thumb,
+        div[data-testid="stContainer"]:has(.fs-panel-scroll)::-webkit-scrollbar-thumb {
+            background: rgba(129, 166, 202, 0.28);
+            border-radius: 999px;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell) .fs-summary-stat,
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell) .fs-rule-card,
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell) .fs-rule-chip,
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell) .fs-insight-card,
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell) .fs-empty-state,
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell) .fs-validation-row,
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell) .fs-table-scroll,
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell) .fs-kv-table,
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell) .fs-data-table,
+        div[data-testid="stContainer"]:has(.fs-panel-shell) .fs-summary-stat,
+        div[data-testid="stContainer"]:has(.fs-panel-shell) .fs-rule-card,
+        div[data-testid="stContainer"]:has(.fs-panel-shell) .fs-rule-chip,
+        div[data-testid="stContainer"]:has(.fs-panel-shell) .fs-insight-card,
+        div[data-testid="stContainer"]:has(.fs-panel-shell) .fs-empty-state,
+        div[data-testid="stContainer"]:has(.fs-panel-shell) .fs-validation-row,
+        div[data-testid="stContainer"]:has(.fs-panel-shell) .fs-table-scroll,
+        div[data-testid="stContainer"]:has(.fs-panel-shell) .fs-kv-table,
+        div[data-testid="stContainer"]:has(.fs-panel-shell) .fs-data-table {
+            border: 0 !important;
+            box-shadow: none !important;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell) .fs-insight-card,
+        div[data-testid="stContainer"]:has(.fs-panel-shell) .fs-insight-card {
+            border-left: 0 !important;
+            border-radius: 8px !important;
+            background: var(--fs-table-bg) !important;
+            transform: none !important;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell) .fs-insight-card:hover,
+        div[data-testid="stContainer"]:has(.fs-panel-shell) .fs-insight-card:hover {
+            border-color: transparent !important;
+            background: var(--fs-panel-hover) !important;
+            transform: none !important;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell) .fs-insight-row,
+        div[data-testid="stContainer"]:has(.fs-panel-shell) .fs-insight-row {
+            border: 0 !important;
+            box-shadow: none !important;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell) .fs-table-scroll,
+        div[data-testid="stContainer"]:has(.fs-panel-shell) .fs-table-scroll,
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell) .fs-kv-table,
+        div[data-testid="stContainer"]:has(.fs-panel-shell) .fs-kv-table {
+            background: transparent !important;
+        }
+
+        [data-testid="stPlotlyChart"],
+        [data-testid="stPlotlyChart"] > div,
+        [data-testid="stPlotlyChart"] iframe,
+        .js-plotly-plot,
+        .plot-container,
+        .svg-container {
+            border: 0 !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            background: transparent !important;
+        }
+
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 def style_plotly_figure(fig: go.Figure) -> go.Figure:

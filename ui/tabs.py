@@ -317,6 +317,8 @@ def render_overview_dashboard(
         risk_level = str(summary.get("risk_level", "UNKNOWN"))
         metric_card("Risk Level", risk_level, "Rule-based classification", "amber", "◇")
 
+    vspace(18)
+
     top_left, top_mid, top_right = st.columns([1.45, 1.0, 0.88])
     with top_left:
         with panel("Executive Summary", "Cumulative return over time", height=360):
@@ -423,6 +425,8 @@ def render_data_profile_tab(
     with kpi_cols[5]:
         metric_card("Frequency", str(profile.get("frequency", "unknown")).title(), f"{profile.get('periods_per_year', 'N/A')} periods/year", "teal", "~")
 
+    vspace(18)
+
     work_area, validation_area = st.columns([2.15, 1.0])
     with work_area:
         upper_left, upper_right = st.columns([1.0, 1.1])
@@ -511,6 +515,8 @@ def render_return_analysis_tab(
     with kpi_cols[5]:
         metric_card("Data Sufficiency", str(summary.get("data_sufficiency", "N/A")), "Observation quality", "blue", "DQ")
 
+    vspace(18)
+
     top_left, top_right = st.columns([1.38, 1.0])
     with top_left:
         with panel("Cumulative Return", "Portfolio or asset indexed cumulative return", height=380):
@@ -586,6 +592,8 @@ def render_risk_analysis_tab(
         metric_card("Downside Deviation", format_percent(summary.get("downside_deviation")), "Below zero return", "amber", "DD")
     with kpi_cols[5]:
         metric_card("Risk Level", str(summary.get("risk_level", "UNKNOWN")), "Rule-based classification", "amber", "RL")
+
+    vspace(18)
 
     top_left, top_mid, top_right = st.columns([1.2, 1.05, 0.82])
     with top_left:
@@ -668,6 +676,8 @@ def render_diversification_tab(
     with kpi_cols[5]:
         metric_card("Cash Exposure", _cash_exposure(schema), "Cash-like asset labels", "teal", "CA")
 
+    vspace(18)
+
     top_left, top_mid, top_right = st.columns([1.1, 1.0, 0.95])
     with top_left:
         with panel("Correlation Heatmap", "Pearson correlation across asset returns", height=428):
@@ -742,6 +752,8 @@ def render_insights_tab(
         metric_card("Max Drawdown", format_percent(summary.get("max_drawdown")), "From peak to trough", "red", "MD")
     with kpi_cols[4]:
         metric_card("Risk Level", str(summary.get("risk_level", "UNKNOWN")), "Rule-classified", "amber", "RL")
+
+    vspace(18)
 
     st.markdown("### Executive Insight Summary")
     with panel("Executive Insight Summary", "Generated and validated via Skills.md rules.", scroll=True):
@@ -839,7 +851,7 @@ def render_insights_tab(
     for column, (title, description) in zip(next_cols, next_steps, strict=False):
         with column:
             rule_card("NEXT", title, description, status="Queued", severity="INFO")
-
+    vspace(14)
 
 def render_applied_rules_tab(df: pd.DataFrame | None, audit: RuleAuditLog) -> None:
     """Render the Applied Rules governance tab."""
@@ -862,6 +874,8 @@ def render_applied_rules_tab(df: pd.DataFrame | None, audit: RuleAuditLog) -> No
         metric_card("Coverage", f"{summary['coverage']}/{summary['required']}", "Required categories", "purple", "CV")
     with kpi_cols[5]:
         metric_card("Avg Execution", "local", "In-process rules", "blue", "TM")
+
+    vspace(18)
 
     table_col, timeline_col, graph_col, side_col = st.columns([1.35, 0.78, 0.9, 0.82])
     with table_col:
@@ -963,6 +977,8 @@ def render_reports_tab(
         metric_card("Data Rows", f"{int(profile.get('row_count', 0)):,}" if profile else "N/A", "Profile summary", "blue", "DR")
     with kpi_cols[5]:
         metric_card("Delivery Status", "Healthy", "Local export ready", "teal", "OK")
+
+    vspace(18)
 
     library_col, preview_col, action_col, summary_col = st.columns([1.0, 1.25, 0.82, 0.9])
     with library_col:

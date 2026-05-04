@@ -24,7 +24,7 @@ from ui.tabs import (
     render_risk_analysis_tab,
 )
 from ui.theme import apply_dashboard_style
-
+from ui.components import vspace
 
 APP_ROOT = Path(__file__).resolve().parent
 SAMPLE_DATA_DIR = APP_ROOT / "sample_data"
@@ -200,6 +200,7 @@ def main() -> None:
             source_name=source_name,
             date_range=date_range_label(profile),
         )
+        vspace(8)
 
     if controls["run_analysis"]:
         st.success("Analysis refreshed for the current dataset.")

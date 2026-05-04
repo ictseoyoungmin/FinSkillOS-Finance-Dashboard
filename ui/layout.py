@@ -147,6 +147,7 @@ def render_topbar(title: str, subtitle: str, active_tab: str, source_name: str, 
 
 def render_topbar_controls(sample_files: Sequence[str]) -> dict[str, object]:
     """Render dataset, mode, rate, and action controls in the main app shell."""
+
     sample_options = list(sample_files)
     if sample_options:
         default_sample = "multi_asset_portfolio.csv"
@@ -155,14 +156,20 @@ def render_topbar_controls(sample_files: Sequence[str]) -> dict[str, object]:
         sample_options = ["샘플 없음"]
         default_index = 0
 
-    with panel("Analysis Controls", None, height=112, body_class="fs-control-shell"):
+    with panel("Analysis Controls", None, height=118, body_class="fs-control-shell"):
         row = st.columns(
-            [1.55, 0.95, 0.72, 1.0, 0.78, 0.82],
+            [1.65, 0.95, 0.74, 1.1, 0.78, 0.96],
             gap="small",
             vertical_alignment="bottom",
         )
+
         with row[0]:
-            sample_label, sample_help = st.columns([0.86, 0.14], gap="small", vertical_alignment="bottom")
+            sample_label, sample_help = st.columns(
+                [0.86, 0.14],
+                gap="small",
+                vertical_alignment="bottom",
+            )
+
             with sample_label:
                 sample_name = st.selectbox(
                     "Sample Dataset",
@@ -170,10 +177,12 @@ def render_topbar_controls(sample_files: Sequence[str]) -> dict[str, object]:
                     index=default_index,
                     key="sample_dataset_select",
                 )
+
             with sample_help:
                 description = _sample_description(
                     str(st.session_state.get("sample_dataset_select", sample_options[default_index]))
                 )
+
                 with st.popover("?"):
                     st.markdown(
                         f"""
@@ -184,11 +193,13 @@ def render_topbar_controls(sample_files: Sequence[str]) -> dict[str, object]:
                         """,
                         unsafe_allow_html=True,
                     )
+
         mode = row[1].selectbox(
             "Mode",
             ["Auto Detect", "Single Asset", "Multi Asset", "Allocation"],
             key="analysis_mode_select",
         )
+
         risk_free_rate_pct = row[2].number_input(
             "Risk-Free Rate (%)",
             min_value=-100.0,
@@ -199,6 +210,7 @@ def render_topbar_controls(sample_files: Sequence[str]) -> dict[str, object]:
             key="risk_free_rate_pct_input",
         )
         risk_free_rate = risk_free_rate_pct / 100.0
+
         with row[3]:
             uploaded_file = st.file_uploader(
                 "CSV Upload",
@@ -206,13 +218,19 @@ def render_topbar_controls(sample_files: Sequence[str]) -> dict[str, object]:
                 accept_multiple_files=False,
                 key="csv_upload",
             )
+
         theme = row[4].selectbox(
             "Theme",
             ["Dark", "Light"],
             index=0,
             key="dashboard_theme",
         )
-        run_analysis = row[5].button("Generate Dashboard", type="primary", use_container_width=True)
+
+        run_analysis = row[5].button(
+            "Generate Dashboard",
+            type="primary",
+            use_container_width=True,
+        )
 
     return {
         "uploaded_file": uploaded_file,
@@ -223,7 +241,6 @@ def render_topbar_controls(sample_files: Sequence[str]) -> dict[str, object]:
         "run_analysis": run_analysis,
         "export_requested": False,
     }
-
 
 def date_range_label(profile: dict[str, object] | None) -> str:
     if not profile:
