@@ -1161,6 +1161,260 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             padding-bottom: 2px !important;
         }
 
+
+        /* FINSKILLOS_OVERVIEW_FOOTER_V9_2
+           Complete Overview footer replacement styles.
+           This block is self-contained and does not rely on v9/v9.1.
+        */
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-overview-rules-panel) {
+            margin-top: 4px !important;
+            margin-bottom: 20px !important;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-overview-rules-panel) > div {
+            padding-bottom: 16px !important;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-overview-rules-panel) [data-testid="stHorizontalBlock"] {
+            align-items: stretch !important;
+        }
+
+        .fs-overview-rules-panel .fs-panel-header {
+            margin-bottom: 8px;
+        }
+
+        .fs-overview-rule-strip {
+            display: block;
+            width: 100%;
+        }
+
+        .fs-overview-rule-divider {
+            height: 1px;
+            width: 100%;
+            margin: 12px 0 12px 0;
+            background: linear-gradient(
+                90deg,
+                rgba(25, 198, 180, 0.28),
+                rgba(129, 166, 202, 0.12),
+                rgba(129, 166, 202, 0.03)
+            );
+        }
+
+        .fs-overview-stat-card {
+            height: 82px;
+            min-height: 82px;
+            padding: 0.78rem 0.88rem;
+            border: 1px solid rgba(129, 166, 202, 0.16);
+            border-radius: 12px;
+            background:
+                radial-gradient(circle at 0% 0%, rgba(25, 198, 180, 0.10), transparent 11rem),
+                linear-gradient(180deg, rgba(13, 28, 45, 0.96), rgba(7, 17, 31, 0.98));
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.04),
+                0 8px 20px rgba(0, 0, 0, 0.12);
+            overflow: hidden;
+        }
+
+        .fs-overview-stat-kicker {
+            color: var(--fs-muted);
+            font-size: 0.62rem;
+            font-weight: 820;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            line-height: 1;
+            margin-bottom: 0.46rem;
+        }
+
+        .fs-overview-stat-value {
+            color: var(--fs-ink);
+            font-size: 1.08rem;
+            font-weight: 880;
+            letter-spacing: -0.02em;
+            line-height: 1.08;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .fs-overview-stat-caption {
+            color: var(--fs-muted);
+            font-size: 0.68rem;
+            font-weight: 620;
+            line-height: 1.22;
+            margin-top: 0.38rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .fs-overview-stat-card[data-tone="teal"] .fs-overview-stat-value {
+            color: var(--fs-teal);
+        }
+
+        .fs-overview-stat-card[data-tone="blue"] .fs-overview-stat-value {
+            color: var(--fs-blue);
+        }
+
+        .fs-overview-stat-card[data-tone="purple"] .fs-overview-stat-value {
+            color: var(--fs-purple);
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-overview-rules-panel) .stDownloadButton {
+            height: 82px !important;
+            min-height: 82px !important;
+            margin: 0 !important;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-overview-rules-panel) .stDownloadButton > button {
+            width: 100% !important;
+            height: 82px !important;
+            min-height: 82px !important;
+            border-radius: 14px !important;
+            font-size: 0.88rem !important;
+            font-weight: 840 !important;
+            letter-spacing: -0.01em;
+            box-shadow:
+                0 14px 30px rgba(17, 123, 140, 0.24),
+                inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-overview-rules-panel) .stDownloadButton > button p {
+            font-size: 0.88rem !important;
+            font-weight: 840 !important;
+            line-height: 1 !important;
+        }
+
+        .fs-overview-report-unavailable {
+            height: 82px;
+            min-height: 82px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(245, 166, 35, 0.24);
+            border-radius: 14px;
+            background: rgba(245, 166, 35, 0.08);
+        }
+
+        .fs-overview-footer-end {
+            height: 18px;
+        }
+
+
+
+        /* FINSKILLOS_OVERVIEW_FOOTER_V9_4
+           Stronger Overview footer compaction.
+           v9.3 was too conservative: the visible issue is mostly the footer
+           panel min-height, not only outer margin.
+        */
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-overview-rules-panel) {
+            margin-top: 6px !important;
+            margin-bottom: 18px !important;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-overview-rules-panel) > div {
+            padding-top: 12px !important;
+            padding-bottom: 12px !important;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-overview-rules-panel) [data-testid="stVerticalBlock"] {
+            gap: 8px !important;
+        }
+
+        .fs-overview-rules-panel .fs-panel-header {
+            margin-bottom: 8px !important;
+        }
+
+        .fs-overview-rule-divider {
+            margin: 8px 0 8px 0 !important;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-overview-rules-panel) .fs-rule-chip {
+            min-height: 48px !important;
+            padding: 0.58rem 0.72rem !important;
+        }
+
+        .fs-overview-stat-card {
+            height: 72px !important;
+            min-height: 72px !important;
+            padding: 0.66rem 0.78rem !important;
+        }
+
+        .fs-overview-stat-kicker {
+            font-size: 0.6rem !important;
+            margin-bottom: 0.38rem !important;
+        }
+
+        .fs-overview-stat-value {
+            font-size: 1.08rem !important;
+            line-height: 1.04 !important;
+        }
+
+        .fs-overview-stat-caption {
+            font-size: 0.66rem !important;
+            margin-top: 0.32rem !important;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-overview-rules-panel) .stDownloadButton {
+            height: 72px !important;
+            min-height: 72px !important;
+            margin: 0 !important;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-overview-rules-panel) .stDownloadButton > button {
+            height: 72px !important;
+            min-height: 72px !important;
+            border-radius: 13px !important;
+            font-size: 1.08rem !important;
+            font-weight: 900 !important;
+            letter-spacing: -0.02em !important;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-overview-rules-panel) .stDownloadButton > button p,
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-overview-rules-panel) .stDownloadButton > button div,
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-overview-rules-panel) .stDownloadButton > button span {
+            font-size: 1.08rem !important;
+            font-weight: 900 !important;
+            line-height: 1.05 !important;
+        }
+
+        .fs-overview-footer-end {
+            height: 14px !important;
+        }
+
+        /* v5 dynamic min-height classes can keep the footer visually too tall.
+           Override the specific v9.2/v9.4 footer height class only inside this panel. */
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-overview-rules-panel.fs-panel-height-268),
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-overview-rules-panel.fs-panel-height-226) {
+            min-height: 0 !important;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-overview-rules-panel.fs-panel-height-268) > div,
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-overview-rules-panel.fs-panel-height-226) > div {
+            min-height: 0 !important;
+        }
+
+
+        /* FINSKILLOS_OVERVIEW_FOOTER_V9_5
+           Add explicit breathing room between the divider hline and the
+           Rules/Coverage/Schema/Generate Report row.
+        */
+
+        .fs-overview-rule-divider {
+            margin: 8px 0 6px 0 !important;
+        }
+
+        .fs-overview-stat-row-spacer {
+            height: 18px;
+            min-height: 10px;
+            width: 100%;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-overview-rules-panel) .fs-overview-stat-row-spacer {
+            display: block !important;
+        }
+
         @keyframes fs-card-in {
             from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }

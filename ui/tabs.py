@@ -362,41 +362,94 @@ def render_overview_dashboard(
                 vspace(14)
 
     records = audit.deduplicated_records()
-    st.markdown("### Applied Skill Rules")
-    st.caption("Rule traceability and execution status for this analysis")
-    rule_cols = st.columns(5, gap="small")
-    for column, record in zip(rule_cols, records[:5], strict=False):
-        with column:
-            rule_chip(
-                rule_id=str(record.get("rule_id", "RULE")),
-                title=str(record.get("step", "rule")),
-                status="Passed" if record.get("severity") != "WARNING" else "Review",
-                severity=str(record.get("severity", "INFO")),
-            )
+    coverage = audit.has_prefixes(["DATA", "SCHEMA", "METRIC", "VIS", "INSIGHT", "SAFE"])
+    coverage_value = f"{sum(coverage.values())}/{len(coverage)} categories"
+    schema_value = str(schema.get("schema_type", "unknown") if schema else "unknown")
+
+    def _fs_escape(value: object) -> str:
+        return (
+            str(value)
+            .replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace('"', "&quot;")
+        )
+
+    def _overview_footer_stat(label: str, value: str, caption: str, tone: str = "teal") -> None:
+        st.markdown(
+            f"""
+            <div class="fs-overview-stat-card" data-tone="{_fs_escape(tone)}">
+              <div class="fs-overview-stat-kicker">{_fs_escape(label)}</div>
+              <div class="fs-overview-stat-value">{_fs_escape(value)}</div>
+              <div class="fs-overview-stat-caption">{_fs_escape(caption)}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
     st.markdown('<div class="fs-row-spacer"></div>', unsafe_allow_html=True)
-    footer_cols = st.columns([1.2, 1.0, 1.0, 1.15])
-    coverage = audit.has_prefixes(["DATA", "SCHEMA", "METRIC", "VIS", "INSIGHT", "SAFE"])
-    with footer_cols[0]:
-        summary_stat_card("Rules Executed", f"{len(records):,}")
-    with footer_cols[1]:
-        summary_stat_card("Coverage", f"{sum(coverage.values())}/{len(coverage)} categories")
-    with footer_cols[2]:
-        summary_stat_card("Schema", str(schema.get("schema_type", "unknown") if schema else "unknown"))
-    with footer_cols[3]:
-        if analysis_result is not None:
-            html_report = build_html_report(analysis_result)
-            st.download_button(
-                "Generate Report",
-                data=html_report.encode("utf-8"),
-                file_name="finskillos_analysis_report.html",
-                mime="text/html",
-                use_container_width=True,
-            )
-        else:
-            st.markdown(status_badge("Report unavailable", "warning"), unsafe_allow_html=True)
-    st.markdown('<div class="fs-row-spacer fs-row-spacer-sm"></div>', unsafe_allow_html=True)
 
+    with panel(
+        "Applied Skill Rules",
+        "Rule traceability, execution status, and report readiness for this analysis",
+        height=226,
+        body_class="fs-overview-rules-panel",
+    ):
+        st.markdown('<div class="fs-overview-rule-strip"></div>', unsafe_allow_html=True)
+        rule_cols = st.columns(5, gap="small")
+        for column, record in zip(rule_cols, records[:5], strict=False):
+            with column:
+                rule_chip(
+                    rule_id=str(record.get("rule_id", "RULE")),
+                    title=str(record.get("step", "rule")),
+                    status="Passed" if record.get("severity") != "WARNING" else "Review",
+                    severity=str(record.get("severity", "INFO")),
+                )
+
+        st.markdown('<div class="fs-overview-rule-divider"></div>', unsafe_allow_html=True)
+        st.markdown('<div class="fs-overview-stat-row-spacer"></div>', unsafe_allow_html=True)
+
+        footer_cols = st.columns([1.0, 1.0, 1.0, 1.18], gap="small")
+        with footer_cols[0]:
+            _overview_footer_stat(
+                "Rules Executed",
+                f"{len(records):,}",
+                "Deduplicated audit records",
+                "teal",
+            )
+        with footer_cols[1]:
+            _overview_footer_stat(
+                "Coverage",
+                coverage_value,
+                "Required Skill categories",
+                "blue",
+            )
+        with footer_cols[2]:
+            _overview_footer_stat(
+                "Schema",
+                schema_value,
+                "Detected standardized schema",
+                "purple",
+            )
+        with footer_cols[3]:
+            if analysis_result is not None:
+                html_report = build_html_report(analysis_result)
+                st.download_button(
+                    "Generate Report",
+                    data=html_report.encode("utf-8"),
+                    file_name="finskillos_analysis_report.html",
+                    mime="text/html",
+                    use_container_width=True,
+                )
+            else:
+                st.markdown(
+                    '<div class="fs-overview-report-unavailable">'
+                    + status_badge("Report unavailable", "warning")
+                    + "</div>",
+                    unsafe_allow_html=True,
+                )
+
+    st.markdown('<div class="fs-overview-footer-end"></div>', unsafe_allow_html=True)
 
 def render_data_profile_tab(
     df: pd.DataFrame | None,
@@ -1001,7 +1054,6 @@ def render_applied_rules_tab(df: pd.DataFrame | None, audit: RuleAuditLog) -> No
         return
     records = _rule_records(audit)
     summary = _rule_summary(records)
-
     kpi_cols = st.columns(6)
     with kpi_cols[0]:
         metric_card("Rules Executed", f"{summary['executed']:,}", "Total rules run", "blue", "RU")
