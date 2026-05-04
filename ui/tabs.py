@@ -1156,7 +1156,6 @@ def render_reports_tab(
                 {"format": "Rules JSON", "status": "Available"},
             ]
             compact_data_table(available_exports, columns=["format", "status"], max_rows=3)
-            vspace(20)
             if html_report:
                 st.download_button(
                     "Download HTML Report",
@@ -1214,3 +1213,137 @@ def render_reports_tab(
 
     with panel("Report Rules & Validation", "Rules included in the current export package", scroll=True):
         _rule_validation_list_for_prefix(audit, {"METRIC", "RISK", "INSIGHT", "SAFE", "AUTO"}, limit=5)
+
+# ---------------------------------------------------------------------------
+# Layout override: Reports tab v8
+# Appended by apply_reports_layout_v8.py.
+# This later definition intentionally overrides the earlier render_reports_tab.
+# ---------------------------------------------------------------------------
+def render_reports_tab(
+    df: pd.DataFrame | None,
+    source_name: str,
+    audit: RuleAuditLog,
+    profile: dict[str, Any] | None,
+    schema: dict[str, Any] | None,
+    metrics: dict[str, Any] | None,
+    analysis_result: dict[str, Any] | None,
+) -> None:
+    """Render the Reports tab with action-first, balanced card layout."""
+
+    if not _analysis_available(df):
+        return
+
+    records = _rule_records(audit)
+    rule_summary = _rule_summary(records)
+    schema_name = str(schema.get("schema_type", "unknown") if schema else "unknown")
+    row_count = int(profile.get("row_count", 0)) if profile else 0
+    asset_count = _asset_count(metrics, schema)
+    html_report = build_html_report(analysis_result) if analysis_result is not None else ""
+    html_bytes = html_report.encode("utf-8") if html_report else b""
+    rules_df = pd.DataFrame(records)
+    rules_csv = rules_df.to_csv(index=False).encode("utf-8") if not rules_df.empty else b""
+    rules_json = json.dumps(records, ensure_ascii=False, indent=2).encode("utf-8")
+
+    summary = metrics.get("summary", {}) if metrics else {}
+    report_library = _report_library(source_name)
+
+    preview_rows = [
+        {"section": "Dataset Summary", "status": "Included"},
+        {"section": "Schema Mapping", "status": "Included" if schema else "Unavailable"},
+        {"section": "Metric Summary", "status": "Included" if metrics else "Unavailable"},
+        {"section": "Risk Insights", "status": "Included" if analysis_result else "Unavailable"},
+        {"section": "Applied Rules", "status": f"{len(records):,} rows"},
+        {"section": "Disclaimer", "status": "Included"},
+    ]
+
+    export_rows = [
+        {"format": "HTML Report", "status": "Available" if html_bytes else "Unavailable"},
+        {"format": "Rules CSV", "status": "Available" if rules_csv else "Unavailable"},
+        {"format": "Rules JSON", "status": "Available"},
+    ]
+
+    planned_rows = [
+        {"format": "PDF Export", "status": "Planned"},
+        {"format": "PPTX Export", "status": "Planned"},
+        {"format": "Secure Share Link", "status": "Planned"},
+        {"format": "Scheduled Delivery", "status": "Planned"},
+    ]
+
+    report_summary_rows = [
+        {"item": "Dataset", "status": source_name},
+        {"item": "Schema", "status": schema_name},
+        {"item": "Rows", "status": f"{row_count:,}" if row_count else "N/A"},
+        {"item": "Assets", "status": asset_count},
+        {"item": "Total Return", "status": format_percent(summary.get("total_return")) if summary else "N/A"},
+        {"item": "Risk Level", "status": str(summary.get("risk_level", "N/A"))},
+    ]
+
+    validation_rows = [
+        {"item": "Rule Coverage", "value": f"{rule_summary['coverage']}/{rule_summary['required']}"},
+        {"item": "Rules Executed", "value": f"{rule_summary['executed']:,}"},
+        {"item": "Warnings", "value": f"{rule_summary['warnings']:,}"},
+        {"item": "Blocked", "value": f"{rule_summary['blocked']:,}"},
+        {"item": "Loaded From", "value": "Skills.md"},
+    ]
+
+    primary_left, primary_mid, primary_right = st.columns([1.35, 0.95, 0.92])
+    with primary_left:
+        with panel("Report Preview", "Current export package contents", height=396, scroll=True):
+            compact_data_table(preview_rows, columns=["section", "status"], max_rows=8)
+            st.caption(f"Preview bytes: {len(html_bytes):,}" if html_bytes else "Preview unavailable until analysis is available.")
+
+    with primary_mid:
+        with panel("Export & Share", "Available now vs planned next", height=396, scroll=True):
+            st.markdown("#### Available Exports")
+            compact_data_table(export_rows, columns=["format", "status"], max_rows=5)
+            st.download_button(
+                "Download HTML Report",
+                data=html_bytes,
+                file_name="finskillos_analysis_report.html",
+                mime="text/html",
+                use_container_width=True,
+                disabled=not bool(html_bytes),
+            )
+            st.download_button(
+                "Download Rules CSV",
+                data=rules_csv,
+                file_name="finskillos_rule_audit.csv",
+                mime="text/csv",
+                use_container_width=True,
+                disabled=not bool(rules_csv),
+            )
+            st.download_button(
+                "Download Rules JSON",
+                data=rules_json,
+                file_name="finskillos_rule_audit.json",
+                mime="application/json",
+                use_container_width=True,
+                disabled=not bool(records),
+            )
+
+    with primary_right:
+        with panel("Report Summary", "Dataset, schema, and output status", height=396, scroll=True):
+            key_value_table(report_summary_rows, key_label="Item", value_label="Status")
+            vspace(10)
+            st.markdown("#### Validation Status")
+            key_value_table(validation_rows)
+
+    vspace(10)
+
+    secondary_left, secondary_mid, secondary_right = st.columns([1.05, 0.95, 1.35])
+    with secondary_left:
+        with panel("Report Library", "Generated report artifacts for the current dataset", height=340, scroll=True):
+            compact_data_table(report_library.astype(str).to_dict("records"), columns=list(report_library.columns), max_rows=8)
+
+    with secondary_mid:
+        with panel("Planned Extensions", "Future export and delivery options", height=340, scroll=True):
+            compact_data_table(planned_rows, columns=["format", "status"], max_rows=8)
+
+    with secondary_right:
+        with panel("Report Rules & Validation", "Rules included in the current export package", height=340, scroll=True):
+            if not records:
+                empty_state("No Rules Available", "Rule audit records will appear after analysis.")
+            else:
+                rule_validation_list(records, limit=6)
+
+    st.markdown('<div class="fs-row-spacer fs-row-spacer-sm"></div>', unsafe_allow_html=True)
