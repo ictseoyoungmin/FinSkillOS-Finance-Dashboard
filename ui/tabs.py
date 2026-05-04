@@ -670,77 +670,199 @@ def render_diversification_tab(
     metrics: dict[str, Any] | None,
     insights: dict[str, Any] | None,
 ) -> None:
-    """Render the Diversification detail tab."""
+    """Render the Diversification tab with available cards promoted first."""
 
     if not _require_analysis(df, metrics):
         return
+
+    summary = metrics.get("summary", {}) if metrics else {}
     avg_corr = _average_correlation(metrics)
-    allocation = metrics.get("allocation", {})
-    largest_weight, largest_asset = _largest_weight(schema)
-    effective_diversification = "N/A" if avg_corr is None else f"{max(1.0, 1.0 / max(avg_corr, 0.01)):.1f}"
+    allocation_rows = _allocation_rows(schema)
+    asset_metrics = pd.DataFrame(metrics.get("asset_metrics", [])) if metrics else pd.DataFrame()
+    corr = metrics.get("correlation_matrix") if metrics else None
+
+    diversification_items = [
+        item
+        for item in (insights or {}).get("insights", [])
+        if item.get("category") in {"correlation", "diversification", "allocation", "concentration", "data_quality"}
+    ]
+
+    correlation_available = isinstance(corr, pd.DataFrame) and not corr.empty and corr.shape[0] >= 2
+    allocation_available = not allocation_rows.empty
+    insights_available = len(diversification_items) > 0
+
+    risk_contribution_available = (
+        not asset_metrics.empty
+        and {"asset", "annualized_volatility"}.issubset(asset_metrics.columns)
+        and pd.to_numeric(asset_metrics["annualized_volatility"], errors="coerce").dropna().sum() > 0
+    )
+    risk_return_available = (
+        not asset_metrics.empty
+        and {"asset", "annualized_volatility", "annualized_return"}.issubset(asset_metrics.columns)
+        and not asset_metrics.dropna(subset=["annualized_volatility", "annualized_return"]).empty
+    )
+    concentration_available = allocation_available
 
     kpi_cols = st.columns(6)
     with kpi_cols[0]:
-        metric_card("Number of Assets", _asset_count(metrics, schema), "Detected assets", "blue", "AS")
+        metric_card(
+            "Average Correlation",
+            f"{avg_corr:.2f}" if avg_corr is not None else "N/A",
+            "Off-diagonal mean",
+            "blue",
+            "ρ",
+        )
     with kpi_cols[1]:
-        metric_card("Avg Correlation", "N/A" if avg_corr is None else f"{avg_corr:.2f}", "Pairwise average", "purple", "COR")
+        metric_card(
+            "Asset Count",
+            _asset_count(metrics, schema),
+            "Distinct assets",
+            "teal",
+            "A",
+        )
     with kpi_cols[2]:
-        metric_card("Concentration Risk", str(allocation.get("concentration_level", "N/A")), f"HHI {format_ratio(allocation.get('hhi'))}", "amber", "HHI")
+        largest_weight, largest_asset = _largest_weight(schema)
+        metric_card(
+            "Largest Weight",
+            largest_weight,
+            largest_asset,
+            "amber" if largest_weight != "N/A" else "blue",
+            "W",
+        )
     with kpi_cols[3]:
-        metric_card("Effective Diversification", effective_diversification, "Correlation-derived proxy", "teal", "DIV")
+        metric_card(
+            "Cash Exposure",
+            _cash_exposure(schema),
+            "Detected cash allocation",
+            "teal",
+            "$",
+        )
     with kpi_cols[4]:
-        metric_card("Largest Weight", largest_weight, largest_asset, "red" if largest_weight != "N/A" else "blue", "LW")
+        metric_card(
+            "Diversification",
+            str(summary.get("diversification_level", summary.get("risk_level", "N/A"))),
+            "Rule-based signal",
+            "purple",
+            "D",
+        )
     with kpi_cols[5]:
-        metric_card("Cash Exposure", _cash_exposure(schema), "Cash-like asset labels", "teal", "CA")
+        metric_card(
+            "Warnings",
+            str(len([record for record in audit.deduplicated_records() if record.get("severity") == "WARNING"])),
+            "Audit warnings",
+            "red",
+            "!",
+        )
 
     vspace(18)
 
-    top_left, top_mid, top_right = st.columns([1.1, 1.0, 0.95])
-    with top_left:
-        with panel("Correlation Heatmap", "Pearson correlation across asset returns", height=428):
-            render_correlation_heatmap(metrics, height=350)
-    with top_mid:
-        with panel("Portfolio Allocation", "Weight-based exposure when available", height=428):
-            render_allocation_chart(schema, height=350)
-    with top_right:
-        with panel("Diversification Insights", None, height=428, scroll=True):
-            vspace(14)
-            items = [item for item in (insights or {}).get("insights", []) if item.get("category") in {"correlation", "concentration", "data_quality"}]
-            if not items:
-                empty_state("No Diversification Insights", "Correlation or allocation-specific insight was not generated.")
-            for item in items[:3]:
+    def _render_correlation() -> None:
+        with panel("Correlation Heatmap", "Pearson correlation across asset returns", height=392):
+            render_correlation_heatmap(metrics, height=315)
+
+    def _render_allocation() -> None:
+        with panel("Portfolio Allocation", "Weight-based exposure when available", height=392):
+            render_allocation_chart(schema, height=315)
+
+    def _render_insights() -> None:
+        with panel("Diversification Insights", "Available insight cards are promoted ahead of unavailable panels", height=392, scroll=True):
+            if not diversification_items:
+                empty_state("No Diversification Insights", "No diversification-specific insights were generated.")
+                return
+            for item in diversification_items[:4]:
                 insight_card(
-                    category=str(item.get("category", "diversification")),
+                    category=str(item.get("category", "Diversification")),
                     fact=str(item.get("fact", "")),
                     interpretation=str(item.get("interpretation", "")),
                     caution=str(item.get("caution", "")),
                     severity=str(item.get("severity", "INFO")),
+                    compact=True,
                 )
-                vspace(14)
+                vspace(12)
 
-    bottom_left, bottom_mid, bottom_right = st.columns([1.0, 1.0, 1.0])
-    with bottom_left:
-        with panel("Risk Contribution", "Volatility-weighted asset contribution proxy", height=370):
-            render_risk_contribution_chart(metrics, height=290)
-    with bottom_mid:
-        with panel("Risk vs. Return", "Asset comparison", height=370):
-            render_risk_return_scatter(metrics, height=290)
-    with bottom_right:
-        with panel("Concentration Analysis", None, height=370, scroll=True):
-            if allocation:
-                allocation_rows = [
-                    {"item": "Concentration Level", "value": allocation.get("concentration_level", "N/A")},
-                    {"item": "HHI", "value": format_ratio(allocation.get("hhi"))},
-                    {"item": "Largest Weight", "value": largest_weight},
-                    {"item": "Largest Asset", "value": largest_asset},
-                    {"item": "Cash Exposure", "value": _cash_exposure(schema)},
-                ]
-                key_value_table(allocation_rows)
-            else:
+    def _render_risk_contribution() -> None:
+        with panel("Risk Contribution", "Volatility-weighted asset contribution proxy", height=392):
+            render_risk_contribution_chart(metrics, height=315)
+
+    def _render_risk_return() -> None:
+        with panel("Risk vs. Return", "Asset comparison", height=392):
+            render_risk_return_scatter(metrics, height=315)
+
+    def _render_concentration() -> None:
+        with panel("Concentration Analysis", "Weight concentration and exposure summary", height=392, scroll=True):
+            if allocation_rows.empty:
                 empty_state("Concentration Unavailable", "Concentration metrics require an allocation weight column.")
+                return
 
-    with panel("Rule Traceability & Data Quality", "Diversification rules, visualization checks, and data quality status", scroll=True):
-        _rule_validation_list_for_prefix(audit, {"VIS", "RISK", "DATA", "INSIGHT"}, limit=5)
+            working = allocation_rows.copy()
+            working["weight"] = pd.to_numeric(working["weight"], errors="coerce")
+            working = working.dropna(subset=["asset", "weight"])
+            if working.empty:
+                empty_state("Concentration Unavailable", "No valid asset weights were available.")
+                return
+
+            total_weight = float(working["weight"].sum())
+            top_weight = float(working["weight"].max())
+            top_asset = str(working.loc[working["weight"].idxmax(), "asset"])
+            hhi = float((working["weight"] ** 2).sum())
+            top3 = float(working.sort_values("weight", ascending=False).head(3)["weight"].sum())
+
+            rows = [
+                {"item": "Largest Asset", "value": top_asset},
+                {"item": "Largest Weight", "value": format_percent(top_weight)},
+                {"item": "Top 3 Weight", "value": format_percent(top3)},
+                {"item": "Weight Sum", "value": format_percent(total_weight)},
+                {"item": "HHI Proxy", "value": f"{hhi:.3f}"},
+            ]
+            key_value_table(rows)
+
+    card_specs = [
+        {
+            "title": "Correlation Heatmap",
+            "available": correlation_available,
+            "render": _render_correlation,
+        },
+        {
+            "title": "Portfolio Allocation",
+            "available": allocation_available,
+            "render": _render_allocation,
+        },
+        {
+            "title": "Diversification Insights",
+            "available": insights_available,
+            "render": _render_insights,
+        },
+        {
+            "title": "Risk Contribution",
+            "available": risk_contribution_available,
+            "render": _render_risk_contribution,
+        },
+        {
+            "title": "Risk vs. Return",
+            "available": risk_return_available,
+            "render": _render_risk_return,
+        },
+        {
+            "title": "Concentration Analysis",
+            "available": concentration_available,
+            "render": _render_concentration,
+        },
+    ]
+
+    ordered_cards = [card for card in card_specs if card["available"]] + [card for card in card_specs if not card["available"]]
+
+    for row_start in range(0, len(ordered_cards), 3):
+        row_cards = ordered_cards[row_start : row_start + 3]
+        columns = st.columns(3)
+        for column, card in zip(columns, row_cards, strict=False):
+            with column:
+                card["render"]()
+        if row_start + 3 < len(ordered_cards):
+            vspace(8)
+
+    with panel("Applied Diversification Rules", "Rule traceability and execution status for this analysis", height=300, scroll=True):
+        _rule_validation_list_for_prefix(audit, {"METRIC", "VIS", "RISK", "SAFE"}, limit=6)
+
 
 
 def render_insights_tab(
