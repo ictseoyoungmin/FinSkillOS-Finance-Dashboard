@@ -21,9 +21,43 @@ NAV_ITEMS = [
     ("Reports", "▤"),
 ]
 
+SAMPLE_DESCRIPTIONS = {
+    "single_asset_price.csv": {
+        "title": "단일 자산 가격 시계열",
+        "body": "하나의 자산에 대해 날짜별 가격이 들어있는 기본 예시입니다. 누적수익률, drawdown, rolling volatility처럼 단일 가격 시계열에서 계산되는 지표를 확인하기 좋습니다.",
+    },
+    "multi_asset_portfolio.csv": {
+        "title": "멀티 자산 포트폴리오 시계열",
+        "body": "여러 자산의 날짜별 가격을 long format으로 담은 대표 데모 데이터입니다. 자산별 수익률, 상관관계, diversification, risk-return scatter 등 전체 대시보드 기능을 가장 풍부하게 확인할 수 있습니다.",
+    },
+    "mixed_schema_assets.csv": {
+        "title": "혼합 컬럼명 스키마 매핑",
+        "body": "`trade_dt`, `ticker_name`, `nav_value`처럼 표준 컬럼명이 아닌 입력을 자동으로 date, asset, price, volume 필드에 매핑하는 예시입니다. Auto Detect와 스키마 추론 품질을 확인할 때 사용합니다.",
+    },
+    "allocation_sample.csv": {
+        "title": "보유 비중 / 자산 배분 스냅샷",
+        "body": "날짜별 가격 시계열이 아니라 자산별 weight, sector, region을 담은 allocation 예시입니다. 포트폴리오 구성, 집중도, sector/region exposure를 확인하는 데 적합합니다.",
+    },
+}
+
 
 def _html(value: object) -> str:
     return escape("" if value is None else str(value))
+
+
+def _sample_description(sample_name: str) -> dict[str, str]:
+    if sample_name == "샘플 없음":
+        return {
+            "title": "샘플 데이터 없음",
+            "body": "샘플 CSV가 없거나 아직 선택되지 않았습니다. CSV Upload에서 직접 파일을 업로드하면 Auto Detect가 스키마를 추론합니다.",
+        }
+    return SAMPLE_DESCRIPTIONS.get(
+        sample_name,
+        {
+            "title": "사용자 샘플 CSV",
+            "body": "등록된 샘플 데이터입니다. Auto Detect가 컬럼 이름과 데이터 분포를 기준으로 날짜, 자산, 가격, 수익률, 비중 필드를 추론합니다.",
+        },
+    )
 
 
 def render_sidebar_nav(active_tab: str, source_name: str, mode: str) -> str:
@@ -113,7 +147,6 @@ def render_topbar(title: str, subtitle: str, active_tab: str, source_name: str, 
 
 def render_topbar_controls(sample_files: Sequence[str]) -> dict[str, object]:
     """Render dataset, mode, rate, and action controls in the main app shell."""
-
     sample_options = list(sample_files)
     if sample_options:
         default_sample = "multi_asset_portfolio.csv"
@@ -128,12 +161,29 @@ def render_topbar_controls(sample_files: Sequence[str]) -> dict[str, object]:
             gap="small",
             vertical_alignment="bottom",
         )
-        sample_name = row[0].selectbox(
-            "Sample Dataset",
-            sample_options,
-            index=default_index,
-            key="sample_dataset_select",
-        )
+        with row[0]:
+            sample_label, sample_help = st.columns([0.86, 0.14], gap="small", vertical_alignment="bottom")
+            with sample_label:
+                sample_name = st.selectbox(
+                    "Sample Dataset",
+                    sample_options,
+                    index=default_index,
+                    key="sample_dataset_select",
+                )
+            with sample_help:
+                description = _sample_description(
+                    str(st.session_state.get("sample_dataset_select", sample_options[default_index]))
+                )
+                with st.popover("?"):
+                    st.markdown(
+                        f"""
+                        <div class="fs-sample-help">
+                          <div class="fs-sample-help-title">{_html(description['title'])}</div>
+                          <div class="fs-sample-help-body">{_html(description['body'])}</div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True,
+                    )
         mode = row[1].selectbox(
             "Mode",
             ["Auto Detect", "Single Asset", "Multi Asset", "Allocation"],
