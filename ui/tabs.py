@@ -780,7 +780,7 @@ def render_insights_tab(
                     interpretation=str(item.get("interpretation", "")),
                     caution=str(item.get("caution", "")),
                     severity=str(item.get("severity", "INFO")),
-                    selected=idx == idx,
+                    selected=idx == selected_index,
                 )
                 vspace(12)
 

@@ -992,6 +992,140 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
         .fs-panel-lean .fs-empty-state {
             box-shadow: none !important;
         }
+
+        /* FINSKILLOS_SCROLL_SCOPE_FIX_V4
+           Only panels rendered with panel(..., scroll=True, height=...)
+           become local vertical scroll areas. Tables own horizontal overflow only.
+           Do not use overscroll-behavior: contain because it traps wheel chaining.
+        */
+
+        [data-testid="stMain"],
+        section.main,
+        [data-testid="stMainBlockContainer"],
+        [data-testid="stMainBlockContainer"] [data-testid="stVerticalBlock"],
+        [data-testid="stMainBlockContainer"] [data-testid="stHorizontalBlock"],
+        [data-testid="column"],
+        [data-testid="column"] > div,
+        div[data-testid="stElementContainer"],
+        div[data-testid="stVerticalBlockBorderWrapper"],
+        div[data-testid="stVerticalBlockBorderWrapper"] > div,
+        div[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stVerticalBlock"] {
+            min-width: 0 !important;
+            overscroll-behavior: auto !important;
+        }
+
+        [data-testid="stMain"],
+        section.main {
+            overflow-x: hidden !important;
+            overscroll-behavior-y: auto !important;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell):not(:has(.fs-panel-scroll)) {
+            overflow: visible !important;
+            overscroll-behavior: auto !important;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell):not(:has(.fs-panel-scroll)) > div,
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-shell):not(:has(.fs-panel-scroll)) > div > [data-testid="stVerticalBlock"] {
+            height: auto !important;
+            max-height: none !important;
+            min-height: 0 !important;
+            overflow: visible !important;
+            overscroll-behavior: auto !important;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-scroll) {
+            min-width: 0 !important;
+            overflow: hidden !important;
+            overscroll-behavior: auto !important;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-scroll) > div {
+            height: 100% !important;
+            min-height: 0 !important;
+            min-width: 0 !important;
+            overflow-x: hidden !important;
+            overflow-y: auto !important;
+            overscroll-behavior: auto !important;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-scroll) > div > [data-testid="stVerticalBlock"] {
+            height: auto !important;
+            min-height: 100% !important;
+            min-width: 0 !important;
+            overflow: visible !important;
+            overscroll-behavior: auto !important;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-panel-scroll) .fs-panel-header {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            padding-bottom: var(--fs-gap-xs);
+            background: linear-gradient(180deg, rgba(12, 27, 45, 0.98), rgba(12, 27, 45, 0.86));
+            backdrop-filter: blur(6px);
+        }
+
+        .fs-table-scroll {
+            display: block !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            max-height: none !important;
+            overflow-x: auto !important;
+            overflow-y: visible !important;
+            border: 1px solid var(--fs-line);
+            border-radius: var(--fs-radius);
+            background: var(--fs-table-bg);
+            overscroll-behavior: auto !important;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .fs-data-table,
+        .fs-kv-table {
+            width: max-content !important;
+            min-width: 100% !important;
+            border-collapse: separate;
+            border-spacing: 0;
+            table-layout: auto;
+        }
+
+        .fs-data-table th,
+        .fs-data-table td,
+        .fs-kv-table th,
+        .fs-kv-table td {
+            white-space: nowrap;
+        }
+
+        .fs-kv-table td:last-child {
+            white-space: normal;
+            min-width: 12rem;
+        }
+
+        .fs-data-table thead th,
+        .fs-kv-table thead th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background: var(--fs-table-header-bg);
+            backdrop-filter: blur(6px);
+        }
+
+        div[data-testid="stDataFrame"],
+        div[data-testid="stTable"],
+        div[data-testid="stDataFrame"] > div,
+        div[data-testid="stTable"] > div {
+            max-width: 100% !important;
+            min-width: 0 !important;
+            overscroll-behavior: auto !important;
+        }
+
+        div[data-testid="stTable"] table {
+            width: max-content !important;
+            min-width: 100% !important;
+        }
+
         @keyframes fs-card-in {
             from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }

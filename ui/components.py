@@ -78,15 +78,17 @@ def key_value_table(rows: Iterable[dict[str, object]], key_label: str = "Item", 
     )
     st.markdown(
         f"""
-        <table class="fs-kv-table">
-          <thead>
-            <tr>
-              <th>{_html(key_label)}</th>
-              <th>{_html(value_label)}</th>
-            </tr>
-          </thead>
-          <tbody>{body}</tbody>
-        </table>
+        <div class="fs-table-scroll fs-kv-scroll" role="region" aria-label="Scrollable key value table" tabindex="0">
+          <table class="fs-kv-table">
+            <thead>
+              <tr>
+                <th>{_html(key_label)}</th>
+                <th>{_html(value_label)}</th>
+              </tr>
+            </thead>
+            <tbody>{body}</tbody>
+          </table>
+        </div>
         """,
         unsafe_allow_html=True,
     )
@@ -107,7 +109,7 @@ def compact_data_table(rows: Iterable[dict[str, object]], columns: Sequence[str]
     )
     st.markdown(
         f"""
-        <div class="fs-table-scroll">
+        <div class="fs-table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
           <table class="fs-data-table">
             <thead><tr>{header_html}</tr></thead>
             <tbody>{body_html}</tbody>
@@ -162,11 +164,16 @@ def panel(
     action_html = f"<div>{action}</div>" if action else ""
     subtitle_html = f'<div class="fs-panel-subtitle">{_html(subtitle)}</div>' if subtitle else ""
     class_names = ["fs-panel-shell"]
-    if scroll:
+    use_local_scroll = scroll and height is not None
+    if use_local_scroll:
         class_names.append("fs-panel-scroll")
     if body_class:
         class_names.append(body_class)
-    with st.container(border=True, height=height):
+
+    # Passing height to st.container creates a local scroll container in Streamlit.
+    # Only explicit scroll panels receive height; all other panels remain in page flow.
+    container_height = height if use_local_scroll else None
+    with st.container(border=True, height=container_height):
         header_html = (
             f'<div class="{" ".join(class_names)}">'
             '<div class="fs-panel-header">'
