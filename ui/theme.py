@@ -1502,6 +1502,37 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
             font-size: 0.82rem !important;
         }
 
+
+        /* FINSKILLOS_INSIGHTS_FOOTER_SPACING_V12
+           Prevent the global Skills.md expander from visually colliding with
+           the Insights tab's final "Pinned Insights & Next Steps" row.
+        */
+
+        .fs-insights-footer-end {
+            height: 28px;
+            min-height: 28px;
+            width: 100%;
+        }
+
+        /* Add breathing room only when the Insights tab emits the footer spacer. */
+        div[data-testid="stElementContainer"]:has(.fs-insights-footer-end) {
+            margin-bottom: 10px !important;
+        }
+
+        /* Pinned cards are usually rendered as rule-chip-like cards near the tab end.
+           This keeps their row from visually touching the expander border. */
+        div[data-testid="stHorizontalBlock"]:has(.fs-insight-next-card),
+        div[data-testid="stHorizontalBlock"]:has(.fs-pinned-insight-card),
+        div[data-testid="stHorizontalBlock"]:has(.fs-next-step-card) {
+            margin-bottom: 12px !important;
+        }
+
+        /* Fallback: if the pinned cards reuse fs-rule-chip, give the last horizontal
+           block before the Insights footer a little separation. */
+        div[data-testid="stHorizontalBlock"]:has(+ div [class*="fs-insights-footer-end"]) {
+            margin-bottom: 12px !important;
+        }
+
         @keyframes fs-card-in {
             from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }

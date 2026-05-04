@@ -1046,6 +1046,7 @@ def render_insights_tab(
         with column:
             rule_card("NEXT", title, description, status="Queued", severity="INFO")
     vspace(14)
+    st.markdown('<div class="fs-insights-footer-end"></div>', unsafe_allow_html=True)
 
 def render_applied_rules_tab(df: pd.DataFrame | None, audit: RuleAuditLog) -> None:
     """Render the Applied Rules governance tab."""
@@ -1322,12 +1323,12 @@ def render_reports_tab(
     ]
 
     report_summary_rows = [
-        {"item": "Dataset", "status": source_name},
-        {"item": "Schema", "status": schema_name},
-        {"item": "Rows", "status": f"{row_count:,}" if row_count else "N/A"},
-        {"item": "Assets", "status": asset_count},
-        {"item": "Total Return", "status": format_percent(summary.get("total_return")) if summary else "N/A"},
-        {"item": "Risk Level", "status": str(summary.get("risk_level", "N/A"))},
+        {"item": "Dataset", "value": source_name},
+        {"item": "Schema", "value": schema_name},
+        {"item": "Rows", "value": f"{row_count:,}" if row_count else "N/A"},
+        {"item": "Assets", "value": asset_count},
+        {"item": "Total Return", "value": format_percent(summary.get("total_return")) if summary else "N/A"},
+        {"item": "Risk Level", "value": str(summary.get("risk_level", "N/A"))},
     ]
 
     validation_rows = [
