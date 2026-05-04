@@ -165,6 +165,9 @@ def panel(
     subtitle_html = f'<div class="fs-panel-subtitle">{_html(subtitle)}</div>' if subtitle else ""
     class_names = ["fs-panel-shell"]
     use_local_scroll = scroll and height is not None
+    height_class = f"fs-panel-height-{int(height)}" if height is not None else None
+    if height_class:
+        class_names.append(height_class)
     if use_local_scroll:
         class_names.append("fs-panel-scroll")
     if body_class:
@@ -173,8 +176,24 @@ def panel(
     # Passing height to st.container creates a local scroll container in Streamlit.
     # Only explicit scroll panels receive height; all other panels remain in page flow.
     container_height = height if use_local_scroll else None
+    visual_height_css = ""
+    if height_class and not use_local_scroll:
+        height_px = int(height)
+        visual_height_css = (
+            "<style>"
+            f'div[data-testid="stVerticalBlockBorderWrapper"]:has(.{height_class}):not(:has(.fs-panel-scroll)) '
+            f'{{ min-height: {height_px}px !important; }}'
+            f'div[data-testid="stVerticalBlockBorderWrapper"]:has(.{height_class}):not(:has(.fs-panel-scroll)) > div '
+            f'{{ min-height: calc({height_px}px - 2px) !important; }}'
+            f'div[data-testid="stVerticalBlockBorderWrapper"]:has(.{height_class}):not(:has(.fs-panel-scroll)) '
+            f'[data-testid="stVerticalBlock"] '
+            f'{{ min-height: 100% !important; }}'
+            "</style>"
+        )
+
     with st.container(border=True, height=container_height):
         header_html = (
+            visual_height_css +
             f'<div class="{" ".join(class_names)}">'
             '<div class="fs-panel-header">'
             f'<div><div class="fs-panel-title">{_html(title)}</div>{subtitle_html}</div>'

@@ -775,7 +775,7 @@ def render_insights_tab(
 
     feed_col, detail_col, trace_col = st.columns([0.92, 1.35, 0.86])
     with feed_col:
-        with panel("Insight Feed", None, height=760, scroll=True):
+        with panel("Insight Feed", None, height=720, scroll=True):
             if not items:
                 empty_state("Empty Feed", "No insight cards are available.")
             for idx, item in enumerate(items):
@@ -790,7 +790,8 @@ def render_insights_tab(
                 vspace(12)
 
     with detail_col:
-        with panel("Selected Insight", None, height=760, scroll=True):
+        with panel("Selected Insight", None, height=720, scroll=True):
+            vspace(20)
             if selected is None:
                 empty_state("No Selection", "Select an insight from the feed to inspect its evidence.")
             else:
@@ -822,7 +823,7 @@ def render_insights_tab(
                     key_value_table(evidence_rows.rename(columns={"field": "item"}).astype(str).to_dict("records"))
 
     with trace_col:
-        with panel("Insight Validation & Traceability", None, height=760, scroll=True):
+        with panel("Insight Validation & Traceability", None, height=720, scroll=True):
             records = _rule_records(audit)
             if selected is None:
                 empty_state("No Traceability", "Select an insight to inspect its referenced rules.")
