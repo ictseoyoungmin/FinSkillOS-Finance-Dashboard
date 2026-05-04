@@ -107,10 +107,10 @@ def render_sidebar_nav(active_tab: str, source_name: str, mode: str) -> str:
             <div class="fs-sidebar-value"><span class="fs-status-dot"></span>All systems operational</div>
           </div>
           <div class="fs-user-row">
-            <div class="fs-user-avatar">FS</div>
+            <div class="fs-user-avatar">YM</div>
             <div class="fs-user-copy">
               <div class="fs-user-name">FinSkillOS Console</div>
-              <div class="fs-user-plan">Reference layout synced</div>
+              <div class="fs-user-plan">@ictseoyoungmin</div>
             </div>
           </div>
         </div>

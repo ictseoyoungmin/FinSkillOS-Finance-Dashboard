@@ -552,23 +552,70 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
         .fs-brand {
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin: 0 var(--fs-sidebar-pad-x) 10px var(--fs-sidebar-pad-x);
-            padding: 0 0 18px 0;
+            gap: 10px;
+            margin: 0 var(--fs-sidebar-pad-x) 16px var(--fs-sidebar-pad-x);
+            padding: 0 0 20px 0;
             border-bottom: 1px solid var(--fs-line);
             min-width: 0;
         }
+
         .fs-logo-mark {
-            width: 28px;
-            height: 28px;
+            width: 32px;
+            height: 32px;
             display: grid;
             place-items: center;
-            border-radius: 6px;
-            color: #021019;
+            border-radius: 8px;
+            color: white;
             font-weight: 900;
-            font-size: 0.74rem;
-            background: linear-gradient(135deg, var(--fs-teal), var(--fs-blue));
-            box-shadow: 0 0 22px rgba(0, 212, 160, 0.16);
+            font-size: 0.82rem;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #00d4a0 0%, #0099ff 50%, #5e4dff 100%);
+            box-shadow: 
+                0 2px 8px rgba(0, 212, 160, 0.25),
+                0 0 0 1px rgba(255,255,255,0.15) inset,
+                0 4px 12px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 빛 반사 효과 */
+        .fs-logo-mark::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 60%;
+            height: 60%;
+            background: linear-gradient(
+                135deg,
+                rgba(255,255,255,0.35) 0%,
+                rgba(255,255,255,0) 60%
+            );
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        /* 미세한 inner glow */
+        .fs-logo-mark::after {
+            content: '';
+            position: absolute;
+            inset: 1px;
+            border-radius: 7px;
+            background: linear-gradient(
+                180deg,
+                rgba(255,255,255,0.12),
+                rgba(255,255,255,0)
+            );
+            pointer-events: none;
+        }
+
+        /* Hover 효과 */
+        .fs-brand:hover .fs-logo-mark {
+            transform: translateY(-1px) scale(1.05);
+            box-shadow: 
+                0 4px 16px rgba(0, 212, 160, 0.35),
+                0 0 0 1px rgba(255,255,255,0.2) inset;
         }
         .fs-brand-title {
             color: var(--fs-ink);
