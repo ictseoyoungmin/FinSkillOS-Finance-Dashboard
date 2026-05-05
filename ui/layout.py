@@ -60,6 +60,22 @@ def _sample_description(sample_name: str) -> dict[str, str]:
     )
 
 
+def _control_label(label: str, help_title: str, help_body: str) -> None:
+    st.markdown(
+        f"""
+        <div class="fs-control-field-label">
+          <span>{_html(label)}</span>
+          <span class="fs-control-help" tabindex="0" aria-label="{_html(help_title)}">?</span>
+          <div class="fs-control-help-card" role="tooltip">
+            <div class="fs-control-help-title">{_html(help_title)}</div>
+            <div class="fs-control-help-body">{_html(help_body)}</div>
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 def render_sidebar_nav(active_tab: str, source_name: str, mode: str) -> str:
     """Render the product navigation shell and return the selected tab."""
 
@@ -158,77 +174,74 @@ def render_topbar_controls(sample_files: Sequence[str]) -> dict[str, object]:
 
     with panel("Analysis Controls", None, height=118, body_class="fs-control-shell"):
         row = st.columns(
-            [1.65, 0.95, 0.74, 1.1, 0.78, 0.96],
+            [1.48, 1.18, 0.98, 0.78, 0.82, 1.1],
             gap="small",
             vertical_alignment="bottom",
         )
 
         with row[0]:
-            sample_label, sample_help = st.columns(
-                [0.86, 0.14],
-                gap="small",
-                vertical_alignment="bottom",
+            selected_sample = str(st.session_state.get("sample_dataset_select", sample_options[default_index]))
+            description = _sample_description(selected_sample)
+            _control_label("Sample Dataset", description["title"], description["body"])
+            sample_name = st.selectbox(
+                "Sample Dataset",
+                sample_options,
+                index=default_index,
+                key="sample_dataset_select",
+                label_visibility="collapsed",
             )
 
-            with sample_label:
-                sample_name = st.selectbox(
-                    "Sample Dataset",
-                    sample_options,
-                    index=default_index,
-                    key="sample_dataset_select",
-                )
-
-            with sample_help:
-                description = _sample_description(
-                    str(st.session_state.get("sample_dataset_select", sample_options[default_index]))
-                )
-
-                with st.popover("?"):
-                    st.markdown(
-                        f"""
-                        <div class="fs-sample-help">
-                          <div class="fs-sample-help-title">{_html(description['title'])}</div>
-                          <div class="fs-sample-help-body">{_html(description['body'])}</div>
-                        </div>
-                        """,
-                        unsafe_allow_html=True,
-                    )
-
-        mode = row[1].selectbox(
-            "Mode",
-            ["Auto Detect", "Single Asset", "Multi Asset", "Allocation"],
-            key="analysis_mode_select",
-        )
-
-        risk_free_rate_pct = row[2].number_input(
-            "Risk-Free Rate (%)",
-            min_value=-100.0,
-            max_value=100.0,
-            value=0.0,
-            step=0.25,
-            format="%.2f",
-            key="risk_free_rate_pct_input",
-        )
-        risk_free_rate = risk_free_rate_pct / 100.0
-
-        with row[3]:
+        with row[1]:
+            _control_label(
+                "CSV Upload",
+                "사용자 CSV 업로드",
+                "샘플 대신 직접 CSV 파일을 업로드하면 현재 파일을 우선 분석합니다. 파일명은 업로드 후 이 컨트롤 안에 표시됩니다.",
+            )
             uploaded_file = st.file_uploader(
                 "CSV Upload",
                 type=["csv"],
                 accept_multiple_files=False,
                 key="csv_upload",
+                label_visibility="collapsed",
             )
 
-        theme = row[4].selectbox(
-            "Theme",
-            ["Dark", "Light"],
-            index=0,
-            key="dashboard_theme",
-        )
+        with row[2]:
+            _control_label("Mode", "분석 모드", "Auto Detect는 컬럼명과 데이터 분포를 바탕으로 가장 적합한 스키마를 자동 추론합니다.")
+            mode = st.selectbox(
+                "Mode",
+                ["Auto Detect", "Single Asset", "Multi Asset", "Allocation"],
+                key="analysis_mode_select",
+                label_visibility="collapsed",
+            )
+
+        with row[3]:
+            _control_label("Risk-Free Rate (%)", "무위험 수익률", "Sharpe ratio 등 위험 조정 지표 계산에 사용할 연 환산 무위험 수익률입니다.")
+            risk_free_rate_pct = st.number_input(
+                "Risk-Free Rate (%)",
+                min_value=-100.0,
+                max_value=100.0,
+                value=0.0,
+                step=0.25,
+                format="%.2f",
+                key="risk_free_rate_pct_input",
+                label_visibility="collapsed",
+            )
+        risk_free_rate = risk_free_rate_pct / 100.0
+
+        with row[4]:
+            _control_label("Theme", "테마", "대시보드 전체의 Light/Dark 색상 체계를 전환합니다.")
+            theme = st.selectbox(
+                "Theme",
+                ["Dark", "Light"],
+                index=0,
+                key="dashboard_theme",
+                label_visibility="collapsed",
+            )
 
         run_analysis = row[5].button(
             "Generate Dashboard",
             type="primary",
+            icon=":material/analytics:",
             use_container_width=True,
         )
 

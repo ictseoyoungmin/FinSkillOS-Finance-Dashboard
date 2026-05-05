@@ -3254,6 +3254,646 @@ def apply_dashboard_style(theme: str = "Dark") -> None:
         unsafe_allow_html=True,
     )
 
+    st.markdown(
+        """
+        <style>
+        /* Final controls pass: stable alignment first, decoration second. */
+
+        .fs-control-field-label {
+            position: relative;
+            z-index: 20;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.34rem;
+            max-width: 100%;
+            height: 1rem;
+            margin: 0 0 6px 0;
+            color: var(--fs-muted);
+            font-size: 0.68rem;
+            font-weight: 760;
+            line-height: 1;
+            letter-spacing: 0.01em;
+            white-space: nowrap;
+        }
+
+        .fs-control-help {
+            width: 0.92rem;
+            height: 0.92rem;
+            border-radius: 999px;
+            display: inline-grid;
+            place-items: center;
+            flex: 0 0 auto;
+            cursor: help;
+            border: 1px solid var(--fs-accent-line);
+            background: var(--fs-accent-soft);
+            color: var(--fs-teal);
+            font-size: 0.62rem;
+            font-weight: 860;
+            line-height: 1;
+            outline: none;
+        }
+
+        .fs-control-help-card {
+            position: absolute;
+            left: 0;
+            top: calc(100% + 8px);
+            z-index: 9999;
+            display: none;
+            width: max-content;
+            min-width: min(22rem, calc(100vw - 48px));
+            max-width: min(38rem, calc(100vw - 48px));
+            padding: 0.72rem 0.82rem;
+            border: 1px solid var(--fs-line);
+            border-radius: 10px;
+            background: var(--fs-panel-card-bg);
+            color: var(--fs-ink);
+            box-shadow: var(--fs-shadow);
+            white-space: normal;
+            overflow: visible;
+        }
+
+        .fs-control-field-label:hover .fs-control-help-card,
+        .fs-control-field-label:focus-within .fs-control-help-card {
+            display: block;
+        }
+
+        .fs-control-help-title {
+            color: var(--fs-ink);
+            font-size: 0.82rem;
+            font-weight: 820;
+            line-height: 1.24;
+            margin-bottom: 0.34rem;
+        }
+
+        .fs-control-help-body {
+            color: var(--fs-soft);
+            font-size: 0.76rem;
+            font-weight: 560;
+            line-height: 1.52;
+            white-space: normal;
+            overflow: visible;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-control-shell),
+        div[data-testid="stContainer"]:has(.fs-control-shell) {
+            overflow: visible !important;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.fs-control-shell) [data-testid="column"],
+        div[data-testid="stContainer"]:has(.fs-control-shell) [data-testid="column"] {
+            min-width: 0 !important;
+            align-items: flex-end !important;
+        }
+
+        .fs-control-shell [data-testid="stWidgetLabel"] {
+            min-height: 1rem !important;
+            margin-bottom: 6px !important;
+        }
+
+        .fs-control-shell [data-testid="stWidgetLabel"] p {
+            max-width: 100% !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+        }
+
+        .fs-control-shell [data-testid="stWidgetLabel"] [data-testid="stTooltipHoverTarget"],
+        .fs-control-shell [data-testid="stWidgetLabel"] svg,
+        .fs-control-shell [data-testid="stWidgetLabel"] [data-testid="stIconMaterial"] {
+            color: var(--fs-teal) !important;
+            fill: currentColor !important;
+            opacity: 1 !important;
+        }
+
+        .fs-control-shell [data-testid="stWidgetLabel"] [data-testid="stTooltipHoverTarget"] {
+            width: 0.92rem !important;
+            height: 0.92rem !important;
+            border-radius: 999px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background: var(--fs-accent-soft) !important;
+            box-shadow: inset 0 0 0 1px var(--fs-accent-line) !important;
+        }
+
+        [data-baseweb="tooltip"],
+        [data-baseweb="tooltip"] > div {
+            max-width: 34rem !important;
+            border: 1px solid var(--fs-line) !important;
+            border-radius: 10px !important;
+            background: var(--fs-panel-card-bg) !important;
+            color: var(--fs-ink) !important;
+            box-shadow: var(--fs-shadow) !important;
+            line-height: 1.5 !important;
+        }
+
+        .fs-control-shell [data-baseweb="select"] > div,
+        .fs-control-shell [data-testid="stNumberInput"] input,
+        .fs-control-shell [data-testid="stFileUploader"] section,
+        .fs-control-shell [data-testid="stButton"] button {
+            min-height: 2.62rem !important;
+        }
+
+        .fs-control-shell [data-testid="stFileUploader"] {
+            height: 2.62rem !important;
+            min-height: 2.62rem !important;
+            min-width: 0 !important;
+            position: relative !important;
+        }
+
+        .fs-control-shell [data-testid="stFileUploader"] section {
+            position: relative !important;
+            max-height: 2.62rem !important;
+            padding: 0.34rem 0.5rem !important;
+            border: 1px solid var(--fs-line) !important;
+            border-radius: 10px !important;
+            background: var(--fs-surface-tint) !important;
+            color: var(--fs-ink) !important;
+            box-shadow: none !important;
+            overflow: hidden !important;
+        }
+
+        .fs-control-shell [data-testid="stFileUploader"] section:hover,
+        .fs-control-shell [data-testid="stFileUploader"] section:focus-within {
+            border-color: var(--fs-accent-line) !important;
+            box-shadow: 0 0 0 1px rgba(25, 198, 180, 0.1) !important;
+        }
+
+        .fs-control-shell [data-testid="stFileUploader"] section > div {
+            width: 100% !important;
+            min-width: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 0.42rem !important;
+        }
+
+        .fs-control-shell [data-testid="stFileUploader"] [data-testid="stFileUploaderDropzoneInstructions"] {
+            flex: 1 1 auto !important;
+            min-width: 0 !important;
+        }
+
+        .fs-control-shell [data-testid="stFileUploader"] [data-testid="stFileUploaderDropzoneInstructions"]::before {
+            content: "CSV file" !important;
+            display: block !important;
+            max-width: 100% !important;
+            color: var(--fs-soft) !important;
+            font-size: 0.72rem !important;
+            font-weight: 760 !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+        }
+
+        .fs-control-shell [data-testid="stFileUploader"]:has([data-testid="stFileUploaderFile"])
+            [data-testid="stFileUploaderDropzoneInstructions"]::before {
+            content: "" !important;
+        }
+
+        .fs-control-shell [data-testid="stFileUploader"]:has([data-testid="stFileUploaderFile"])
+            [data-testid="stFileUploaderDropzoneInstructions"] {
+            display: none !important;
+        }
+
+        .fs-control-shell [data-testid="stFileUploader"] section button {
+            flex: 0 0 auto !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            min-height: 1.74rem !important;
+            height: 1.74rem !important;
+            min-width: 2rem !important;
+            width: 2rem !important;
+            padding: 0 !important;
+            border: 1px solid var(--fs-line) !important;
+            border-radius: 8px !important;
+            background: var(--fs-panel) !important;
+            color: var(--fs-soft) !important;
+            box-shadow: none !important;
+            overflow: hidden !important;
+        }
+
+        .fs-control-shell [data-testid="stFileUploader"] section button:hover {
+            border-color: var(--fs-accent-line) !important;
+            color: var(--fs-ink) !important;
+            background: var(--fs-accent-soft) !important;
+        }
+
+        .fs-control-shell [data-testid="stFileUploader"] section button p {
+            position: absolute !important;
+            width: 1px !important;
+            height: 1px !important;
+            padding: 0 !important;
+            margin: -1px !important;
+            overflow: hidden !important;
+            clip: rect(0 0 0 0) !important;
+            white-space: nowrap !important;
+            border: 0 !important;
+        }
+
+        .fs-control-shell [data-testid="stFileUploader"] section button::before {
+            content: "";
+            display: block;
+            width: 0.94rem;
+            height: 0.94rem;
+            background: currentColor;
+            -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/%3E%3Cpath d='M14 2v6h6'/%3E%3Cpath d='M12 18v-6'/%3E%3Cpath d='M9 15l3-3 3 3'/%3E%3C/svg%3E") center / contain no-repeat;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/%3E%3Cpath d='M14 2v6h6'/%3E%3Cpath d='M12 18v-6'/%3E%3Cpath d='M9 15l3-3 3 3'/%3E%3C/svg%3E") center / contain no-repeat;
+        }
+
+        .fs-control-shell [data-testid="stFileUploader"]:has([data-testid="stFileUploaderFile"]) section button {
+            display: none !important;
+        }
+
+        .fs-control-shell [data-testid="stFileUploader"] [data-testid="stFileUploaderFile"] {
+            display: flex !important;
+            align-items: center !important;
+            gap: 0.38rem !important;
+            position: absolute !important;
+            left: 0.42rem !important;
+            right: 0.42rem !important;
+            top: 50% !important;
+            width: auto !important;
+            height: 1.84rem !important;
+            min-height: 1.84rem !important;
+            margin: 0 !important;
+            padding: 0.22rem 1.64rem 0.22rem 2rem !important;
+            border: 1px solid var(--fs-line) !important;
+            border-radius: 8px !important;
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0)),
+                var(--fs-panel) !important;
+            color: var(--fs-ink) !important;
+            box-shadow: none !important;
+            overflow: hidden !important;
+            transform: translateY(-50%) !important;
+            z-index: 3 !important;
+        }
+
+        .fs-control-shell [data-testid="stFileUploader"] [data-testid="stFileUploaderFile"]::before {
+            content: "";
+            position: absolute;
+            left: 0.54rem;
+            top: 50%;
+            width: 0.98rem;
+            height: 0.98rem;
+            transform: translateY(-50%);
+            background: var(--fs-teal);
+            -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/%3E%3Cpath d='M14 2v6h6'/%3E%3Cpath d='M8 13h8'/%3E%3Cpath d='M8 17h5'/%3E%3C/svg%3E") center / contain no-repeat;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/%3E%3Cpath d='M14 2v6h6'/%3E%3Cpath d='M8 13h8'/%3E%3Cpath d='M8 17h5'/%3E%3C/svg%3E") center / contain no-repeat;
+            pointer-events: none;
+        }
+
+        .fs-control-shell [data-testid="stFileUploader"] [data-testid="stFileUploaderFile"] > div {
+            min-width: 0 !important;
+            max-width: 100% !important;
+        }
+
+        .fs-control-shell [data-testid="stFileUploader"] [data-testid="stFileUploaderFileName"] {
+            max-width: 100% !important;
+            color: var(--fs-ink) !important;
+            font-size: 0.68rem !important;
+            font-weight: 700 !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            white-space: nowrap !important;
+        }
+
+        .fs-control-shell [data-testid="stFileUploader"] [data-testid="stFileUploaderFile"] button {
+            position: absolute !important;
+            right: 0.34rem !important;
+            top: 50% !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 1.12rem !important;
+            min-width: 1.12rem !important;
+            height: 1.12rem !important;
+            min-height: 1.12rem !important;
+            padding: 0 !important;
+            transform: translateY(-50%) !important;
+            border: 1px solid var(--fs-line) !important;
+            border-radius: 999px !important;
+            background: var(--fs-surface-tint) !important;
+            color: var(--fs-muted) !important;
+            box-shadow: none !important;
+        }
+
+        .fs-control-shell [data-testid="stFileUploader"] [data-testid="stFileUploaderFile"] button:hover {
+            border-color: rgba(240, 81, 81, 0.3) !important;
+            background: rgba(240, 81, 81, 0.1) !important;
+            color: var(--fs-red) !important;
+        }
+
+        .fs-control-shell [data-testid="stFileUploader"] [data-testid="stFileUploaderFile"] button svg {
+            width: 0.72rem !important;
+            height: 0.72rem !important;
+            color: currentColor !important;
+            fill: currentColor !important;
+        }
+
+        .fs-control-shell [data-testid="stFileUploader"] small {
+            display: none !important;
+        }
+
+        /* Specificity guard: older uploader theme blocks use html body
+           selectors, so this scoped pass must outrank them in both themes. */
+        html body [data-testid="stAppViewContainer"] .fs-control-shell [data-testid="stWidgetLabel"] [data-testid="stTooltipHoverTarget"],
+        html body [data-testid="stAppViewContainer"] .fs-control-shell [data-testid="stWidgetLabel"] svg,
+        html body [data-testid="stAppViewContainer"] .fs-control-shell [data-testid="stWidgetLabel"] [data-testid="stIconMaterial"] {
+            color: var(--fs-teal) !important;
+            fill: currentColor !important;
+            opacity: 1 !important;
+        }
+
+        html body [data-testid="stAppViewContainer"] .fs-control-shell [data-testid="stFileUploader"] {
+            height: 2.62rem !important;
+            min-height: 2.62rem !important;
+            min-width: 0 !important;
+            position: relative !important;
+        }
+
+        html body [data-testid="stAppViewContainer"] .fs-control-shell [data-testid="stFileUploader"] section {
+            position: relative !important;
+            min-height: 2.62rem !important;
+            max-height: 2.62rem !important;
+            padding: 0.34rem 0.5rem !important;
+            border: 1px solid var(--fs-line) !important;
+            border-radius: 10px !important;
+            background: var(--fs-surface-tint) !important;
+            color: var(--fs-ink) !important;
+            box-shadow: none !important;
+            overflow: hidden !important;
+        }
+
+        html body [data-testid="stAppViewContainer"] .fs-control-shell [data-testid="stFileUploader"] section > div {
+            width: 100% !important;
+            min-width: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 0.42rem !important;
+        }
+
+        html body [data-testid="stAppViewContainer"] .fs-control-shell [data-testid="stFileUploader"] [data-testid="stFileUploaderDropzoneInstructions"] {
+            flex: 1 1 auto !important;
+            min-width: 0 !important;
+        }
+
+        html body [data-testid="stAppViewContainer"] .fs-control-shell [data-testid="stFileUploader"] [data-testid="stFileUploaderDropzoneInstructions"]::before {
+            content: "CSV file" !important;
+            display: block !important;
+            max-width: 100% !important;
+            color: var(--fs-soft) !important;
+            font-size: 0.72rem !important;
+            font-weight: 760 !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+        }
+
+        html body [data-testid="stAppViewContainer"] .fs-control-shell [data-testid="stFileUploader"]:has([data-testid="stFileUploaderFile"]) [data-testid="stFileUploaderDropzoneInstructions"] {
+            display: none !important;
+        }
+
+        html body [data-testid="stAppViewContainer"] .fs-control-shell [data-testid="stFileUploader"] section button {
+            flex: 0 0 auto !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            min-height: 1.74rem !important;
+            height: 1.74rem !important;
+            min-width: 2rem !important;
+            width: 2rem !important;
+            padding: 0 !important;
+            border: 1px solid var(--fs-line) !important;
+            border-radius: 8px !important;
+            background: var(--fs-panel) !important;
+            color: var(--fs-soft) !important;
+            box-shadow: none !important;
+            overflow: hidden !important;
+        }
+
+        html body [data-testid="stAppViewContainer"] .fs-control-shell [data-testid="stFileUploader"] section button p {
+            position: absolute !important;
+            width: 1px !important;
+            height: 1px !important;
+            padding: 0 !important;
+            margin: -1px !important;
+            overflow: hidden !important;
+            clip: rect(0 0 0 0) !important;
+            white-space: nowrap !important;
+            border: 0 !important;
+        }
+
+        html body [data-testid="stAppViewContainer"] .fs-control-shell [data-testid="stFileUploader"] section button::before {
+            content: "";
+            display: block;
+            width: 0.94rem;
+            height: 0.94rem;
+            background: currentColor;
+            -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/%3E%3Cpath d='M14 2v6h6'/%3E%3Cpath d='M12 18v-6'/%3E%3Cpath d='M9 15l3-3 3 3'/%3E%3C/svg%3E") center / contain no-repeat;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/%3E%3Cpath d='M14 2v6h6'/%3E%3Cpath d='M12 18v-6'/%3E%3Cpath d='M9 15l3-3 3 3'/%3E%3C/svg%3E") center / contain no-repeat;
+        }
+
+        html body [data-testid="stAppViewContainer"] .fs-control-shell [data-testid="stFileUploader"]:has([data-testid="stFileUploaderFile"]) section button {
+            display: none !important;
+        }
+
+        html body [data-testid="stAppViewContainer"] .fs-control-shell [data-testid="stFileUploader"] [data-testid="stFileUploaderFile"] {
+            display: flex !important;
+            align-items: center !important;
+            gap: 0.38rem !important;
+            position: absolute !important;
+            left: 0.42rem !important;
+            right: 0.42rem !important;
+            top: 50% !important;
+            width: auto !important;
+            height: 1.84rem !important;
+            min-height: 1.84rem !important;
+            margin: 0 !important;
+            padding: 0.22rem 1.64rem 0.22rem 2rem !important;
+            border: 1px solid var(--fs-line) !important;
+            border-radius: 8px !important;
+            background: var(--fs-panel) !important;
+            color: var(--fs-ink) !important;
+            box-shadow: none !important;
+            overflow: hidden !important;
+            transform: translateY(-50%) !important;
+            z-index: 3 !important;
+        }
+
+        html body [data-testid="stAppViewContainer"] .fs-control-shell [data-testid="stFileUploader"] [data-testid="stFileUploaderFile"]::before {
+            content: "";
+            position: absolute;
+            left: 0.54rem;
+            top: 50%;
+            width: 0.98rem;
+            height: 0.98rem;
+            transform: translateY(-50%);
+            background: var(--fs-teal);
+            -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/%3E%3Cpath d='M14 2v6h6'/%3E%3Cpath d='M8 13h8'/%3E%3Cpath d='M8 17h5'/%3E%3C/svg%3E") center / contain no-repeat;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/%3E%3Cpath d='M14 2v6h6'/%3E%3Cpath d='M8 13h8'/%3E%3Cpath d='M8 17h5'/%3E%3C/svg%3E") center / contain no-repeat;
+            pointer-events: none;
+        }
+
+        html body [data-testid="stAppViewContainer"] .fs-control-shell [data-testid="stFileUploader"] [data-testid="stFileUploaderFile"] > div:first-child {
+            display: none !important;
+        }
+
+        html body [data-testid="stAppViewContainer"] .fs-control-shell [data-testid="stFileUploader"] [data-testid="stFileUploaderFile"] > div {
+            min-width: 0 !important;
+            max-width: 100% !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            white-space: nowrap !important;
+        }
+
+        html body [data-testid="stAppViewContainer"] .fs-control-shell [data-testid="stFileUploader"] [data-testid="stFileUploaderFileName"] {
+            max-width: 100% !important;
+            color: var(--fs-ink) !important;
+            font-size: 0.68rem !important;
+            font-weight: 700 !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            white-space: nowrap !important;
+        }
+
+        html body [data-testid="stAppViewContainer"] .fs-control-shell [data-testid="stFileUploader"] [data-testid="stFileUploaderFile"] button {
+            position: absolute !important;
+            right: 0.34rem !important;
+            top: 50% !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 1.12rem !important;
+            min-width: 1.12rem !important;
+            height: 1.12rem !important;
+            min-height: 1.12rem !important;
+            padding: 0 !important;
+            transform: translateY(-50%) !important;
+            border: 1px solid var(--fs-line) !important;
+            border-radius: 999px !important;
+            background: var(--fs-surface-tint) !important;
+            color: var(--fs-muted) !important;
+            box-shadow: none !important;
+        }
+
+        html body [data-testid="stAppViewContainer"] .fs-control-shell [data-testid="stFileUploader"] [data-testid="stFileUploaderFile"] button:hover {
+            border-color: rgba(240, 81, 81, 0.3) !important;
+            background: rgba(240, 81, 81, 0.1) !important;
+            color: var(--fs-red) !important;
+        }
+
+        html body [data-testid="stAppViewContainer"] .fs-control-shell [data-testid="stFileUploader"] small {
+            display: none !important;
+        }
+
+        html body [data-testid="stAppViewContainer"] .fs-control-shell [data-testid="stFileUploader"] > div:has(.stFileUploaderFile) {
+            position: absolute !important;
+            left: 0.42rem !important;
+            right: 0.42rem !important;
+            top: 50% !important;
+            z-index: 5 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            line-height: 1 !important;
+            transform: translateY(-50%) !important;
+            pointer-events: none;
+        }
+
+        html body [data-testid="stAppViewContainer"] .fs-control-shell [data-testid="stFileUploader"] > div:has(.stFileUploaderFile) ul,
+        html body [data-testid="stAppViewContainer"] .fs-control-shell [data-testid="stFileUploader"] > div:has(.stFileUploaderFile) li {
+            margin: 0 !important;
+            padding: 0 !important;
+            list-style: none !important;
+        }
+
+        html body [data-testid="stAppViewContainer"] .fs-control-shell [data-testid="stFileUploader"] .stFileUploaderFile {
+            position: relative !important;
+            display: flex !important;
+            align-items: center !important;
+            width: 100% !important;
+            height: 1.84rem !important;
+            min-height: 1.84rem !important;
+            margin: 0 !important;
+            padding: 0.22rem 1.64rem 0.22rem 2rem !important;
+            border: 1px solid var(--fs-line) !important;
+            border-radius: 8px !important;
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0)),
+                var(--fs-panel) !important;
+            color: var(--fs-ink) !important;
+            box-shadow: none !important;
+            overflow: hidden !important;
+            pointer-events: auto;
+        }
+
+        html body [data-testid="stAppViewContainer"] .fs-control-shell [data-testid="stFileUploader"] .stFileUploaderFile::before {
+            content: "";
+            position: absolute;
+            left: 0.54rem;
+            top: 50%;
+            width: 0.98rem;
+            height: 0.98rem;
+            transform: translateY(-50%);
+            background: var(--fs-teal);
+            -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/%3E%3Cpath d='M14 2v6h6'/%3E%3Cpath d='M8 13h8'/%3E%3Cpath d='M8 17h5'/%3E%3C/svg%3E") center / contain no-repeat;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/%3E%3Cpath d='M14 2v6h6'/%3E%3Cpath d='M8 13h8'/%3E%3Cpath d='M8 17h5'/%3E%3C/svg%3E") center / contain no-repeat;
+            pointer-events: none;
+        }
+
+        html body [data-testid="stAppViewContainer"] .fs-control-shell [data-testid="stFileUploader"] .stFileUploaderFile > div:first-child {
+            display: none !important;
+        }
+
+        html body [data-testid="stAppViewContainer"] .fs-control-shell [data-testid="stFileUploader"] .stFileUploaderFileData {
+            min-width: 0 !important;
+            flex: 1 1 auto !important;
+            padding: 0 !important;
+            overflow: hidden !important;
+        }
+
+        html body [data-testid="stAppViewContainer"] .fs-control-shell [data-testid="stFileUploader"] .stFileUploaderFileName {
+            max-width: 100% !important;
+            margin: 0 !important;
+            color: var(--fs-ink) !important;
+            font-size: 0.68rem !important;
+            font-weight: 720 !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            white-space: nowrap !important;
+        }
+
+        html body [data-testid="stAppViewContainer"] .fs-control-shell [data-testid="stFileUploader"] [data-testid="stFileUploaderDeleteBtn"] {
+            position: absolute !important;
+            right: 0.34rem !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+            width: 1.12rem !important;
+            height: 1.12rem !important;
+        }
+
+        html body [data-testid="stAppViewContainer"] .fs-control-shell [data-testid="stFileUploader"] [data-testid="stFileUploaderDeleteBtn"] button {
+            width: 1.12rem !important;
+            min-width: 1.12rem !important;
+            height: 1.12rem !important;
+            min-height: 1.12rem !important;
+            padding: 0 !important;
+            border: 1px solid var(--fs-line) !important;
+            border-radius: 999px !important;
+            background: var(--fs-surface-tint) !important;
+            color: var(--fs-muted) !important;
+            box-shadow: none !important;
+        }
+
+        html body [data-testid="stAppViewContainer"] .fs-control-shell [data-testid="stFileUploader"] [data-testid="stFileUploaderDeleteBtn"] button:hover {
+            border-color: rgba(240, 81, 81, 0.3) !important;
+            background: rgba(240, 81, 81, 0.1) !important;
+            color: var(--fs-red) !important;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
 
 def style_plotly_figure(fig: go.Figure) -> go.Figure:
     """Apply the shared chart treatment for the selected shell theme."""
